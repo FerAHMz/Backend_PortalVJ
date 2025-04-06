@@ -46,7 +46,7 @@ Create table Padres (
   apellido_estudiante varchar(50) not null,
   email varchar(50) unique not null,
   telefono varchar(14) unique not null,
-  pasword varchar(255) not null,  
+  password varchar(255) not null,  
   foreign key (carnet_estudiante) references estudiantes (carnet),
   foreign key (rol) references usuarios (id)
 );

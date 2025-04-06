@@ -40,9 +40,6 @@ CREATE TABLE Boleta_calificaciones (
 ALTER TABLE Padres
     RENAME COLUMN apellido_estudiante TO apellido;
 
-ALTER TABLE Padres
-    RENAME COLUMN pasword TO password;
-
 -- Modificar tabla Estudiantes
 ALTER TABLE Estudiantes
     ADD COLUMN id_grado_seccion int REFERENCES Grado_seccion(id),

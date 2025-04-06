@@ -3,33 +3,59 @@ const app = express();
 const db = require('./database_cn');
 const cors = require('cors');
 const net = require('net');
+const bcrypt = require('bcrypt');
 
 app.use(cors());
 app.use(express.json()); // Para leer JSON del frontend
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
+  console.log('Login attempt received');
 
   try {
     const result = await db.getPool().query(
-      `SELECT u.rol FROM usuarios u
-       JOIN padres p ON u.id = p.rol AND p.email = $1 AND p.password = $2
-       UNION
-       SELECT u.rol FROM usuarios u
-       JOIN maestros m ON u.id = m.rol AND m.email = $1 AND m.password = $2
-       UNION
-       SELECT u.rol FROM usuarios u
-       JOIN administrativos a ON u.id = a.rol AND a.email = $1 AND a.password = $2`,
-      [email, password]
+      `SELECT m.id, m.password as hashed_password, 'Maestro' as rol, 'maestros' as user_type
+       FROM maestros m 
+       WHERE m.email = $1
+       UNION ALL
+       SELECT p.id, p.password as hashed_password, 'Padre' as rol, 'padres' as user_type
+       FROM padres p 
+       WHERE p.email = $1
+       UNION ALL
+       SELECT a.id, a.password as hashed_password, 'Administrativo' as rol, 'administrativos' as user_type
+       FROM administrativos a 
+       WHERE a.email = $1`,
+      [email]
     );
 
+    console.log('Query executed:', {
+      found: result.rows.length > 0
+    });
+    
     if (result.rows.length > 0) {
-      res.json({ success: true, user: result.rows[0] });
+      try {
+        const match = await bcrypt.compare(password, result.rows[0].hashed_password);
+        console.log('Authentication attempt:', match ? 'successful' : 'failed');
+        
+        if (match) {
+          res.json({ 
+            success: true, 
+            user: {
+              rol: result.rows[0].rol,
+              type: result.rows[0].user_type
+            } });  
+        } else {
+          res.status(401).json({ success: false, message: 'Credenciales inválidas' });
+        }
+      } catch (error) {
+        console.error('Authentication error');
+        res.status(500).json({ success: false, message: 'Error en la verificación' });
+      }
     } else {
       res.status(401).json({ success: false, message: 'Credenciales inválidas' });
     }
   } catch (err) {
-    console.error(err);
+    console.error('Server error:', err.message);
     res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 });
