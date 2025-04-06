@@ -49,10 +49,6 @@ ALTER TABLE Estudiantes
     DROP CONSTRAINT estudiantes_grado_fkey,
     DROP COLUMN grado;
 
--- Modificar tabla Administrativos
-ALTER TABLE Administrativos
-    RENAME COLUMN pasword TO password;
-
 -- Modificar tabla Secciones
 ALTER TABLE Secciones
     ADD COLUMN seccion varchar(5),
@@ -82,8 +78,10 @@ ALTER TABLE Cursos
 
 -- esto no es necesario, ver si lo agregamos
 -- Modificar tabla Cursos
+/* provisionalmente lo voy a dejar comentado, por pruebas del login
 ALTER TABLE Cursos
     ADD COLUMN id_trimestres int NOT NULL REFERENCES Trimestres(id);
+*/
 
 -- Modificar tabla Grados
 ALTER TABLE Grados
@@ -92,7 +90,7 @@ ALTER TABLE Grados
 
 -- Modificar tabla Calificaciones
 ALTER TABLE Calificaciones
-    ADD COLUMN id_boleta int NOT NULL REFERENCES Boleta_calificaciones(id),
+    ADD COLUMN id_boleta int REFERENCES Boleta_calificaciones(id),
     ADD COLUMN id_tarea int NOT NULL REFERENCES Tareas(id);
 
 -- Modificar tabla Tareas
@@ -106,4 +104,8 @@ ALTER TABLE Observaciones
 -- Modificar tabla Metodo pago
 ALTER TABLE Metodo_pago
 ADD CONSTRAINT metodo_pago_check
-CHECK (metodo_pago IN ('Servipagos', 'Efectivo', 'Transferencias', 'Deposito'));
+CHECK (metodo_pago IN (
+  'Efectivo', 'Tarjeta de Crédito', 'Tarjeta de Débito', 
+  'Transferencia', 'Cheque', 'PayPal', 'Bitcoin', 
+  'Apple Pay', 'Google Pay', 'Pago Móvil'
+));
