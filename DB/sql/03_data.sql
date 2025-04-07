@@ -70,6 +70,18 @@ INSERT INTO Padres (carnet_estudiante, rol, apellido, email, telefono, password)
 (1009, 8, 'Ramirez', 'padre9@example.com', '9012345678', 'password9'),
 (1010, 2, 'Torres', 'padre10@example.com', '0123456789', 'password10');
 
+INSERT INTO Administrativos (rol, nombre, apellido, email, telefono, password) VALUES 
+(4, 'Roberto', 'Mendoza', 'admin1@example.com', '1122334455', 'password1'),
+(7, 'Patricia', 'Vargas', 'admin2@example.com', '2233445566', 'password2'),
+(10, 'Fernando', 'Castro', 'admin3@example.com', '3344556677', 'password3'),
+(4, 'Gabriela', 'Rojas', 'admin4@example.com', '4455667788', 'password4'),
+(7, 'Ricardo', 'Silva', 'admin5@example.com', '5566778899', 'password5'),
+(10, 'Isabel', 'Fuentes', 'admin6@example.com', '6677889900', 'password6'),
+(4, 'Oscar', 'Navarro', 'admin7@example.com', '7788990011', 'password7'),
+(7, 'Adriana', 'Miranda', 'admin8@example.com', '8899001122', 'password8'),
+(10, 'Javier', 'Peña', 'admin9@example.com', '9900112233', 'password9'),
+(4, 'Monica', 'Cordero', 'admin10@example.com', '0011223344', 'password10');
+
 INSERT INTO Familias (id_padre, carnet_estudiante) VALUES
 (1, 1001),
 (2, 1002),
