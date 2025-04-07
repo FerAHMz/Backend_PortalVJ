@@ -45,14 +45,7 @@ This command:
 - Authentication
   
   - POST /login : User authentication
-- Data Management
-  
-  - Additional endpoints to be documented
-## Database Structure
-- Teachers (maestros)
-- Parents (padres)
-- Administrators (administrativos)
-- Additional tables to be documented
+
 ## Stopping the Application
 ```bash
 docker compose down
