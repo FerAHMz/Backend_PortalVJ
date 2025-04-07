@@ -30,7 +30,6 @@ This backend service manages the Portal Vanguardia Juvenil system, handling user
 2. **Launch the Application**
    ```bash
    docker compose up --build -d
- ```
 
 This command:
 - Builds the necessary containers
@@ -57,7 +56,7 @@ This command:
 ## Stopping the Application
 ```bash
 docker compose down
- ```
+```
 
 ## Troubleshooting
 If you encounter issues:
