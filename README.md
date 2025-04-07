@@ -1,4 +1,3 @@
-```markdown
 <div align="center">
   <h1>Portal Vanguardia Juvenil - Backend</h1>
   <p>
@@ -32,7 +31,6 @@ This backend service manages the Portal Vanguardia Juvenil system, handling user
    ```bash
    docker compose up --build -d
  ```
-```
 
 This command:
 - Builds the necessary containers
