@@ -1,7 +1,7 @@
 <div align="center">
   <h1>Portal Vanguardia Juvenil - Backend</h1>
   <p>
-    Backend service for Portal Vanguardia Juvenil using Node.js, Express, and PostgreSQL with Docker
+    Backend service for Portal Vanguardia Juvenil using Node.js, and PostgreSQL with Docker
   </p>
 </div>
 
