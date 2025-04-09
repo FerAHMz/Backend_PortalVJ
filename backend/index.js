@@ -64,3 +64,26 @@ app.post('/login', async (req, res) => {
 app.listen(3000, () => {
   console.log('Servidor listo en http://localhost:3000');
 });
+
+app.get('/students-payments', async (req, res) => {
+  try {
+    const result = await db.getPool().query(`
+      SELECT 
+        e.carnet AS id,
+        CONCAT(e.nombre, ' ', e.apellido) AS name,
+        CASE 
+          WHEN COUNT(s.id) = 12 THEN 'Al día'
+          ELSE 'Pendiente'
+        END AS estado,
+        g.grado AS grade
+      FROM estudiantes e
+      LEFT JOIN solvencias s ON e.carnet = s.id_pagos
+      LEFT JOIN grados g ON e.id_grado_seccion = g.id
+      GROUP BY e.carnet, e.nombre, e.apellido, g.grado
+    `)
+    res.json(result.rows)
+  } catch (error) {
+    console.error('Error fetching students payments:', error)
+    res.status(500).json({ error: 'Error fetching students payments' })
+  }
+})
