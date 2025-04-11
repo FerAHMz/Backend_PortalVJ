@@ -20,18 +20,41 @@ const upload = multer({
 const uploadPayments = async (req, res) => {
     let client;
     try {
-        client = await db.getPool().connect();
-        
-        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-        const validation = validateExcelContent(workbook);
-        
-        if (!validation.isValid) {
-            return res.status(400).json({ 
-                success: false, 
-                errors: validation.errors 
+        if (!req.file || !req.file.buffer) {
+            console.log('Invalid file upload');
+            return res.status(400).json({
+                success: false,
+                error: 'Archivo inválido o vacío'
             });
         }
 
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        
+        // Add sheet validation
+        if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
+            console.log('Invalid Excel format');
+            return res.status(400).json({
+                success: false,
+                error: 'Formato de Excel inválido o archivo vacío'
+            });
+        }
+
+        const validation = validateExcelContent(workbook);
+        
+        console.log('Validation results:', {
+            isValid: validation?.isValid,
+            errors: validation?.errors,
+            dataLength: validation?.data?.length
+        });
+
+        if (!validation || !validation.isValid) {
+            return res.status(400).json({ 
+                success: false, 
+                errors: validation?.errors || ['Error al validar el archivo']
+            });
+        }
+
+        client = await db.getPool().connect();
         await client.query('BEGIN');
 
         for (const payment of validation.data) {
@@ -82,6 +105,7 @@ const uploadPayments = async (req, res) => {
             count: validation.data.length
         });
     } catch (error) {
+        console.error('Upload error:', error);
         if (client) await client.query('ROLLBACK');
         res.status(500).json({ 
             success: false, 
