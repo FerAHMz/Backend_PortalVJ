@@ -4,9 +4,14 @@ const db = require('./database_cn');
 const cors = require('cors');
 const net = require('net');
 const bcrypt = require('bcrypt');
+const paymentRoutes = require('./routes/paymentRoutes');
+const jwt = require('jsonwebtoken');
+const { JWT_SECRET } = require('./config/config');
 
 app.use(cors());
 app.use(express.json()); // Para leer JSON del frontend
+
+app.use('/api/payments', paymentRoutes);
 
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -38,12 +43,24 @@ app.post('/login', async (req, res) => {
         console.log('Authentication attempt:', match ? 'successful' : 'failed');
         
         if (match) {
+          // Generate JWT token
+          const token = jwt.sign(
+            { 
+              id: result.rows[0].id,
+              rol: result.rows[0].rol,
+              type: result.rows[0].user_type
+            },
+            JWT_SECRET
+          );
+          
           res.json({ 
             success: true, 
             user: {
               rol: result.rows[0].rol,
               type: result.rows[0].user_type
-            } });  
+            },
+            token: token 
+          });  
         } else {
           res.status(401).json({ success: false, message: 'Credenciales inválidas' });
         }
@@ -61,29 +78,10 @@ app.post('/login', async (req, res) => {
 });
 
 // arrancar el servidor
-app.listen(3000, () => {
+app.listen(3000, (err) => {
+  if (err) {
+    console.error('Error starting server:', err);
+    process.exit(1);
+  }
   console.log('Servidor listo en http://localhost:3000');
 });
-
-app.get('/students-payments', async (req, res) => {
-  try {
-    const result = await db.getPool().query(`
-      SELECT 
-        e.carnet AS id,
-        CONCAT(e.nombre, ' ', e.apellido) AS name,
-        CASE 
-          WHEN COUNT(s.id) = 12 THEN 'Al día'
-          ELSE 'Pendiente'
-        END AS estado,
-        g.grado AS grade
-      FROM estudiantes e
-      LEFT JOIN solvencias s ON e.carnet = s.id_pagos
-      LEFT JOIN grados g ON e.id_grado_seccion = g.id
-      GROUP BY e.carnet, e.nombre, e.apellido, g.grado
-    `)
-    res.json(result.rows)
-  } catch (error) {
-    console.error('Error fetching students payments:', error)
-    res.status(500).json({ error: 'Error fetching students payments' })
-  }
-})

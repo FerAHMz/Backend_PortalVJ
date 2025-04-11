@@ -42,6 +42,7 @@ services:
       DB_USER: postgres
       DB_PASSWORD: admin123.
       DB_NAME: portalvj_db
+      JWT_SECRET: portalvj-secret-2024
     networks:
       - app-network
 

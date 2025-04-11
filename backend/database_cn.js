@@ -1,4 +1,3 @@
-
 const { Pool } = require('pg');
 
 class Database {
@@ -17,11 +16,9 @@ class Database {
       .catch(err => console.error('Error PostgreSQL:', err));
   }
 
-  // Método para obtener el pool 
   getPool() {
     return this.pool;
   }
 }
 
-// Exportamos una instancia de la DB
 module.exports = new Database();

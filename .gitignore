@@ -1,3 +1,4 @@
 docker-compose.yml
 hashPasswords.js
 resetPassword.js
+config.js
