@@ -10,6 +10,9 @@ INSERT INTO Usuarios (rol) VALUES
 ('Maestro'),
 ('Administrativo');
 
+INSERT INTO SuperUsuarios (rol, nombre, apellido, email, telefono, password) VALUES 
+(1, 'Admin', 'Principal', 'superadmin@example.com', '0000000000', 'password1');
+
 INSERT INTO Grados (grado) VALUES 
 ('Primer Grado'),
 ('Segundo Grado'),
