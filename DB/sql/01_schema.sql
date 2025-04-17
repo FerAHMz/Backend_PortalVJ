@@ -51,16 +51,17 @@ create table Estudiantes (
 );
 
 -- Creación tabla Padres
-Create table Padres (
+CREATE TABLE Padres (
   id serial primary key not null,
   carnet_estudiante int not null,
   rol int not null,
+  nombre varchar(50) not null,
   apellido_estudiante varchar(50) not null,
   email varchar(50) unique not null,
   telefono varchar(14) unique not null,
   password varchar(255) not null,  
-  foreign key (carnet_estudiante) references estudiantes (carnet),
-  foreign key (rol) references usuarios (id)
+  foreign key (carnet_estudiante) references Estudiantes(carnet),
+  foreign key (rol) references Usuarios(id)
 );
 
 -- Creación tabla Familia

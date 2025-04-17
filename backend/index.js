@@ -4,15 +4,18 @@ const db = require('./database_cn');
 const cors = require('cors');
 const net = require('net');
 const bcrypt = require('bcrypt');
-const paymentRoutes = require('./routes/paymentRoutes');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('./config/config');
 
+//Routes
+const paymentRoutes = require('./routes/paymentRoutes');
+const superUserRoutes = require('./routes/superUserRoutes');
+
+// Middleware
 app.use(cors());
 app.use(express.json()); // Para leer JSON del frontend
 
-app.use('/api/payments', paymentRoutes);
-
+// Auth Routes
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   console.log('Login attempt received');
@@ -81,6 +84,27 @@ app.post('/login', async (req, res) => {
   }
 });
 
+// API Routes
+app.use('/api/payments', paymentRoutes);
+app.use('/api/superusers', superUserRoutes);
+
+// Erro handeling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+      success: false,
+      error: 'Error interno del servidor'
+  });
+});
+
+// Not founfd middleware
+app.use((req, res) => {
+  res.status(404).json({
+      success: false,
+      error: 'Ruta no encontrada'
+  });
+});
+
 // arrancar el servidor
 app.listen(3000, (err) => {
   if (err) {
@@ -89,26 +113,3 @@ app.listen(3000, (err) => {
   }
   console.log('Servidor listo en http://localhost:3000');
 });
-
-app.get('/students-payments', async (req, res) => {
-  try {
-    const result = await db.getPool().query(`
-      SELECT 
-        e.carnet AS id,
-        CONCAT(e.nombre, ' ', e.apellido) AS name,
-        CASE 
-          WHEN COUNT(s.id) = 12 THEN 'Al día'
-          ELSE 'Pendiente'
-        END AS estado,
-        g.grado AS grade
-      FROM estudiantes e
-      LEFT JOIN solvencias s ON e.carnet = s.id_pagos
-      LEFT JOIN grados g ON e.id_grado_seccion = g.id
-      GROUP BY e.carnet, e.nombre, e.apellido, g.grado
-    `)
-    res.json(result.rows)
-  } catch (error) {
-    console.error('Error fetching students payments:', error)
-    res.status(500).json({ error: 'Error fetching students payments' })
-  }
-})
