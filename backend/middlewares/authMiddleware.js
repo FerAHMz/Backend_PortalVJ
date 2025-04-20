@@ -30,7 +30,20 @@ const isAdmin = async (req, res, next) => {
     }
 };
 
+const isSup = async (req, res, next) => {
+    try {
+       if (req.user.rol === 'SUP') {
+            next();
+        } else {
+            res.status(403).json({ error: 'Acceso denegado. Se requiere rol Super Usuario' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Error al verificar permisos' });
+    }
+}
+
 module.exports = {
     verifyToken,
-    isAdmin
+    isAdmin,
+    isSup
 };

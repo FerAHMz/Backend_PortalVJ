@@ -25,7 +25,7 @@ router.post('/upload', verifyToken, isAdmin, (req, res) => {
 });
 
 // Student payments route
-router.get('/students', async (req, res) => {
+router.get('/students-payments', async (req, res) => {
     try {
         const result = await db.getPool().query(`
             SELECT 
@@ -45,10 +45,10 @@ router.get('/students', async (req, res) => {
         `);
         res.json(result.rows);
     } catch (error) {
-        console.error('Error fetching students payments:', error);
-        res.status(500).json({ error: 'Error fetching students payments' });
+      console.error('Error fetching students payments:', error)
+      res.status(500).json({ error: 'Error fetching students payments' })
     }
-});
+  })
 
 router.post('/report', async (req, res) => {
     const { searchQuery, grade, startDate, endDate } = req.body

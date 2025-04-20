@@ -10,6 +10,9 @@ INSERT INTO Usuarios (rol) VALUES
 ('Maestro'),
 ('Administrativo');
 
+INSERT INTO SuperUsuarios (rol, nombre, apellido, email, telefono, password) VALUES 
+(1, 'Admin', 'Principal', 'superadmin@example.com', '0000000000', 'password1');
+
 INSERT INTO Grados (grado) VALUES 
 ('Primer Grado'),
 ('Segundo Grado'),
@@ -58,17 +61,18 @@ INSERT INTO Estudiantes (carnet, nombre, apellido, fecha_nacimiento, id_grado_se
 (1009, 'Pedro', 'Ramirez', '2010-01-30', 9),
 (1010, 'Lucia', 'Torres', '2011-02-05', 10);
 
-INSERT INTO Padres (carnet_estudiante, rol, apellido, email, telefono, password) VALUES 
-(1001, 2, 'Gomez', 'padre1@example.com', '1234567890', 'password1'),
-(1002, 5, 'Lopez', 'padre2@example.com', '2345678901', 'password2'),
-(1003, 8, 'Martinez', 'padre3@example.com', '3456789012', 'password3'),
-(1004, 2, 'Perez', 'padre4@example.com', '4567890123', 'password4'),
-(1005, 5, 'Gonzalez', 'padre5@example.com', '5678901234', 'password5'),
-(1006, 8, 'Rodriguez', 'padre6@example.com', '6789012345', 'password6'),
-(1007, 2, 'Fernandez', 'padre7@example.com', '7890123456', 'password7'),
-(1008, 5, 'Sanchez', 'padre8@example.com', '8901234567', 'password8'),
-(1009, 8, 'Ramirez', 'padre9@example.com', '9012345678', 'password9'),
-(1010, 2, 'Torres', 'padre10@example.com', '0123456789', 'password10');
+INSERT INTO Padres (carnet_estudiante, rol, nombre, apellido, email, telefono, password) VALUES 
+(1001, 2, 'Carlos',     'Gomez',     'padre1@example.com', '1234567890', 'password1'),
+(1002, 5, 'Luis',       'Lopez',     'padre2@example.com', '2345678901', 'password2'),
+(1003, 8, 'Ricardo',    'Martinez',  'padre3@example.com', '3456789012', 'password3'),
+(1004, 2, 'Jorge',      'Perez',     'padre4@example.com', '4567890123', 'password4'),
+(1005, 5, 'Alejandro',  'Gonzalez',  'padre5@example.com', '5678901234', 'password5'),
+(1006, 8, 'Eduardo',    'Rodriguez', 'padre6@example.com', '6789012345', 'password6'),
+(1007, 2, 'Roberto',    'Fernandez', 'padre7@example.com', '7890123456', 'password7'),
+(1008, 5, 'Mario',      'Sanchez',   'padre8@example.com', '8901234567', 'password8'),
+(1009, 8, 'Daniel',     'Ramirez',   'padre9@example.com', '9012345678', 'password9'),
+(1010, 2, 'Fernando',   'Torres',    'padre10@example.com','0123456789', 'password10');
+
 
 INSERT INTO Administrativos (rol, nombre, apellido, email, telefono, password) VALUES 
 (4, 'Roberto', 'Mendoza', 'admin1@example.com', '1122334455', 'password1'),

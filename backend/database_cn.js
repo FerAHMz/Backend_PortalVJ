@@ -10,10 +10,21 @@ class Database {
       port: process.env.DB_PORT,
     });
 
-    // Verificar conexión al crear la instancia
-    this.pool.query('SELECT NOW()')
-      .then(() => console.log('PostgreSQL conectado'))
-      .catch(err => console.error('Error PostgreSQL:', err));
+    this.connectWithRetry();
+  }
+
+  async connectWithRetry(retries = 5, interval = 2000) {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await this.pool.query('SELECT NOW()');
+        console.log('PostgreSQL conectado');
+        return;
+      } catch (err) {
+        console.log(`Intento de conexión ${i + 1}/${retries} fallido. Reintentando en ${interval/1000}s...`);
+        await new Promise(resolve => setTimeout(resolve, interval));
+      }
+    }
+    console.error('Error PostgreSQL: No se pudo establecer la conexión después de varios intentos');
   }
 
   getPool() {

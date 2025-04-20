@@ -4,15 +4,18 @@ const db = require('./database_cn');
 const cors = require('cors');
 const net = require('net');
 const bcrypt = require('bcrypt');
-const paymentRoutes = require('./routes/paymentRoutes');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('./config/config');
 
+//Routes
+const paymentRoutes = require('./routes/paymentRoutes');
+const superUserRoutes = require('./routes/superUserRoutes');
+
+// Middleware
 app.use(cors());
 app.use(express.json()); // Para leer JSON del frontend
 
-app.use('/api/payments', paymentRoutes);
-
+// Auth Routes
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
   console.log('Login attempt received');
@@ -29,7 +32,11 @@ app.post('/login', async (req, res) => {
        UNION ALL
        SELECT a.id, a.password as hashed_password, 'Administrativo' as rol, 'administrativos' as user_type
        FROM administrativos a 
-       WHERE a.email = $1`,
+       WHERE a.email = $1
+       UNION ALL
+       SELECT s.id, s.password as hashed_password, 'SUP' as rol, 'superusuarios' as user_type
+       FROM superusuarios s 
+       WHERE s.email = $1`,
       [email]
     );
 
@@ -75,6 +82,27 @@ app.post('/login', async (req, res) => {
     console.error('Server error:', err.message);
     res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
+});
+
+// API Routes
+app.use('/api/payments', paymentRoutes);
+app.use('/api/superusers', superUserRoutes);
+
+// Erro handeling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({
+      success: false,
+      error: 'Error interno del servidor'
+  });
+});
+
+// Not founfd middleware
+app.use((req, res) => {
+  res.status(404).json({
+      success: false,
+      error: 'Ruta no encontrada'
+  });
 });
 
 // arrancar el servidor
