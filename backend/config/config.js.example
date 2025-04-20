@@ -1,5 +1,0 @@
-const JWT_SECRET = 'portalvj-secret-2024';
-
-module.exports = {
-    JWT_SECRET
-};
