@@ -18,7 +18,7 @@ app.use(express.json()); // Para leer JSON del frontend
 // Auth Routes
 app.post('/login', async (req, res) => {
   const { email, password } = req.body;
-  console.log('Login attempt received');
+  console.log('Login attempt received:', { email });
 
   try {
     const result = await db.getPool().query(
@@ -32,54 +32,42 @@ app.post('/login', async (req, res) => {
        UNION ALL
        SELECT a.id, a.password as hashed_password, 'Administrativo' as rol, 'administrativos' as user_type
        FROM administrativos a 
-       WHERE a.email = $1
-       UNION ALL
-       SELECT s.id, s.password as hashed_password, 'SUP' as rol, 'superusuarios' as user_type
-       FROM superusuarios s 
-       WHERE s.email = $1`,
+       WHERE a.email = $1`,
       [email]
     );
 
-    console.log('Query executed:', {
-      found: result.rows.length > 0
-    });
-    
+    console.log('Query executed:', { rows: result.rows });
+
     if (result.rows.length > 0) {
-      try {
-        const match = await bcrypt.compare(password, result.rows[0].hashed_password);
-        console.log('Authentication attempt:', match ? 'successful' : 'failed');
-        
-        if (match) {
-          // Generate JWT token
-          const token = jwt.sign(
-            { 
-              id: result.rows[0].id,
-              rol: result.rows[0].rol,
-              type: result.rows[0].user_type
-            },
-            JWT_SECRET
-          );
-          
-          res.json({ 
-            success: true, 
-            user: {
-              rol: result.rows[0].rol,
-              type: result.rows[0].user_type
-            },
-            token: token 
-          });  
-        } else {
-          res.status(401).json({ success: false, message: 'Credenciales inválidas' });
-        }
-      } catch (error) {
-        console.error('Authentication error');
-        res.status(500).json({ success: false, message: 'Error en la verificación' });
+      const match = await bcrypt.compare(password, result.rows[0].hashed_password);
+      console.log('Password match:', match);
+
+      if (match) {
+        const token = jwt.sign(
+          { 
+            id: result.rows[0].id,
+            rol: result.rows[0].rol,
+            type: result.rows[0].user_type
+          },
+          JWT_SECRET
+        );
+
+        res.json({ 
+          success: true, 
+          user: {
+            rol: result.rows[0].rol,
+            type: result.rows[0].user_type
+          },
+          token: token 
+        });
+      } else {
+        res.status(401).json({ success: false, message: 'Credenciales inválidas' });
       }
     } else {
       res.status(401).json({ success: false, message: 'Credenciales inválidas' });
     }
   } catch (err) {
-    console.error('Server error:', err.message);
+    console.error('Error during login:', err.message, err.stack);
     res.status(500).json({ success: false, message: 'Error en el servidor' });
   }
 });

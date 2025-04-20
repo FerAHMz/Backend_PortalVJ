@@ -5,7 +5,7 @@ create table Usuarios (
 );
 
 -- Creación Tabla SuperUsuarios
-CREATE TABLE SuperUsuarios (
+CREATE TABLE IF NOT EXISTS SuperUsuarios (
   id serial primary key not null,
   rol int not null,
   nombre varchar(50) not null,

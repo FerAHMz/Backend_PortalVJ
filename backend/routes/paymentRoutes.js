@@ -50,6 +50,32 @@ router.get('/students-payments', async (req, res) => {
     }
   })
 
+// Student status route
+router.get('/students-status', async (req, res) => {
+    try {
+        const result = await db.getPool().query(`
+            SELECT 
+                e.carnet AS id,
+                CONCAT(e.nombre, ' ', e.apellido) AS name,
+                g.grado AS grade,
+                CASE 
+                    WHEN COUNT(s.id) = 12 THEN 'Solvente'
+                    ELSE 'No Solvente'
+                END AS status
+            FROM estudiantes e
+            LEFT JOIN pagos p ON e.carnet = p.carnet_estudiante
+            LEFT JOIN solvencias s ON p.id = s.id_pagos
+            LEFT JOIN grado_seccion gs ON e.id_grado_seccion = gs.id
+            LEFT JOIN grados g ON gs.id_grado = g.id
+            GROUP BY e.carnet, e.nombre, e.apellido, g.grado
+        `);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching students status:', error);
+        res.status(500).json({ error: 'Error fetching students status' });
+    }
+});
+
 router.post('/report', async (req, res) => {
     const { searchQuery, grade, startDate, endDate } = req.body
 
