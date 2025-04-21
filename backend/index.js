@@ -32,7 +32,11 @@ app.post('/login', async (req, res) => {
        UNION ALL
        SELECT a.id, a.password as hashed_password, 'Administrativo' as rol, 'administrativos' as user_type
        FROM administrativos a 
-       WHERE a.email = $1`,
+       WHERE a.email = $1
+       UNION ALL
+       SELECT s.id, s.password as hashed_password, 'SUP' as rol, 'superusuarios' as user_type
+       FROM superusuarios s 
+       WHERE s.email = $1`,
       [email]
     );
 
