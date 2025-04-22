@@ -2,6 +2,12 @@ const express = require('express');
 const router = express.Router();
 const { upload, uploadPayments } = require('../controllers/paymentControllers');
 const { verifyToken, isAdmin } = require('../middlewares/authMiddleware');
+const { 
+    addPayment,
+    getPayments,
+    updatePayment,
+    deletePayment
+  } = require('../controllers/manualPaymentsController');
 const db = require('../database_cn'); 
 
 router.post('/upload', verifyToken, isAdmin, (req, res) => {
@@ -113,4 +119,10 @@ router.post('/report', async (req, res) => {
     }
 })
 
-module.exports = router;
+//CRUD manual de pagos
+router.post('/', verifyToken, isAdmin, addPayment);
+router.put('/:id', verifyToken, isAdmin, updatePayment);
+router.delete('/:id', verifyToken, isAdmin, deletePayment);
+router.get('/', verifyToken, isAdmin, getPayments);
+
+module.exports = router;
