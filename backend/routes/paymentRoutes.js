@@ -83,41 +83,98 @@ router.get('/students-status', async (req, res) => {
 });
 
 router.post('/report', async (req, res) => {
-    const { searchQuery, grade, startDate, endDate } = req.body
+    const { searchQuery, carnetQuery, grade, startDate, endDate } = req.body;
 
     try {
         const query = `
             SELECT 
                 CONCAT(e.nombre, ' ', e.apellido) AS student,
                 g.grado AS grade,
-                COUNT(s.id) AS totalPayments,
-                (12 - COUNT(s.id)) AS pendingPayments
+                s.monto AS amount,
+                s.mes_solvencia_new AS month
             FROM estudiantes e
             LEFT JOIN pagos p ON e.carnet = p.carnet_estudiante
             LEFT JOIN solvencias s ON p.id = s.id_pagos
             LEFT JOIN grado_seccion gs ON e.id_grado_seccion = gs.id
             LEFT JOIN grados g ON gs.id_grado = g.id
             WHERE ($1::text IS NULL OR CONCAT(e.nombre, ' ', e.apellido) ILIKE '%' || $1 || '%')
-              AND ($2::text IS NULL OR g.grado = $2)
-              AND ($3::date IS NULL OR s.fecha_pago >= $3)
-              AND ($4::date IS NULL OR s.fecha_pago <= $4)
-            GROUP BY e.carnet, e.nombre, e.apellido, g.grado
-        `
+              AND ($2::text IS NULL OR e.carnet::text ILIKE '%' || $2 || '%')
+              AND ($3::text IS NULL OR g.grado = $3)
+              AND ($4::date IS NULL OR s.fecha_pago >= $4)
+              AND ($5::date IS NULL OR s.fecha_pago <= $5)
+        `;
 
         const values = [
             searchQuery || null,
+            carnetQuery || null,
             grade || null,
             startDate || null,
             endDate || null,
-        ]
+        ];
 
-        const result = await db.getPool().query(query, values)
-        res.json(result.rows)
+        const result = await db.getPool().query(query, values);
+        res.json(result.rows);
     } catch (error) {
-        console.error('Error generating report:', error)
-        res.status(500).json({ error: 'Error al generar el reporte' })
+        console.error('Error generating report:', error);
+        res.status(500).json({ error: 'Error al generar el reporte' });
+    }
+});
+
+router.get('/grades', async (req, res) => {
+    try {
+        const result = await db.getPool().query('SELECT id, grado FROM grados');
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching grades:', error);
+        res.status(500).json({ error: 'Error fetching grades' });
     }
 })
+
+// Full report route
+router.get('/full-report', async (req, res) => {
+    try {
+        const paymentsQuery = `
+            SELECT 
+                e.carnet AS carnet,
+                CONCAT(e.nombre, ' ', e.apellido) AS student,
+                g.grado AS grade,
+                s.monto AS amount,
+                s.mes_solvencia_new AS month,
+                s.fecha_pago AS paymentDate
+            FROM estudiantes e
+            LEFT JOIN pagos p ON e.carnet = p.carnet_estudiante
+            LEFT JOIN solvencias s ON p.id = s.id_pagos
+            LEFT JOIN grado_seccion gs ON e.id_grado_seccion = gs.id
+            LEFT JOIN grados g ON gs.id_grado = g.id
+        `;
+
+        const summaryQuery = `
+            SELECT 
+                g.grado AS grade,
+                COALESCE(COUNT(DISTINCT e.carnet), 0) AS upToDate
+            FROM grados g
+            LEFT JOIN grado_seccion gs ON g.id = gs.id_grado
+            LEFT JOIN estudiantes e ON gs.id = e.id_grado_seccion
+            LEFT JOIN pagos p ON e.carnet = p.carnet_estudiante
+            LEFT JOIN solvencias s ON p.id = s.id_pagos AND s.mes_solvencia_new IS NOT NULL
+            GROUP BY g.grado
+            ORDER BY g.grado
+        `;
+
+        const [paymentsResult, summaryResult] = await Promise.all([
+            db.getPool().query(paymentsQuery),
+            db.getPool().query(summaryQuery),
+        ]);
+
+        res.json({
+            payments: paymentsResult.rows,
+            summary: summaryResult.rows,
+        });
+    } catch (error) {
+        console.error('Error fetching full report:', error);
+        res.status(500).json({ error: 'Error al generar el reporte completo' });
+    }
+});
 
 //CRUD manual de pagos
 router.post('/', verifyToken, isAdmin, addPayment);
