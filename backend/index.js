@@ -14,7 +14,16 @@ const teacherRoutes = require('./routes/teacherRoutes');
 
 // Middleware
 app.use(cors());
-app.use(express.json()); // Para leer JSON del frontend
+app.use(express.json());
+
+app.use((req, res, next) => {
+  console.log('Request:', {
+    method: req.method,
+    path: req.path,
+    token: req.headers.authorization
+  });
+  next();
+});
 
 // Auth Routes
 app.post('/login', async (req, res) => {

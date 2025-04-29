@@ -31,6 +31,154 @@ const getTeacherCourses = async (req, res) => {
     }
 };
 
+const getCourseGrades = async (req, res) => {
+    const { courseId } = req.params;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            SELECT 
+                c.id,
+                e.carnet,
+                e.nombre,
+                e.apellido,
+                t.titulo as tarea,
+                c.nota,
+                t.valor as valor_total
+            FROM calificaciones c
+            JOIN estudiantes e ON c.carnet_estudiante = e.carnet
+            JOIN tareas t ON c.id_tarea = t.id
+            WHERE c.id_curso = $1
+            ORDER BY e.apellido, e.nombre, t.fecha_entrega
+        `;
+        const result = await client.query(query, [courseId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener calificaciones:', error);
+        res.status(500).json({ error: 'Error al obtener calificaciones' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
+const getCourseTasks = async (req, res) => {
+    const { courseId } = req.params;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            SELECT 
+                t.id,
+                t.titulo,
+                t.valor,
+                t.fecha_entrega,
+                tr.fecha_inicio,
+                tr.fecha_fin
+            FROM tareas t
+            JOIN trimestres tr ON t.trimestre_id = tr.id
+            JOIN cursos_tareas ct ON t.id = ct.id_tareas
+            WHERE ct.id_curso = $1
+            ORDER BY t.fecha_entrega
+        `;
+        const result = await client.query(query, [courseId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener tareas:', error);
+        res.status(500).json({ error: 'Error al obtener tareas' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
+const createTask = async (req, res) => {
+    const { courseId } = req.params;
+    const { titulo, valor, fecha_entrega, trimestre_id } = req.body;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        await client.query('BEGIN');
+
+        const taskQuery = `
+            INSERT INTO tareas (titulo, valor, fecha_entrega, trimestre_id)
+            VALUES ($1, $2, $3, $4)
+            RETURNING id
+        `;
+        const taskResult = await client.query(taskQuery, [titulo, valor, fecha_entrega, trimestre_id]);
+
+        await client.query(
+            `INSERT INTO cursos_tareas (id_curso, id_tareas)
+             VALUES ($1, $2)`,
+            [courseId, taskResult.rows[0].id]
+        );
+
+        await client.query('COMMIT');
+        res.json({ success: true, taskId: taskResult.rows[0].id });
+    } catch (error) {
+        if (client) await client.query('ROLLBACK');
+        console.error('Error al crear tarea:', error);
+        res.status(500).json({ error: 'Error al crear tarea' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
+const registerGrade = async (req, res) => {
+    const { courseId } = req.params;
+    const { carnet_estudiante, id_tarea, nota } = req.body;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            INSERT INTO calificaciones (carnet_estudiante, id_curso, nota, id_tarea)
+            VALUES ($1, $2, $3, $4)
+            RETURNING id
+        `;
+        const result = await client.query(query, [carnet_estudiante, courseId, nota, id_tarea]);
+        res.json({ success: true, gradeId: result.rows[0].id });
+    } catch (error) {
+        console.error('Error al registrar calificación:', error);
+        res.status(500).json({ error: 'Error al registrar calificación' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
+const getStudentsByCourse = async (req, res) => {
+    const { courseId } = req.params;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            SELECT 
+                e.carnet,
+                e.nombre,
+                e.apellido
+            FROM estudiantes e
+            JOIN grado_seccion gs ON e.id_grado_seccion = gs.id
+            JOIN cursos c ON c.id_grado_seccion = gs.id
+            WHERE c.id = $1
+            ORDER BY e.apellido, e.nombre
+        `;
+        const result = await client.query(query, [courseId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener estudiantes:', error);
+        res.status(500).json({ error: 'Error al obtener estudiantes' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
 module.exports = {
-    getTeacherCourses
+    getTeacherCourses,
+    getCourseGrades,
+    getCourseTasks,
+    createTask,
+    registerGrade,
+    getStudentsByCourse
 };
