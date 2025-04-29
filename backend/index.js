@@ -10,6 +10,7 @@ const { JWT_SECRET } = require('./config/config');
 //Routes
 const paymentRoutes = require('./routes/paymentRoutes');
 const superUserRoutes = require('./routes/superUserRoutes');
+const teacherRoutes = require('./routes/teacherRoutes');
 
 // Middleware
 app.use(cors());
@@ -59,6 +60,7 @@ app.post('/login', async (req, res) => {
         res.json({ 
           success: true, 
           user: {
+            id: result.rows[0].id,
             rol: result.rows[0].rol,
             type: result.rows[0].user_type
           },
@@ -79,6 +81,7 @@ app.post('/login', async (req, res) => {
 // API Routes
 app.use('/api/payments', paymentRoutes);
 app.use('/api/superusers', superUserRoutes);
+app.use('/api/teacher', teacherRoutes);
 
 // Erro handeling middleware
 app.use((err, req, res, next) => {
