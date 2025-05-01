@@ -22,6 +22,7 @@ CREATE TABLE Estudiante_grado_seccion (
 -- Tabla Trimestres
 CREATE TABLE Trimestres (
     id serial PRIMARY KEY NOT NULL,
+    nombre varchar(50) NOT NULL,
     fecha_inicio date NOT NULL,
     fecha_fin date NOT NULL
 );
@@ -92,6 +93,7 @@ ALTER TABLE Calificaciones
 
 -- Modificar tabla Tareas
 ALTER TABLE Tareas
+    ADD COLUMN descripcion text NOT NULL,
     ADD COLUMN trimestre_id int REFERENCES Trimestres(id);
 
 -- Modificar tabla Observaciones

@@ -146,23 +146,23 @@ INSERT INTO Solvencias (id_pagos, no_boleta, id_metodo_pago, monto, mes_solvenci
 (9, 12353, 1, 500.00, 'Septiembre', '2023-09-15'),
 (10, 12354, 2, 500.00, 'Octubre', '2023-10-15');
 
-INSERT INTO Trimestres (fecha_inicio, fecha_fin) VALUES
-('2023-01-01', '2023-03-31'), 
-('2023-04-01', '2023-06-30'), 
-('2023-07-01', '2023-09-30'),
-('2023-10-01', '2023-12-31'); 
+INSERT INTO Trimestres (nombre, fecha_inicio, fecha_fin) VALUES
+('Primer Trimestre', '2023-01-01', '2023-03-31'), 
+('Segundo Trimestre', '2023-04-01', '2023-06-30'), 
+('Tercer Trimestre', '2023-07-01', '2023-09-30'),
+('Cuarto Trimestre', '2023-10-01', '2023-12-31'); 
 
-INSERT INTO Tareas (titulo, valor, fecha_entrega, trimestre_id) VALUES
-('Tarea de Álgebra', 10.0, '2023-01-20', 1), 
-('Informe de Laboratorio', 15.0, '2023-01-22', 1),
-('Ensayo sobre la Revolución', 20.0, '2023-01-25', 1), 
-('Análisis de Poema', 10.0, '2023-01-27', 1), 
-('Presentación en Inglés', 15.0, '2023-01-30', 1), 
-('Proyecto de Arte', 25.0, '2023-02-01', 1), 
-('Rutina de Ejercicios', 10.0, '2023-02-03', 1), 
-('Mapa de América', 15.0, '2023-02-05', 1), 
-('Informe de Biología', 20.0, '2023-02-07', 1), 
-('Experimento de Química', 25.0, '2023-02-10', 1); 
+INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES
+('Tarea de Álgebra', 'Resolver ejercicios de ecuaciones lineales', 10.0, '2023-01-20', 1), 
+('Informe de Laboratorio', 'Documentar experimento de física', 15.0, '2023-01-22', 1),
+('Ensayo sobre la Revolución', 'Analizar causas y consecuencias', 20.0, '2023-01-25', 1), 
+('Análisis de Poema', 'Interpretar elementos literarios', 10.0, '2023-01-27', 1), 
+('Presentación en Inglés', 'Exponer tema de interés en inglés', 15.0, '2023-01-30', 1), 
+('Proyecto de Arte', 'Crear obra usando técnicas mixtas', 25.0, '2023-02-01', 1), 
+('Rutina de Ejercicios', 'Desarrollar plan de ejercicios semanal', 10.0, '2023-02-03', 1), 
+('Mapa de América', 'Dibujar y etiquetar países y capitales', 15.0, '2023-02-05', 1), 
+('Informe de Biología', 'Investigar sistemas del cuerpo humano', 20.0, '2023-02-07', 1), 
+('Experimento de Química', 'Realizar práctica de laboratorio', 25.0, '2023-02-10', 1); 
 
 INSERT INTO Maestros (id, rol, nombre, apellido, email, telefono, password) VALUES
 (1, 3, 'Juan', 'Pérez', 'maestro1@example.com', '1234567890', 'password1'),
@@ -247,4 +247,4 @@ INSERT INTO Boleta_calificaciones (carnet_estudiante, fecha, ciclo_escolar, trim
 (1007, '2023-03-31', '2023', 1),
 (1008, '2023-03-31', '2023', 1),
 (1009, '2023-03-31', '2023', 1),
-(1010, '2023-03-31', '2023', 1); 
+(1010, '2023-03-31', '2023', 1);
