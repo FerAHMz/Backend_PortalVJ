@@ -10,7 +10,10 @@ const {
 
 const {
     getCourseTasks,
-    createTask
+    createTask,
+    getTaskGrades,
+    saveTaskGrades,
+    updateTaskGrade
 } = require('../controllers/taskController');
 
 // Rutas del maestro
@@ -22,5 +25,8 @@ router.get('/courses/:courseId/students', verifyToken, getStudentsByCourse);
 // Rutas de tareas
 router.get('/courses/:courseId/tasks', verifyToken, getCourseTasks);
 router.post('/courses/:courseId/tasks', verifyToken, createTask);
+router.get('/courses/:courseId/tasks/:taskId/grades', verifyToken, getTaskGrades);
+router.post('/courses/:courseId/tasks/:taskId/grades', verifyToken, saveTaskGrades);
+router.put('/courses/:courseId/tasks/:taskId/grades/:studentId', verifyToken, updateTaskGrade);
 
 module.exports = router;

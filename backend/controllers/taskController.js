@@ -9,38 +9,16 @@ const createTask = async (req, res) => {
         client = await db.getPool().connect();
         await client.query('BEGIN');
 
-        const trimestreQuery = `
-            SELECT id 
-            FROM trimestres 
-            WHERE (
-                EXTRACT(MONTH FROM $1::date) BETWEEN EXTRACT(MONTH FROM fecha_inicio) AND EXTRACT(MONTH FROM fecha_fin)
-                AND
-                CASE 
-                    WHEN EXTRACT(MONTH FROM $1::date) = EXTRACT(MONTH FROM fecha_inicio) 
-                    THEN EXTRACT(DAY FROM $1::date) >= EXTRACT(DAY FROM fecha_inicio)
-                    WHEN EXTRACT(MONTH FROM $1::date) = EXTRACT(MONTH FROM fecha_fin)
-                    THEN EXTRACT(DAY FROM $1::date) <= EXTRACT(DAY FROM fecha_fin)
-                    ELSE true
-                END
-            )
-        `;
-        const trimestreResult = await client.query(trimestreQuery, [fecha_entrega]);
-        
-        if (!trimestreResult.rows[0]) {
-            throw new Error('La fecha no corresponde a ningún trimestre válido');
-        }
-
         const taskQuery = `
-            INSERT INTO tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO tareas (titulo, descripcion, valor, fecha_entrega)
+            VALUES ($1, $2, $3, $4)
             RETURNING id
         `;
         const taskResult = await client.query(taskQuery, [
             titulo,
             descripcion,
             valor,
-            fecha_entrega,
-            trimestreResult.rows[0].id
+            fecha_entrega
         ]);
 
         const courseTaskQuery = `
@@ -60,7 +38,7 @@ const createTask = async (req, res) => {
         console.error('Error al crear tarea:', error);
         res.status(500).json({
             success: false,
-            error: error.message || 'Error al crear la tarea'
+            error: 'Error al crear la tarea'
         });
     } finally {
         if (client) client.release();
@@ -114,7 +92,115 @@ const getCourseTasks = async (req, res) => {
     }
 };
 
+const getTaskGrades = async (req, res) => {
+    const { courseId, taskId } = req.params;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            SELECT c.* 
+            FROM calificaciones c
+            WHERE c.id_curso = $1 AND c.id_tarea = $2
+        `;
+        const result = await client.query(query, [courseId, taskId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error al obtener calificaciones:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al obtener las calificaciones'
+        });
+    } finally {
+        if (client) client.release();
+    }
+};
+
+const saveTaskGrades = async (req, res) => {
+    const { courseId, taskId } = req.params;
+    const { grades } = req.body;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        await client.query('BEGIN');
+
+        const deleteQuery = `
+            DELETE FROM calificaciones 
+            WHERE id_curso = $1 AND id_tarea = $2
+        `;
+        await client.query(deleteQuery, [courseId, taskId]);
+
+        for (const grade of grades) {
+            const insertQuery = `
+                INSERT INTO calificaciones 
+                (carnet_estudiante, id_curso, id_tarea, nota, fecha)
+                VALUES ($1, $2, $3, $4, CURRENT_TIMESTAMP)
+            `;
+            await client.query(insertQuery, [
+                grade.carnet_estudiante,
+                courseId,
+                taskId,
+                grade.nota
+            ]);
+        }
+
+        await client.query('COMMIT');
+        res.json({ success: true, message: 'Calificaciones guardadas exitosamente' });
+    } catch (error) {
+        if (client) await client.query('ROLLBACK');
+        console.error('Error al guardar calificaciones:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al guardar las calificaciones'
+        });
+    } finally {
+        if (client) client.release();
+    }
+};
+
+const updateTaskGrade = async (req, res) => {
+    const { courseId, taskId, studentId } = req.params;
+    const { nota } = req.body;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            UPDATE calificaciones 
+            SET nota = $1, fecha = CURRENT_TIMESTAMP
+            WHERE id_curso = $2 AND id_tarea = $3 AND carnet_estudiante = $4
+            RETURNING *
+        `;
+        const result = await client.query(query, [nota, courseId, taskId, studentId]);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'No se encontró la calificación'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'Calificación actualizada exitosamente',
+            grade: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Error al actualizar calificación:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error al actualizar la calificación'
+        });
+    } finally {
+        if (client) client.release();
+    }
+};
+
 module.exports = {
     createTask,
-    getCourseTasks
+    getCourseTasks,
+    getTaskGrades,
+    saveTaskGrades,
+    updateTaskGrade 
 };
