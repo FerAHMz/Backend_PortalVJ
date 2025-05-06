@@ -45,6 +45,7 @@ const createTask = async (req, res) => {
     }
 };
 
+
 const getCourseTasks = async (req, res) => {
     const { courseId } = req.params;
     let client;
