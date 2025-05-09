@@ -45,7 +45,6 @@ const createTask = async (req, res) => {
     }
 };
 
-
 const getCourseTasks = async (req, res) => {
     const { courseId } = req.params;
     let client;
@@ -198,10 +197,81 @@ const updateTaskGrade = async (req, res) => {
     }
 };
 
+const getAllHomework = async (req, res) => {
+    const { teacherId } = req.params;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            SELECT 
+                t.id AS task_id,
+                t.titulo AS title,
+                t.descripcion AS description,
+                t.valor AS value,
+                to_char(t.fecha_entrega, 'YYYY-MM-DD') AS due_date,
+                c.id AS course_id,
+                m.nombre AS course_name,
+                g.grado AS grade,
+                s.seccion AS section
+            FROM tareas t
+            INNER JOIN cursos_tareas ct ON t.id = ct.id_tareas
+            INNER JOIN cursos c ON ct.id_curso = c.id
+            INNER JOIN materias m ON c.id_materia = m.id
+            INNER JOIN grado_seccion gs ON c.id_grado_seccion = gs.id
+            INNER JOIN grados g ON gs.id_grado = g.id
+            INNER JOIN secciones s ON gs.id_seccion = s.id
+            WHERE c.id_maestro = $1
+            ORDER BY t.fecha_entrega ASC
+        `;
+        const result = await client.query(query, [teacherId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching homework:', error);
+        res.status(500).json({ error: 'Error fetching homework' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
+const getAllTasksForUser = async (req, res) => {
+    const userId = req.user.id; // Assuming user ID is available in the token
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            SELECT 
+                t.id, 
+                t.titulo, 
+                t.descripcion, 
+                t.valor, 
+                to_char(t.fecha_entrega, 'YYYY-MM-DD') as fecha_entrega,
+                c.id as course_id,
+                m.nombre as course_name
+            FROM tareas t
+            INNER JOIN cursos_tareas ct ON t.id = ct.id_tareas
+            INNER JOIN cursos c ON ct.id_curso = c.id
+            INNER JOIN materias m ON c.id_materia = m.id
+            WHERE c.id_maestro = $1
+            ORDER BY t.fecha_entrega ASC
+        `;
+        const result = await client.query(query, [userId]);
+        res.json(result.rows);
+    } catch (error) {
+        console.error('Error fetching tasks for user:', error);
+        res.status(500).json({ error: 'Error fetching tasks' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
 module.exports = {
     createTask,
     getCourseTasks,
     getTaskGrades,
     saveTaskGrades,
-    updateTaskGrade 
+    updateTaskGrade,
+    getAllHomework,
+    getAllTasksForUser
 };

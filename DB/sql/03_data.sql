@@ -162,7 +162,17 @@ INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VAL
 ('Rutina de Ejercicios', 'Desarrollar plan de ejercicios semanal', 10.0, '2023-02-03', 1), 
 ('Mapa de América', 'Dibujar y etiquetar países y capitales', 15.0, '2023-02-05', 1), 
 ('Informe de Biología', 'Investigar sistemas del cuerpo humano', 20.0, '2023-02-07', 1), 
-('Experimento de Química', 'Realizar práctica de laboratorio', 25.0, '2023-02-10', 1); 
+('Experimento de Química', 'Realizar práctica de laboratorio', 25.0, '2023-02-10', 1),
+('Hoja de trabajo 1', 'Resolver problemas de álgebra capitulo 1', 3.0, '2025-05-07', 1),
+('Hoja de trabajo 2', 'Resolver problemas de álgebra capitulo 2', 3.0, '2025-05-14', 1),
+('Hoja de trabajo 3', 'Resolver problemas de álgebra capitulo 3', 3.0, '2025-05-21', 1), 
+('Hoja de trabajo 4', 'Resolver problemas de álgebra capitulo 4', 3.0, '2025-05-28', 1), 
+('Hoja de trabajo 5', 'Resolver problemas de álgebra capitulo 5', 3.0, '2025-06-04', 1), 
+('Hoja de trabajo 6', 'Resolver problemas de álgebra capitulo 6', 3.0, '2025-06-11', 1), 
+('Hoja de trabajo 7', 'Resolver problemas de álgebra capitulo 7', 3.0, '2025-06-18', 1), 
+('Hoja de trabajo 8', 'Resolver problemas de álgebra capitulo 8', 3.0, '2025-06-25', 1), 
+('Hoja de trabajo 9', 'Resolver problemas de álgebra capitulo 9', 3.0, '2025-07-02', 1), 
+('Hoja de trabajo 10', 'Resolver problemas de álgebra capitulo 10', 3.0, '2025-07-09', 1);
 
 INSERT INTO Maestros (id, rol, nombre, apellido, email, telefono, password) VALUES
 (1, 3, 'Juan', 'Pérez', 'maestro1@example.com', '1234567890', 'password1'),
@@ -198,7 +208,17 @@ INSERT INTO Cursos_tareas (id_curso, id_tareas) VALUES
 (7, 7), 
 (8, 8),
 (9, 9), 
-(10, 10); 
+(10, 10),
+(1, 11),
+(1, 12),
+(1, 13),
+(1, 14),
+(1, 15),
+(1, 16),
+(1, 17),
+(1, 18),
+(1, 19),
+(1, 20); 
 
 
 INSERT INTO Calificaciones (carnet_estudiante, id_curso, nota, id_boleta, id_tarea) VALUES--
