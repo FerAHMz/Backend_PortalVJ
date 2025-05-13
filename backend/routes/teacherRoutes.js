@@ -16,6 +16,10 @@ const {
     updateTaskGrade
 } = require('../controllers/taskController');
 
+const {
+    createObservation
+} = require('../controllers/observationController');
+
 // Rutas del maestro
 router.get('/:teacherId/courses', verifyToken, getTeacherCourses);
 router.get('/courses/:courseId/grades', verifyToken, getCourseGrades);
@@ -28,5 +32,8 @@ router.post('/courses/:courseId/tasks', verifyToken, createTask);
 router.get('/courses/:courseId/tasks/:taskId/grades', verifyToken, getTaskGrades);
 router.post('/courses/:courseId/tasks/:taskId/grades', verifyToken, saveTaskGrades);
 router.put('/courses/:courseId/tasks/:taskId/grades/:studentId', verifyToken, updateTaskGrade);
+
+// Ruta para observaciones
+router.post('/courses/:courseId/observations', verifyToken, createObservation);
 
 module.exports = router;
