@@ -11,6 +11,7 @@ const { JWT_SECRET } = require('./config/config');
 const paymentRoutes = require('./routes/paymentRoutes');
 const superUserRoutes = require('./routes/superUserRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
+const gradeRoutes = require('./routes/gradeRoutes');
 
 // Middleware
 app.use(cors());
@@ -91,6 +92,7 @@ app.post('/login', async (req, res) => {
 app.use('/api/payments', paymentRoutes);
 app.use('/api/superusers', superUserRoutes);
 app.use('/api/teacher', teacherRoutes);
+app.use('/api/courses', gradeRoutes);
 
 // Erro handeling middleware
 app.use((err, req, res, next) => {

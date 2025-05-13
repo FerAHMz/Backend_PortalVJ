@@ -42,8 +42,17 @@ const isSup = async (req, res, next) => {
     }
 }
 
+const isTeacher = (req, res, next) => {
+    if (req.user.rol === 'Maestro') {
+      next();
+    } else {
+      res.status(403).json({ error: 'Acceso denegado. Se requiere rol Maestro' });
+    }
+  };
+
 module.exports = {
     verifyToken,
     isAdmin,
-    isSup
+    isSup,
+    isTeacher
 };
