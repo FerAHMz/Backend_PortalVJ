@@ -70,8 +70,8 @@ exports.getNetAverages = async (req, res) => {
           percentage: (row.points_earned / row.max_points) * 100,
         });
         student.totalEarned += row.points_earned;
+        student.totalPossible += row.max_points;
       }
-      student.totalPossible += row.max_points;
 
       if (!tasks.has(row.task_id)) {
         tasks.set(row.task_id, {
@@ -90,14 +90,16 @@ exports.getNetAverages = async (req, res) => {
       ...data,
       average: data.totalPossible > 0 
         ? parseFloat(((data.totalEarned / data.totalPossible) * 100).toFixed(2))
-        : 0,
+        : null,
     }));
-
-    const classAverage = studentResults.length > 0
+      
+    const validAverages = studentResults.filter(s => s.average !== null);
+    const classAverage = validAverages.length > 0
       ? parseFloat((
-          studentResults.reduce((sum, s) => sum + s.average, 0) / studentResults.length
+          validAverages.reduce((sum, s) => sum + s.average, 0) / validAverages.length
         ).toFixed(2))
-      : 0;
+      : null;
+      
 
     console.log(`Procesamiento completado para curso ${courseId}`);
     res.json({
