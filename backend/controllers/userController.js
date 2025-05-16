@@ -107,36 +107,36 @@ const createUser = async (req, res) => {
         switch (rol) {
             case 'SUP':
                 result = await client.query(
-                    `INSERT INTO SuperUsuarios (nombre, apellido, email, telefono, password, rol)
-                     VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING id, nombre, apellido, email, telefono, $6 AS rol`,
+                    `INSERT INTO SuperUsuarios (nombre, apellido, email, telefono, password, rol, activo)
+                     VALUES ($1, $2, $3, $4, $5, $6, true)
+                     RETURNING id, nombre, apellido, email, telefono, 'SUP' as rol, activo`,
                     [nombre, apellido, email, telefono, hashedPassword, rolId]
                 );
                 break;
 
             case 'Administrativo':
                 result = await client.query(
-                    `INSERT INTO Administrativos (nombre, apellido, email, telefono, password, rol)
-                     VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING id, nombre, apellido, email, telefono, $6 AS rol`,
+                    `INSERT INTO Administrativos (nombre, apellido, email, telefono, password, rol, activo)
+                     VALUES ($1, $2, $3, $4, $5, $6, true)
+                     RETURNING id, nombre, apellido, email, telefono, 'Administrativo' as rol, activo`,
                     [nombre, apellido, email, telefono, hashedPassword, rolId]
                 );
                 break;
 
             case 'Maestro':
                 result = await client.query(
-                    `INSERT INTO Maestros (nombre, apellido, email, telefono, password, rol)
-                     VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING id, nombre, apellido, email, telefono, $6 AS rol`,
+                    `INSERT INTO Maestros (nombre, apellido, email, telefono, password, rol, activo)
+                     VALUES ($1, $2, $3, $4, $5, $6, true)
+                     RETURNING id, nombre, apellido, email, telefono, 'Maestro' as rol, activo`,
                     [nombre, apellido, email, telefono, hashedPassword, rolId]
                 );
                 break;
 
             case 'Padre':
                 result = await client.query(
-                    `INSERT INTO Padres (nombre, apellido, email, telefono, password, rol)
-                     VALUES ($1, $2, $3, $4, $5, $6)
-                     RETURNING id, nombre, apellido, email, telefono, $6 AS rol`,
+                    `INSERT INTO Padres (nombre, apellido, email, telefono, password, rol, activo)
+                     VALUES ($1, $2, $3, $4, $5, $6, true)
+                     RETURNING id, nombre, apellido, email, telefono, 'Padre' as rol, activo`,
                     [nombre, apellido, email, telefono, hashedPassword, rolId]
                 );
                 break;
@@ -157,58 +157,175 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { nombre, apellido, email, telefono, rol } = req.body;
+    const { nombre, apellido, email, telefono, rol, rolAnterior } = req.body;
     let client;
+    
     try {
-        client = await db.getPool().connect();
-        let result;
-
-        switch (rol) {
-            case 'SUP':
-                result = await client.query(
-                    `UPDATE SuperUsuarios 
-                     SET nombre = $1, apellido = $2, email = $3, telefono = $4
-                     WHERE id = $5 RETURNING id, nombre, apellido, email, telefono, rol`,
-                    [nombre, apellido, email, telefono, id]
-                );
-                break;
-
-            case 'Administrativo':
-                result = await client.query(
-                    `UPDATE Administrativos 
-                     SET nombre = $1, apellido = $2, email = $3, telefono = $4
-                     WHERE id = $5 RETURNING id, nombre, apellido, email, telefono, rol`,
-                    [nombre, apellido, email, telefono, id]
-                );
-                break;
-
-            case 'Maestro':
-                result = await client.query(
-                    `UPDATE Maestros 
-                     SET nombre = $1, apellido = $2, email = $3, telefono = $4
-                     WHERE id = $5 RETURNING id, nombre, apellido, email, telefono, rol`,
-                    [nombre, apellido, email, telefono, id]
-                );
-                break;
-
-            case 'Padre':
-                result = await client.query(
-                    `UPDATE Padres 
-                     SET nombre = $1, apellido = $2, email = $3, telefono = $4
-                     WHERE id = $5 RETURNING id, nombre, apellido, email, telefono, rol`,
-                    [nombre, apellido, email, telefono, id]
-                );
-                break;
-
-            default:
-                return res.status(400).json({ error: 'Rol de usuario no válido' });
+        if (!nombre?.trim() || !apellido?.trim() || !email?.trim() || !telefono?.trim() || !rol || !rolAnterior) {
+            return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
 
-        if (result.rows.length === 0) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Formato de email inválido' });
+        }
+
+        client = await db.getPool().connect();
+        await client.query('BEGIN');
+
+        const emailCheck = await client.query(`
+            SELECT email FROM (
+                SELECT email, id FROM SuperUsuarios
+                UNION ALL
+                SELECT email, id FROM Administrativos
+                UNION ALL
+                SELECT email, id FROM Maestros
+                UNION ALL
+                SELECT email, id FROM Padres
+            ) AS users
+            WHERE email = $1 AND id != $2
+        `, [email.toLowerCase(), id]);
+
+        if (emailCheck.rows.length > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'El email ya está registrado por otro usuario' });
+        }
+
+        let userData;
+        switch (rolAnterior) {
+            case 'SUP':
+                userData = await client.query('SELECT * FROM SuperUsuarios WHERE id = $1', [id]);
+                break;
+            case 'Administrativo':
+                userData = await client.query('SELECT * FROM Administrativos WHERE id = $1', [id]);
+                break;
+            case 'Maestro':
+                userData = await client.query('SELECT * FROM Maestros WHERE id = $1', [id]);
+                break;
+            case 'Padre':
+                userData = await client.query('SELECT * FROM Padres WHERE id = $1', [id]);
+                break;
+            default:
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: 'Rol anterior no válido' });
+        }
+
+        if (userData.rows.length === 0) {
+            await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        res.json(result.rows[0]);
+
+        const currentUser = userData.rows[0];
+
+        if (rol !== rolAnterior) {
+            const rolResult = await client.query(
+                `SELECT id FROM Usuarios WHERE rol = $1 LIMIT 1`,
+                [rol]
+            );
+
+            if (rolResult.rowCount === 0) {
+                await client.query('ROLLBACK');
+                return res.status(400).json({ error: `Rol "${rol}" no existe en la tabla Usuarios` });
+            }
+
+            const rolId = rolResult.rows[0].id;
+
+            await client.query(`DELETE FROM ${rolAnterior}s WHERE id = $1`, [id]);
+
+            let result;
+            switch (rol) {
+                case 'SUP':
+                    result = await client.query(
+                        `INSERT INTO SuperUsuarios (id, nombre, apellido, email, telefono, password, rol, activo)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                         RETURNING id, nombre, apellido, email, telefono, 'SUP' as rol, activo`,
+                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                    );
+                    break;
+                case 'Administrativo':
+                    result = await client.query(
+                        `INSERT INTO Administrativos (id, nombre, apellido, email, telefono, password, rol, activo)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                         RETURNING id, nombre, apellido, email, telefono, 'Administrativo' as rol, activo`,
+                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                    );
+                    break;
+                case 'Maestro':
+                    result = await client.query(
+                        `INSERT INTO Maestros (id, nombre, apellido, email, telefono, password, rol, activo)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                         RETURNING id, nombre, apellido, email, telefono, 'Maestro' as rol, activo`,
+                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                    );
+                    break;
+                case 'Padre':
+                    result = await client.query(
+                        `INSERT INTO Padres (id, nombre, apellido, email, telefono, password, rol, activo)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                         RETURNING id, nombre, apellido, email, telefono, 'Padre' as rol, activo`,
+                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                    );
+                    break;
+                default:
+                    await client.query('ROLLBACK');
+                    return res.status(400).json({ error: 'Rol no válido' });
+            }
+            await client.query('COMMIT');
+            res.json(result.rows[0]);
+        } else {
+            let result;
+            switch (rol) {
+                case 'SUP':
+                    result = await client.query(
+                        `UPDATE SuperUsuarios 
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4 
+                         WHERE id = $5 
+                         RETURNING id, nombre, apellido, email, telefono, 'SUP' as rol, activo`,
+                        [nombre, apellido, email, telefono, id]
+                    );
+                    break;
+                case 'Administrativo':
+                    result = await client.query(
+                        `UPDATE Administrativos 
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4 
+                         WHERE id = $5 
+                         RETURNING id, nombre, apellido, email, telefono, 'Administrativo' as rol, activo`,
+                        [nombre, apellido, email, telefono, id]
+                    );
+                    break;
+                case 'Maestro':
+                    result = await client.query(
+                        `UPDATE Maestros 
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4 
+                         WHERE id = $5 
+                         RETURNING id, nombre, apellido, email, telefono, 'Maestro' as rol, activo`,
+                        [nombre, apellido, email, telefono, id]
+                    );
+                    break;
+                case 'Padre':
+                    result = await client.query(
+                        `UPDATE Padres 
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4 
+                         WHERE id = $5 
+                         RETURNING id, nombre, apellido, email, telefono, 'Padre' as rol, activo`,
+                        [nombre, apellido, email, telefono, id]
+                    );
+                    break;
+                default:
+                    await client.query('ROLLBACK');
+                    return res.status(400).json({ error: 'Rol de usuario no válido' });
+            }
+
+            if (result.rows.length === 0) {
+                await client.query('ROLLBACK');
+                return res.status(404).json({ error: 'Usuario no encontrado' });
+            }
+
+            await client.query('COMMIT');
+            res.json(result.rows[0]);
+        }
     } catch (error) {
+        if (client) await client.query('ROLLBACK');
         console.error('Error updating user:', error);
         res.status(500).json({ error: 'Error al actualizar usuario' });
     } finally {
