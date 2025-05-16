@@ -108,3 +108,15 @@ CHECK (metodo_pago IN (
   'Transferencia', 'Cheque', 'PayPal', 'Bitcoin', 
   'Apple Pay', 'Google Pay', 'Pago Móvil'
 ));
+
+ALTER TABLE SuperUsuarios
+ADD COLUMN activo boolean DEFAULT true;
+
+ALTER TABLE Administrativos
+ADD COLUMN activo boolean DEFAULT true;
+
+ALTER TABLE Maestros
+ADD COLUMN activo boolean DEFAULT true;
+
+ALTER TABLE Padres
+ADD COLUMN activo boolean DEFAULT true;

@@ -13,7 +13,8 @@ const getAllUsers = async (req, res) => {
                 email, 
                 telefono, 
                 'SUP' as rol,
-                1 as rol_order
+                1 as rol_order,
+                activo
             FROM SuperUsuarios
             UNION ALL
             SELECT DISTINCT ON (id, email)
@@ -23,7 +24,8 @@ const getAllUsers = async (req, res) => {
                 email, 
                 telefono, 
                 'Administrativo' as rol,
-                2 as rol_order
+                2 as rol_order,
+                activo
             FROM Administrativos
             UNION ALL
             SELECT DISTINCT ON (id, email)
@@ -33,7 +35,8 @@ const getAllUsers = async (req, res) => {
                 email, 
                 telefono, 
                 'Maestro' as rol,
-                3 as rol_order
+                3 as rol_order,
+                activo
             FROM Maestros
             UNION ALL
             SELECT DISTINCT ON (id, email)
@@ -43,7 +46,8 @@ const getAllUsers = async (req, res) => {
                 email, 
                 telefono, 
                 'Padre' as rol,
-                4 as rol_order
+                4 as rol_order,
+                activo
             FROM Padres
             ORDER BY rol_order, nombre
         `);
@@ -223,28 +227,36 @@ const deleteUser = async (req, res) => {
         switch (rol) {
             case 'SUP':
                 result = await client.query(
-                    `DELETE FROM SuperUsuarios WHERE id = $1 RETURNING id`,
+                    `UPDATE SuperUsuarios 
+                     SET activo = false
+                     WHERE id = $1 RETURNING id`,
                     [id]
                 );
                 break;
 
             case 'Administrativo':
                 result = await client.query(
-                    `DELETE FROM Administrativos WHERE id = $1 RETURNING id`,
+                    `UPDATE Administrativos 
+                     SET activo = false
+                     WHERE id = $1 RETURNING id`,
                     [id]
                 );
                 break;
 
             case 'Maestro':
                 result = await client.query(
-                    `DELETE FROM Maestros WHERE id = $1 RETURNING id`,
+                    `UPDATE Maestros 
+                     SET activo = false
+                     WHERE id = $1 RETURNING id`,
                     [id]
                 );
                 break;
 
             case 'Padre':
                 result = await client.query(
-                    `DELETE FROM Padres WHERE id = $1 RETURNING id`,
+                    `UPDATE Padres 
+                     SET activo = false
+                     WHERE id = $1 RETURNING id`,
                     [id]
                 );
                 break;
@@ -253,13 +265,14 @@ const deleteUser = async (req, res) => {
                 return res.status(400).json({ error: 'Rol de usuario no válido' });
         }
 
-        if (result.rows.length === 0) {
+        if (result.rowCount === 0) {
             return res.status(404).json({ error: 'Usuario no encontrado' });
         }
-        res.json({ message: 'Usuario eliminado exitosamente' });
+
+        res.json({ message: 'Usuario desactivado exitosamente' });
     } catch (error) {
-        console.error('Error deleting user:', error);
-        res.status(500).json({ error: 'Error al eliminar usuario' });
+        console.error('Error al desactivar usuario:', error);
+        res.status(500).json({ error: 'Error al desactivar usuario' });
     } finally {
         if (client) client.release();
     }

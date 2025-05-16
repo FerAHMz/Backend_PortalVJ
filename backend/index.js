@@ -33,19 +33,19 @@ app.post('/login', async (req, res) => {
 
   try {
     const result = await db.getPool().query(
-      `SELECT m.id, m.password as hashed_password, 'Maestro' as rol, 'maestros' as user_type
+      `SELECT m.id, m.password as hashed_password, 'Maestro' as rol, 'maestros' as user_type, m.activo
        FROM maestros m 
        WHERE m.email = $1
        UNION ALL
-       SELECT p.id, p.password as hashed_password, 'Padre' as rol, 'padres' as user_type
+       SELECT p.id, p.password as hashed_password, 'Padre' as rol, 'padres' as user_type, p.activo
        FROM padres p 
        WHERE p.email = $1
        UNION ALL
-       SELECT a.id, a.password as hashed_password, 'Administrativo' as rol, 'administrativos' as user_type
+       SELECT a.id, a.password as hashed_password, 'Administrativo' as rol, 'administrativos' as user_type, a.activo
        FROM administrativos a 
        WHERE a.email = $1
        UNION ALL
-       SELECT s.id, s.password as hashed_password, 'SUP' as rol, 'superusuarios' as user_type
+       SELECT s.id, s.password as hashed_password, 'SUP' as rol, 'superusuarios' as user_type, s.activo
        FROM superusuarios s 
        WHERE s.email = $1`,
       [email]
@@ -54,6 +54,13 @@ app.post('/login', async (req, res) => {
     console.log('Query executed:', { rows: result.rows });
 
     if (result.rows.length > 0) {
+      if (!result.rows[0].activo) {
+        return res.status(401).json({ 
+          success: false, 
+          message: 'Usuario inactivo. Por favor contacte al administrador.' 
+        });
+      }
+
       const match = await bcrypt.compare(password, result.rows[0].hashed_password);
       console.log('Password match:', match);
 
@@ -72,7 +79,8 @@ app.post('/login', async (req, res) => {
           user: {
             id: result.rows[0].id,
             rol: result.rows[0].rol,
-            type: result.rows[0].user_type
+            type: result.rows[0].user_type,
+            activo: result.rows[0].activo
           },
           token: token 
         });
