@@ -120,3 +120,9 @@ ADD COLUMN activo boolean DEFAULT true;
 
 ALTER TABLE Padres
 ADD COLUMN activo boolean DEFAULT true;
+
+ALTER TABLE Asistencia
+ADD COLUMN estado VARCHAR(10) CHECK (estado IN ('present', 'absent'));
+
+ALTER TABLE Asistencia
+ADD CONSTRAINT unique_asistencia UNIQUE (id_curso, carnet_estudiante, fecha);

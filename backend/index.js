@@ -12,6 +12,7 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const superUserRoutes = require('./routes/superUserRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const gradeRoutes = require('./routes/gradeRoutes');
+const attendanceRoutes = require('./routes/attendanceRoutes')
 
 // Middleware
 app.use(cors());
@@ -101,6 +102,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/superusers', superUserRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/courses', gradeRoutes);
+app.use('/api/courses', attendanceRoutes)
 
 // Erro handeling middleware
 app.use((err, req, res, next) => {
