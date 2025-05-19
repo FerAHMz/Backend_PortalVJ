@@ -310,6 +310,36 @@ class CourseController {
             if (client) client.release();
         }
     }
+
+    async createGradoSeccion(req, res) {
+        const { id_grado, id_seccion } = req.body;
+        let client;
+        
+        try {
+            client = await db.getPool().connect();
+            
+            const existingCheck = await client.query(
+                'SELECT id FROM grado_seccion WHERE id_grado = $1 AND id_seccion = $2',
+                [id_grado, id_seccion]
+            );
+            
+            if (existingCheck.rows.length > 0) {
+                return res.json({ id: existingCheck.rows[0].id });
+            }
+            
+            const result = await client.query(
+                'INSERT INTO grado_seccion (id_grado, id_seccion) VALUES ($1, $2) RETURNING id',
+                [id_grado, id_seccion]
+            );
+            
+            res.status(201).json({ id: result.rows[0].id });
+        } catch (error) {
+            console.error('Error al crear grado_seccion:', error);
+            res.status(500).json({ error: 'Error al crear el registro de grado_seccion' });
+        } finally {
+            if (client) client.release();
+        }
+    }
 }
 
 module.exports = new CourseController();

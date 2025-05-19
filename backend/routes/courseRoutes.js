@@ -13,4 +13,7 @@ router.get('/subjects', courseController.getSubjects);
 router.get('/grades', courseController.getGrades);           
 router.get('/sections', courseController.getSections);
 
+// Ruta para crear grado-sección
+router.post('/grado-seccion', courseController.createGradoSeccion);
+
 module.exports = router;
