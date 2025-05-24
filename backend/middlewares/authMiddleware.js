@@ -3,19 +3,18 @@ const db = require('../database_cn');
 const { JWT_SECRET } = require('../config/config');
 
 const verifyToken = (req, res, next) => {
-    const token = req.headers['authorization']?.split(' ')[1];
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) {
+    return res.status(401).json({ success: false, error: 'Access denied. No token provided.' });
+  }
 
-    if (!token) {
-        return res.status(401).json({ error: 'Token no proporcionado' });
-    }
-
-    try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        req.user = decoded;
-        next();
-    } catch (error) {
-        return res.status(401).json({ error: 'Token inválido' });
-    }
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    req.user = { id: decoded.id, role: decoded.rol }; // Attach user details to the request
+    next();
+  } catch (error) {
+    res.status(401).json({ success: false, error: 'Invalid token.' });
+  }
 };
 
 const isAdmin = async (req, res, next) => {
