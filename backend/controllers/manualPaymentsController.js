@@ -121,9 +121,10 @@ const getPayments = async (req, res) => {
                 FROM pagos p
                 LEFT JOIN estudiantes e ON e.carnet = p.carnet_estudiante
                 LEFT JOIN padres pa ON p.id_padre = pa.id
-                LEFT JOIN solvencias s ON p.id = s.id_pagos
+                LEFT JOIN solvencias s ON p.id = s.id_pagos AND s.estado = TRUE
                 LEFT JOIN grado_seccion gs ON e.id_grado_seccion = gs.id
                 LEFT JOIN grados g ON gs.id_grado = g.id
+                WHERE p.estado = TRUE
                 GROUP BY e.carnet, e.nombre, e.apellido, g.grado, p.id, s.mes_solvencia_new, s.monto, s.id_metodo_pago, s.no_boleta, s.fecha_pago, pa.nombre, pa.apellido;
             `);
         res.json(result.rows);
@@ -241,10 +242,15 @@ const updatePayment = async (req, res) => {
     }
 };
 
-// Eliminar un pago
-const deletePayment = async (req, res) => {
+// Invalidar un pago
+const invalidatePayment = async (req, res) => {
     const { id } = req.params;
+    const { razon, usuarioId, tipoUsuario } = req.body;
     let client;
+
+    if (!razon || razon.trim() === "") {
+        return res.status(400).json({ error: "Debe proporcionar una razón válida." });
+    }
 
     try {
         client = await db.getPool().connect();
@@ -252,16 +258,16 @@ const deletePayment = async (req, res) => {
 
         // Verificar que el pago existe
         const paymentExists = await client.query(
-            'SELECT id FROM pagos WHERE id = $1',
+            'SELECT id FROM pagos WHERE id = $1 AND estado = TRUE',
             [id]
         );
         if (paymentExists.rows.length === 0) {
-            throw new Error('El pago no existe');
+            throw new Error('El pago no existe o ya está invalidado');
         }
 
-        // Eliminar Solvencias 
+        // Invalidar Solvencias 
         const solvenciaResult = await client.query(
-            'DELETE FROM solvencias WHERE id_pagos = $1 RETURNING *',
+            'UPDATE solvencias SET estado = FALSE WHERE id_pagos = $1',
             [id]
         );
 
@@ -269,21 +275,29 @@ const deletePayment = async (req, res) => {
             throw new Error('No se encontraron solvencias para este pago');
         }
 
-        // Eliminar el Pago
-        const pagoResult = await client.query(
-            'DELETE FROM pagos WHERE id = $1 RETURNING *',
-            [id]
+         // Invalidar el pago y guardar la razón
+        await client.query(
+            'UPDATE pagos SET estado = FALSE, razon_invalidacion = $1 WHERE id = $2',
+            [razon, id]
+        );
+
+        // Registrar en auditoria_pagos
+        await client.query(
+            `INSERT INTO auditoria_pagos 
+                (usuario_id, tipo_usuario, accion, descripcion, entidad_afectada, id_entidad_afectada) 
+             VALUES 
+                ($1, $2, 'Invalidación de pago', $3, 'pagos', $4)`,
+            [usuarioId, tipoUsuario, razon, id]
         );
 
         await client.query('COMMIT');
         res.json({
             success: true,
-            message: 'Pago eliminado exitosamente',
-            deletedPayment: pagoResult.rows[0]
+            message: 'Pago invalidado exitosamente'
         });
     } catch (error) {
         await client?.query('ROLLBACK');
-        handleError(res, error, 'Error al eliminar el pago');
+        handleError(res, error, 'Error al invalidar el pago');
     } finally {
         client?.release();
     }
@@ -293,5 +307,5 @@ module.exports = {
     addPayment,
     getPayments,
     updatePayment,
-    deletePayment
+    invalidatePayment
 };

@@ -6,7 +6,7 @@ const {
     addPayment,
     getPayments,
     updatePayment,
-    deletePayment
+    invalidatePayment
   } = require('../controllers/manualPaymentsController');
 const db = require('../database_cn'); 
 
@@ -179,7 +179,7 @@ router.get('/full-report', async (req, res) => {
 //CRUD manual de pagos
 router.post('/', verifyToken, isAdmin, addPayment);
 router.put('/:id', verifyToken, isAdmin, updatePayment);
-router.delete('/:id', verifyToken, isAdmin, deletePayment);
+router.put('/invalidate/:id', verifyToken, isAdmin, invalidatePayment);
 router.get('/', verifyToken, isAdmin, getPayments);
 
 module.exports = router;
