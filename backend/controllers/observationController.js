@@ -51,6 +51,85 @@ const createObservation = async (req, res) => {
   }
 };
 
+const getObservationsByCourseAndStudent = async (req, res) => {
+  const { courseId, carnetEstudiante } = req.params;
+
+  try {
+    const result = await db.getPool().query(`
+      SELECT * FROM Observaciones 
+      WHERE id_curso = $1 AND carnet_estudiante = $2
+      ORDER BY id DESC
+    `, [courseId, carnetEstudiante]);
+
+    res.json({ success: true, observations: result.rows });
+
+  } catch (error) {
+    console.error('Error en getObservationsByCourseAndStudent:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Error al obtener observaciones',
+      details: error.message
+    });
+  }
+};
+
+const updateObservation = async (req, res) => {
+  const { observationId } = req.params;
+  const { observaciones, puntos_de_accion } = req.body;
+
+  try {
+    const result = await db.getPool().query(`
+      UPDATE Observaciones 
+      SET observaciones = $1, puntos_de_accion = $2
+      WHERE id = $3
+      RETURNING *
+    `, [observaciones, puntos_de_accion, observationId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, error: 'Observación no encontrada' });
+    }
+
+    res.json({ success: true, updated: result.rows[0] });
+
+  } catch (error) {
+    console.error('Error en updateObservation:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Error al actualizar observación',
+      details: error.message
+    });
+  }
+};
+
+const deleteObservation = async (req, res) => {
+  const { observationId } = req.params;
+
+  try {
+    const result = await db.getPool().query(`
+      DELETE FROM Observaciones 
+      WHERE id = $1
+    `, [observationId]);
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ success: false, error: 'Observación no encontrada' });
+    }
+
+    res.json({ success: true, message: 'Observación eliminada exitosamente' });
+
+  } catch (error) {
+    console.error('Error en deleteObservation:', error);
+    res.status(500).json({ 
+      success: false,
+      error: 'Error al eliminar observación',
+      details: error.message
+    });
+  }
+};
+
+
 module.exports = {
-  createObservation
+  createObservation,
+  getObservationsByCourseAndStudent,
+  updateObservation,
+  deleteObservation
 };

@@ -19,7 +19,10 @@ const {
 } = require('../controllers/taskController');
 
 const {
-    createObservation
+    createObservation,
+    getObservationsByCourseAndStudent,
+    updateObservation,
+    deleteObservation
 } = require('../controllers/observationController');
 
 // Rutas del maestro
@@ -39,5 +42,8 @@ router.get('/tasks/all', verifyToken, getAllTasksForUser);
 
 // Ruta para observaciones
 router.post('/courses/:courseId/observations', verifyToken, createObservation);
+router.get('/courses/:courseId/observations/:carnetEstudiante', verifyToken, getObservationsByCourseAndStudent);
+router.put('/observations/:observationId', verifyToken, updateObservation);
+router.delete('/observations/:observationId', verifyToken, deleteObservation);
 
 module.exports = router;
