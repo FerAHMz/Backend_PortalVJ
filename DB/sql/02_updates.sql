@@ -126,3 +126,23 @@ ADD COLUMN estado VARCHAR(10) CHECK (estado IN ('present', 'absent'));
 
 ALTER TABLE Asistencia
 ADD CONSTRAINT unique_asistencia UNIQUE (id_curso, carnet_estudiante, fecha);
+
+ALTER TABLE Pagos
+ADD COLUMN estado BOOLEAN DEFAULT TRUE, -- true es que la solvencia es valida, false invalida
+ADD COLUMN razon_invalidacion TEXT;
+
+ALTER TABLE Solvencias
+ADD COLUMN estado BOOLEAN DEFAULT TRUE; -- true es que la solvencia es valida, false invalida
+
+CREATE TABLE auditoria_pagos (
+  id SERIAL PRIMARY KEY,
+  usuario_id INT NOT NULL, -- quien hizo la acción
+  tipo_usuario VARCHAR(20) CHECK (tipo_usuario IN ('Administrativo', 'SUP')),
+  accion VARCHAR(100) NOT NULL,
+  descripcion TEXT,
+  fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  entidad_afectada VARCHAR(50),
+  id_entidad_afectada INT
+);
+
+-- el atributo estado es para invalidar una solvencia, en lugar de eliminarla

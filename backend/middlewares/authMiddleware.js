@@ -19,7 +19,7 @@ const verifyToken = (req, res, next) => {
 
 const isAdmin = async (req, res, next) => {
     try {
-        if (req.user.rol === 'Administrativo') {
+        if (req.user.role === 'Administrativo') {
             next();
         } else {
             res.status(403).json({ error: 'Acceso denegado. Se requiere rol Administrativo' });
