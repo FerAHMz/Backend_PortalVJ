@@ -31,7 +31,7 @@ const isAdmin = async (req, res, next) => {
 
 const isSup = async (req, res, next) => {
     try {
-       if (req.user.rol === 'SUP') {
+       if (req.user.role === 'SUP') {
             next();
         } else {
             res.status(403).json({ error: 'Acceso denegado. Se requiere rol Super Usuario' });
@@ -42,7 +42,7 @@ const isSup = async (req, res, next) => {
 }
 
 const isTeacher = (req, res, next) => {
-    if (req.user.rol === 'Maestro') {
+    if (req.user.role === 'Maestro') {
       next();
     } else {
       res.status(403).json({ error: 'Acceso denegado. Se requiere rol Maestro' });
