@@ -1,7 +1,7 @@
 -- Creación Tabla Usuarios
 create table Usuarios (
     id serial primary key not null,
-    rol varchar(50) not null CHECK(rol = 'SUP' or rol = 'Padre' or rol = 'Maestro' or rol = 'Administrativo')
+    rol varchar(50) not null CHECK(rol = 'SUP' or rol = 'Padre' or rol = 'Maestro' or rol = 'Administrativo' or rol = 'Director')
 );
 
 -- Creación Tabla SuperUsuarios
@@ -14,6 +14,18 @@ CREATE TABLE IF NOT EXISTS SuperUsuarios (
   telefono varchar(14) unique not null,
   password varchar(255) not null,
   foreign key (rol) references Usuarios (id)
+);
+
+CREATE TABLE IF NOT EXISTS Directores (
+    id serial primary key not null,
+    rol int not null,
+    nombre varchar(50) not null,
+    apellido varchar(50) not null,
+    email varchar(50) unique not null,
+    telefono varchar(14) unique not null,
+    password varchar(255) not null,
+    activo boolean DEFAULT true,
+    foreign key (rol) references Usuarios (id)
 );
 
 -- Creación Tabla Materias

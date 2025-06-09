@@ -49,9 +49,22 @@ const isTeacher = (req, res, next) => {
     }
   };
 
+const isDirector = async (req, res, next) => {
+    try {
+        if (req.user.role === 'Director') {
+            next();
+        } else {
+            res.status(403).json({ error: 'Acceso denegado. Se requiere rol Director' });
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Error al verificar permisos' });
+    }
+};
+
 module.exports = {
     verifyToken,
     isAdmin,
     isSup,
-    isTeacher
+    isTeacher,
+    isDirector
 };

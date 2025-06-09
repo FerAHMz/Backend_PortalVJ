@@ -23,6 +23,17 @@ const getAllUsers = async (req, res) => {
                 apellido, 
                 email, 
                 telefono, 
+                'Director' as rol,
+                2 as rol_order,
+                activo
+            FROM Directores
+            UNION ALL
+            SELECT DISTINCT ON (id, email)
+                id, 
+                nombre, 
+                apellido, 
+                email, 
+                telefono, 
                 'Administrativo' as rol,
                 2 as rol_order,
                 activo
@@ -53,8 +64,8 @@ const getAllUsers = async (req, res) => {
         `);
         res.json(result.rows);
     } catch (error) {
-        console.error('Error fetching users:', error);
-        res.status(500).json({ error: 'Error al obtener usuarios' });
+        console.error('Error getting users:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     } finally {
         if (client) client.release();
     }
@@ -84,6 +95,8 @@ const createUser = async (req, res) => {
             SELECT email FROM Maestros WHERE email = $1
             UNION ALL
             SELECT email FROM Padres WHERE email = $1
+            UNION ALL
+            SELECT email FROM Directores WHERE email = $1
         `, [email.toLowerCase()]);
 
         if (emailCheck.rows.length > 0) {
@@ -140,6 +153,14 @@ const createUser = async (req, res) => {
                     [nombre, apellido, email, telefono, hashedPassword, rolId]
                 );
                 break;
+            case 'Director':
+                result = await client.query(
+                    `INSERT INTO Directores (nombre, apellido, email, telefono, password, rol, activo)
+                    VALUES ($1, $2, $3, $4, $5, $6, true)
+                    RETURNING id, nombre, apellido, email, telefono, 'Director' as rol, activo`,
+                    [nombre, apellido, email, telefono, hashedPassword, rolId]
+                );
+                break
 
             default:
                 return res.status(400).json({ error: 'Rol de usuario no válido' });
@@ -182,6 +203,8 @@ const updateUser = async (req, res) => {
                 SELECT email, id FROM Maestros
                 UNION ALL
                 SELECT email, id FROM Padres
+                UNION ALL
+                SELECT email, id FROM Directores
             ) AS users
             WHERE email = $1 AND id != $2
         `, [email.toLowerCase(), id]);
@@ -204,6 +227,9 @@ const updateUser = async (req, res) => {
                 break;
             case 'Padre':
                 userData = await client.query('SELECT * FROM Padres WHERE id = $1', [id]);
+                break;
+            case 'Director':
+                userData = await client.query('SELECT * FROM Directores WHERE id = $1', [id]);
                 break;
             default:
                 await client.query('ROLLBACK');
@@ -266,6 +292,14 @@ const updateUser = async (req, res) => {
                         [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
                     );
                     break;
+                case 'Director':
+                    result = await client.query(
+                        `INSERT INTO Directores (id, nombre, apellido, email, telefono, password, rol, activo)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        RETURNING id, nombre, apellido, email, telefono, 'Director' as rol, activo`,
+                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                    );
+                    break;  
                 default:
                     await client.query('ROLLBACK');
                     return res.status(400).json({ error: 'Rol no válido' });
@@ -308,6 +342,15 @@ const updateUser = async (req, res) => {
                          SET nombre = $1, apellido = $2, email = $3, telefono = $4 
                          WHERE id = $5 
                          RETURNING id, nombre, apellido, email, telefono, 'Padre' as rol, activo`,
+                        [nombre, apellido, email, telefono, id]
+                    );
+                    break;
+                case 'Director':
+                    result = await client.query(
+                        `UPDATE Directores 
+                        SET nombre = $1, apellido = $2, email = $3, telefono = $4 
+                        WHERE id = $5 
+                        RETURNING id, nombre, apellido, email, telefono, 'Director' as rol, activo`,
                         [nombre, apellido, email, telefono, id]
                     );
                     break;
@@ -372,6 +415,15 @@ const deleteUser = async (req, res) => {
             case 'Padre':
                 result = await client.query(
                     `UPDATE Padres 
+                     SET activo = false
+                     WHERE id = $1 RETURNING id`,
+                    [id]
+                );
+                break;
+
+            case 'Director':
+                result = await client.query(
+                    `UPDATE Directores
                      SET activo = false
                      WHERE id = $1 RETURNING id`,
                     [id]
