@@ -53,6 +53,8 @@ const validateExcelContent = (workbook) => {
         };
     }
 
+    const usedBoletas = new Set();
+    
     data.forEach((row, index) => {
         const rowNum = index + 1;
         rowErrors[rowNum] = [];
@@ -89,6 +91,10 @@ const validateExcelContent = (workbook) => {
             rowErrors[rowNum].push('El número de boleta es requerido');
         } else if (!Number.isInteger(Number(row.no_boleta))) {
             rowErrors[rowNum].push('El número de boleta debe ser un número entero');
+        } else if (usedBoletas.has(row.no_boleta)) {
+            rowErrors[rowNum].push(`El número de boleta ${row.no_boleta} está duplicado en el archivo`);
+        } else {
+            usedBoletas.add(row.no_boleta);
         }
         if (!row.metodo_pago?.trim()) {
             rowErrors[rowNum].push('El método de pago es requerido');

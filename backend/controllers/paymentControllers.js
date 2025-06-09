@@ -30,7 +30,6 @@ const uploadPayments = async (req, res) => {
 
         const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
         
-        // Add sheet validation
         if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
             console.log('Invalid Excel format');
             return res.status(400).json({
@@ -41,12 +40,6 @@ const uploadPayments = async (req, res) => {
 
         const validation = validateExcelContent(workbook);
         
-        console.log('Validation results:', {
-            isValid: validation?.isValid,
-            errors: validation?.errors,
-            dataLength: validation?.data?.length
-        });
-
         if (!validation || !validation.isValid) {
             return res.status(400).json({ 
                 success: false, 
@@ -57,52 +50,84 @@ const uploadPayments = async (req, res) => {
         client = await db.getPool().connect();
         await client.query('BEGIN');
 
+        const result = {
+            insertedCount: 0,
+            duplicates: []
+        };
+
         for (const payment of validation.data) {
-            // Verify student exists
-            const studentExists = await client.query(
-                'SELECT carnet FROM Estudiantes WHERE carnet = $1',
-                [payment.carne]
-            );
+            try {
+                // Verificar si el pago ya existe
+                const existingPayment = await client.query(
+                    `SELECT id FROM Solvencias 
+                     WHERE carnet_estudiante = $1 
+                     AND mes_solvencia_new = $2 
+                     AND no_boleta = $3`,
+                    [payment.carne, payment.mes_solvencia, payment.no_boleta]
+                );
 
-            if (studentExists.rows.length === 0) {
-                throw new Error(`El estudiante con carné ${payment.carne} no existe`);
+                if (existingPayment.rows.length > 0) {
+                    result.duplicates.push({
+                        carne: payment.carne,
+                        mes_solvencia: payment.mes_solvencia,
+                        no_boleta: payment.no_boleta
+                    });
+                    continue; // Salta al siguiente pago
+                }
+
+                // Verify student exists
+                const studentExists = await client.query(
+                    'SELECT carnet FROM Estudiantes WHERE carnet = $1',
+                    [payment.carne]
+                );
+
+                if (studentExists.rows.length === 0) {
+                    throw new Error(`El estudiante con carné ${payment.carne} no existe`);
+                }
+
+                // Convert date from DD/MM/YYYY to YYYY-MM-DD
+                const [day, month, year] = payment.fecha_pago.split('/');
+                const date = new Date(year, month - 1, day);
+                if (isNaN(date.getTime())) {
+                    throw new Error(`Fecha inválida para el pago: ${payment.fecha_pago}`);
+                }
+                const formattedDate = `${year}-${month}-${day}`;
+
+                await client.query(
+                    `INSERT INTO Solvencias (
+                        carnet_estudiante, 
+                        mes_solvencia_new, 
+                        fecha_pago, 
+                        monto, 
+                        no_boleta, 
+                        id_metodo_pago
+                    ) VALUES ($1, $2, $3, $4, $5, 
+                        (SELECT id FROM Metodo_pago WHERE metodo_pago = $6)
+                    )`,
+                    [
+                        payment.carne,
+                        payment.mes_solvencia,
+                        formattedDate,
+                        payment.monto,
+                        payment.no_boleta,
+                        payment.metodo_pago
+                    ]
+                );
+
+                result.insertedCount++;
+            } catch (error) {
+                console.error('Error processing payment:', error);
+                throw error;
             }
-
-            // Convert date from DD/MM/YYYY to YYYY-MM-DD
-            const [day, month, year] = payment.fecha_pago.split('/');
-            const date = new Date(year, month - 1, day);
-            if (isNaN(date.getTime())) {
-                throw new Error(`Fecha inválida para el pago: ${payment.fecha_pago}`);
-            }
-            const formattedDate = `${year}-${month}-${day}`;
-
-            await client.query(
-                `INSERT INTO Solvencias (
-                    carnet_estudiante, 
-                    mes_solvencia_new, 
-                    fecha_pago, 
-                    monto, 
-                    no_boleta, 
-                    id_metodo_pago
-                ) VALUES ($1, $2, $3, $4, $5, 
-                    (SELECT id FROM Metodo_pago WHERE metodo_pago = $6)
-                )`,
-                [
-                    payment.carne,
-                    payment.mes_solvencia,
-                    formattedDate,
-                    payment.monto,
-                    payment.no_boleta,
-                    payment.metodo_pago
-                ]
-            );
         }
 
         await client.query('COMMIT');
         res.status(200).json({ 
             success: true, 
             message: 'Pagos procesados exitosamente',
-            count: validation.data.length
+            insertedCount: result.insertedCount,
+            duplicatesCount: result.duplicates.length,
+            duplicates: result.duplicates
         });
     } catch (error) {
         console.error('Upload error:', error);
