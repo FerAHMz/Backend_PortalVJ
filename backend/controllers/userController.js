@@ -447,9 +447,38 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const searchUsers = async (req, res) => {
+    const { name } = req.query;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        const query = `
+            SELECT id, nombre, apellido, 'Maestro' as rol FROM Maestros 
+            WHERE (LOWER(nombre) LIKE LOWER($1) OR LOWER(apellido) LIKE LOWER($1))
+            AND activo = true
+            UNION ALL
+            SELECT id, nombre, apellido, 'Padre' as rol FROM Padres 
+            WHERE (LOWER(nombre) LIKE LOWER($1) OR LOWER(apellido) LIKE LOWER($1))
+            AND activo = true
+            ORDER BY rol, nombre, apellido
+            LIMIT 10
+        `;
+        
+        const result = await client.query(query, [`%${name}%`]);
+        res.json({ users: result.rows });
+    } catch (error) {
+        console.error('Error searching users:', error);
+        res.status(500).json({ error: 'Error searching users' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
 module.exports = {
     getAllUsers,
     createUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    searchUsers
 };

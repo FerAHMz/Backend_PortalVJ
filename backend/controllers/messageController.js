@@ -60,63 +60,183 @@ exports.getConversationMessages = async (req, res) => {
   }
 };
 
+// Add new function to search users
+exports.searchUsers = async (req, res) => {
+  const { query } = req.query;
+  const { id: currentUserId, rol: currentUserRole } = req.user;
+  let client;
+
+  try {
+    client = await db.getPool().connect();
+    const searchQuery = `
+      SELECT id, nombre, apellido, rol, email
+      FROM (
+        SELECT id, nombre, apellido, 'Maestro' as rol, email 
+        FROM maestros 
+        WHERE id != $1
+        UNION ALL
+        SELECT id, nombre, apellido, 'Padre' as rol, email 
+        FROM padres
+      ) users
+      WHERE LOWER(nombre) LIKE LOWER($2) 
+      OR LOWER(apellido) LIKE LOWER($2)
+      LIMIT 10
+    `;
+    
+    const result = await client.query(searchQuery, [
+      currentUserId, 
+      `%${query}%`
+    ]);
+
+    // Filter results based on role permissions
+    const filteredUsers = result.rows.filter(user => {
+      // Maestros can message Padres and other Maestros
+      if (currentUserRole === 'Maestro') {
+        return ['Padre', 'Maestro'].includes(user.rol);
+      }
+      // Padres can only message Maestros
+      if (currentUserRole === 'Padre') {
+        return user.rol === 'Maestro';
+      }
+      return false;
+    });
+
+    res.json({ success: true, users: filteredUsers });
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({ success: false, error: 'Error searching users' });
+  } finally {
+    if (client) client.release();
+  }
+};
+
 // Send a new message
 exports.sendMessage = async (req, res) => {
-  const userId = req.user.id;
-  const role = req.user.rol;
   const { recipient_id, recipient_role, subject, content } = req.body;
-  try {
-    const result = await db.getPool().query(
-      `INSERT INTO messages (sender_id, sender_role, recipient_id, recipient_role, subject, content)
-       VALUES ($1, $2, $3, $4, $5, $6)
-       RETURNING *`,
-      [userId, role, recipient_id, recipient_role, subject, content]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    res.status(500).json({ error: 'Error sending message' });
-  }
-};
-
-// Mark messages as read
-exports.markAsRead = async (req, res) => {
-  const userId = req.user.id;
-  const role = req.user.rol;
-  const { conversationId } = req.body;
-  try {
-    await db.getPool().query(
-      `UPDATE messages SET read = TRUE WHERE id = $1 AND recipient_id = $2 AND recipient_role = $3`,
-      [conversationId, userId, role]
-    );
-    res.json({ success: true });
-  } catch (err) {
-    res.status(500).json({ error: 'Error marking as read' });
-  }
-};
-
-// Get messages for a user
-exports.getMessages = async (req, res) => {
-  const { id, rol } = req.user; // Extract user ID and role from the token
+  const { id: sender_id, rol: sender_role } = req.user;
   let client;
 
   try {
     client = await db.getPool().connect();
 
     const query = `
+      INSERT INTO messages 
+      (sender_id, sender_role, recipient_id, recipient_role, subject, content)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *
+    `;
+
+    const result = await client.query(query, [
+      sender_id,
+      sender_role,
+      recipient_id,
+      recipient_role,
+      subject,
+      content
+    ]);
+
+    res.json({ success: true, message: result.rows[0] });
+  } catch (error) {
+    console.error('Error sending message:', error);
+    res.status(500).json({ success: false, error: 'Error sending message' });
+  } finally {
+    if (client) client.release();
+  }
+};
+
+// Mark a message as read
+exports.markAsRead = async (req, res) => {
+  const { messageId } = req.params;
+  const { id: userId, rol: userRole } = req.user;
+  let client;
+
+  try {
+    client = await db.getPool().connect();
+
+    // Only mark as read if the user is the recipient
+    const query = `
+      UPDATE messages
+      SET read = true
+      WHERE id = $1 AND recipient_id = $2 AND recipient_role = $3
+      RETURNING *
+    `;
+
+    const result = await client.query(query, [messageId, userId, userRole]);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, error: 'Message not found or unauthorized' });
+    }
+
+    res.json({ success: true, message: result.rows[0] });
+  } catch (error) {
+    console.error('Error marking message as read:', error);
+    res.status(500).json({ success: false, error: 'Error marking message as read' });
+  } finally {
+    if (client) client.release();
+  }
+};
+
+// Get messages for a user
+exports.getMessages = async (req, res) => {
+  const { id: userId, rol: userRole } = req.user;
+  let client;
+
+  try {
+    client = await db.getPool().connect();
+    
+    // Only get messages where user is sender or recipient
+    const query = `
       SELECT 
-        id, sender_id, sender_role, recipient_id, recipient_role, 
+        id, sender_id, sender_role, recipient_id, recipient_role,
         subject, content, created_at, read
       FROM messages
-      WHERE recipient_id = $1 AND recipient_role = $2
+      WHERE (sender_id = $1 AND sender_role = $2)
+         OR (recipient_id = $1 AND recipient_role = $2)
       ORDER BY created_at DESC
     `;
 
-    const result = await client.query(query, [id, rol]);
-
+    const result = await client.query(query, [userId, userRole]);
     res.json({ success: true, messages: result.rows });
   } catch (error) {
     console.error('Error fetching messages:', error);
     res.status(500).json({ success: false, error: 'Error fetching messages' });
+  } finally {
+    if (client) client.release();
+  }
+};
+
+// Get a specific conversation
+exports.getConversation = async (req, res) => {
+  const { id: userId, rol: userRole } = req.user;
+  const { conversationId } = req.params;
+  let client;
+
+  try {
+    client = await db.getPool().connect();
+
+    // Verify user is part of conversation
+    const query = `
+      SELECT * FROM messages 
+      WHERE id = $1 
+      AND (
+        (sender_id = $2 AND sender_role = $3) OR 
+        (recipient_id = $2 AND recipient_role = $3)
+      )
+    `;
+    
+    const result = await client.query(query, [conversationId, userId, userRole]);
+
+    if (result.rows.length === 0) {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'No tienes permiso para ver esta conversación' 
+      });
+    }
+
+    res.json({ success: true, conversation: result.rows });
+  } catch (error) {
+    console.error('Error fetching conversation:', error);
+    res.status(500).json({ success: false, error: 'Error fetching conversation' });
   } finally {
     if (client) client.release();
   }

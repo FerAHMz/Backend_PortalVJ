@@ -2,6 +2,32 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middlewares/authMiddleware');
 const db = require('../database_cn');
+const messageController = require('../controllers/messageController');
+
+// Protect all message routes
+router.use(verifyToken);
+
+// Add role verification middleware
+const verifyMessageAccess = async (req, res, next) => {
+  const { id: userId, rol: userRole } = req.user;
+  const { recipient_role } = req.body;
+
+  // Convert roles to consistent format
+  const senderRole = userRole.toLowerCase();
+  const recipientRole = recipient_role ? recipient_role.toLowerCase() : '';
+
+  // Allow messages between any users (teachers, parents, administrators, directors)
+  const allowedRoles = ['maestro', 'padre', 'administrativo', 'director'];
+  
+  if (!allowedRoles.includes(senderRole) || (recipient_role && !allowedRoles.includes(recipientRole))) {
+    return res.status(403).json({ 
+      success: false, 
+      error: 'Unauthorized: Invalid sender or recipient role' 
+    });
+  }
+
+  next();
+};
 
 // Fetch all conversations for the authenticated user
 router.get('/', verifyToken, async (req, res) => {
@@ -64,76 +90,30 @@ router.get('/messages', verifyToken, async (req, res) => {
 });
 
 // Create a new message
-router.post('/', async (req, res) => {
-  const { userType, userId, userName, subject, content } = req.body;
-
-  if (!userType || (!userId && !userName) || !subject || !content) {
-    return res.status(400).json({ success: false, error: 'Missing required fields' });
-  }
-
-  if (!['maestro', 'padre'].includes(userType.toLowerCase())) {
-    return res.status(400).json({ success: false, error: 'Invalid user type' });
-  }
-
+router.post('/', verifyMessageAccess, async (req, res) => {
   try {
-    let recipient;
-    if (userId) {
-      // Find recipient by ID
-      const result = await db.getPool().query(
-        `SELECT id, 'Maestro' AS role FROM maestros WHERE id = $1
-         UNION ALL
-         SELECT id, 'Padre' AS role FROM padres WHERE id = $1`,
-        [userId]
-      );
-      recipient = result.rows[0];
-    } else if (userName) {
-      // Find recipient by name
-      const [firstName, lastName] = userName.split(' ');
-      const result = await db.getPool().query(
-        `SELECT id, 'Maestro' AS role FROM maestros WHERE nombre = $1 AND apellido = $2
-         UNION ALL
-         SELECT id, 'Padre' AS role FROM padres WHERE nombre = $1 AND apellido = $2`,
-        [firstName, lastName]
-      );
-      recipient = result.rows[0];
-    }
-
-    if (!recipient) {
-      return res.status(404).json({ success: false, error: 'Recipient not found' });
-    }
-
-    // Insert the new message
-    const senderId = 1; // Replace with the actual sender ID (e.g., from the authenticated user)
-    const senderRole = 'Maestro'; // Replace with the actual sender role
-    const createdAt = new Date();
-
-    await db.getPool().query(
-      `INSERT INTO messages (sender_id, sender_role, recipient_id, recipient_role, subject, content, created_at, read)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [senderId, senderRole, recipient.id, recipient.role, subject, content, createdAt, false]
-    );
-
-    res.status(201).json({ success: true, message: 'Message created successfully' });
+    await messageController.sendMessage(req, res);
   } catch (error) {
-    console.error('Error creating message:', error);
-    res.status(500).json({ success: false, error: 'Internal Server Error' });
+    console.error('Error in message creation route:', error);
+    res.status(500).json({ success: false, error: 'Error interno del servidor' });
   }
 });
 
 // Add a message to an existing conversation
-router.post('/conversation', async (req, res) => {
+router.post('/conversation', verifyToken, async (req, res) => {
   const { subject, content } = req.body;
+  const { id: currentUserId, rol: currentUserRole } = req.user;
 
   if (!subject || !content) {
     return res.status(400).json({ success: false, error: 'Subject and content are required' });
   }
 
   try {
-    // Retrieve sender and recipient details from the existing conversation
     const conversation = await db.getPool().query(
       `SELECT sender_id, sender_role, recipient_id, recipient_role
        FROM messages
        WHERE subject = $1
+       ORDER BY created_at DESC
        LIMIT 1`,
       [subject]
     );
@@ -142,26 +122,87 @@ router.post('/conversation', async (req, res) => {
       return res.status(404).json({ success: false, error: 'Conversation not found' });
     }
 
-    const { sender_id, sender_role, recipient_id, recipient_role } = conversation.rows[0];
-
-    // Validate roles
-    if (!['Maestro', 'Padre'].includes(sender_role) || !['Maestro', 'Padre'].includes(recipient_role)) {
-      return res.status(400).json({ success: false, error: 'Invalid roles in conversation' });
+    const lastMessage = conversation.rows[0];
+    
+    // Determine if current user was the sender or recipient of the last message
+    let recipientId, recipientRole;
+    if (currentUserId === lastMessage.sender_id && currentUserRole === lastMessage.sender_role) {
+      recipientId = lastMessage.recipient_id;
+      recipientRole = lastMessage.recipient_role;
+    } else {
+      recipientId = lastMessage.sender_id;
+      recipientRole = lastMessage.sender_role;
     }
 
-    // Insert the new message into the database
     const createdAt = new Date();
     await db.getPool().query(
       `INSERT INTO messages (sender_id, sender_role, recipient_id, recipient_role, subject, content, created_at, read)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [sender_id, sender_role, recipient_id, recipient_role, subject, content, createdAt, false]
+      [currentUserId, currentUserRole, recipientId, recipientRole, subject, content, createdAt, false]
     );
 
-    res.status(201).json({ success: true, message: 'Message sent successfully' });
+    res.status(201).json({ success: true, message: 'Message added to conversation successfully' });
   } catch (error) {
-    console.error('Error sending message:', error);
+    console.error('Error adding message to conversation:', error);
     res.status(500).json({ success: false, error: 'Internal Server Error' });
   }
 });
+
+router.get('/search-users', verifyToken, async (req, res) => {
+  const { query } = req.query;
+  const { id: currentUserId, rol: currentUserRole } = req.user;
+
+  if (!query || query.length < 2) {
+    return res.json({ success: true, users: [] });
+  }
+
+  try {
+    const searchQuery = `
+      SELECT id, nombre, apellido, rol, email
+      FROM (
+        SELECT id, nombre, apellido, 'Maestro' as rol, email 
+        FROM maestros 
+        WHERE (LOWER(nombre) LIKE LOWER($1) OR LOWER(apellido) LIKE LOWER($1))
+        AND activo = true
+        UNION ALL
+        SELECT id, nombre, apellido, 'Padre' as rol, email 
+        FROM padres
+        WHERE (LOWER(nombre) LIKE LOWER($1) OR LOWER(apellido) LIKE LOWER($1))
+        AND activo = true
+      ) users
+      WHERE users.id != $2
+      LIMIT 10
+    `;
+
+    const result = await db.getPool().query(searchQuery, [
+      `%${query}%`,
+      currentUserId
+    ]);
+
+    // Filter results based on role permissions
+    const filteredUsers = result.rows.filter(user => {
+      // Convert roles to match the database values
+      const currentRole = currentUserRole === 3 ? 'Maestro' : 'Padre';
+      
+      // Maestros can message Padres and other Maestros
+      if (currentRole === 'Maestro') {
+        return ['Padre', 'Maestro'].includes(user.rol);
+      }
+      // Padres can only message Maestros
+      if (currentRole === 'Padre') {
+        return user.rol === 'Maestro';
+      }
+      return false;
+    });
+
+    res.json({ success: true, users: filteredUsers });
+  } catch (error) {
+    console.error('Error searching users:', error);
+    res.status(500).json({ success: false, error: 'Error searching users' });
+  }
+});
+
+// Mark a message as read
+router.patch('/:messageId/read', messageController.markAsRead);
 
 module.exports = router;
