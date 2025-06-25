@@ -493,6 +493,14 @@ const getUserProfile = async (req, res) => {
                 `, [userId]);
                 break;
 
+            case 'Director':
+                result = await client.query(`
+                    SELECT id, nombre, apellido, email, telefono, 'Director' as rol
+                    FROM Directores
+                    WHERE id = $1
+                `, [userId]);
+                break;
+
             case 'Administrativo':
                 result = await client.query(`
                     SELECT id, nombre, apellido, email, telefono, 'Administrativo' as rol

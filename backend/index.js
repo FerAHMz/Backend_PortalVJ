@@ -51,6 +51,10 @@ app.post('/login', async (req, res) => {
        FROM Administrativos a 
        WHERE a.email = $1
        UNION ALL
+       SELECT d.id, d.password as hashed_password, 'Director' as rol, 'directores' as user_type
+       FROM Directores d 
+       WHERE d.email = $1
+       UNION ALL
        SELECT s.id, s.password as hashed_password, 'SUP' as rol, 'superusuarios' as user_type
        FROM SuperUsuarios s 
        WHERE s.email = $1`,

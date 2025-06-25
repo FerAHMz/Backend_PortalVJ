@@ -3,12 +3,23 @@ INSERT INTO Usuarios (rol) VALUES
 ('Padre'),
 ('Maestro'),
 ('Administrativo'),
+('Director'),
 ('Padre'),
 ('Maestro'),
 ('Administrativo'),
+('Director'),
 ('Padre'),
 ('Maestro'),
-('Administrativo');
+('Administrativo'),
+('Director'),
+('Padre'),
+('Maestro'),
+('Administrativo'),
+('Director'),
+('Padre'),
+('Maestro'),
+('Administrativo'),
+('Director');
 
 INSERT INTO SuperUsuarios (rol, nombre, apellido, email, telefono, password, activo) VALUES 
 (1, 'Admin', 'Principal', 'superadmin@example.com', '0000000000', 'password1', True);
@@ -85,6 +96,13 @@ INSERT INTO Administrativos (rol, nombre, apellido, email, telefono, password, a
 (7, 'Adriana', 'Miranda', 'admin8@example.com', '8899001122', 'password8', True),
 (10, 'Javier', 'Peña', 'admin9@example.com', '9900112233', 'password9', True),
 (4, 'Monica', 'Cordero', 'admin10@example.com', '0011223344', 'password10', True);
+
+INSERT INTO Directores (rol, nombre, apellido, email, telefono, password, activo) VALUES 
+(5, 'Miguel', 'Herrera', 'director1@example.com', '1357924680', 'password1', True),
+(9, 'Carmen', 'Delgado', 'director2@example.com', '2468135790', 'password2', True),
+(13, 'Antonio', 'Vega', 'director3@example.com', '3579246801', 'password3', True),
+(17, 'Elena', 'Morales', 'director4@example.com', '4680357912', 'password4', True),
+(21, 'Francisco', 'Jiménez', 'director5@example.com', '5791468023', 'password5', True);
 
 INSERT INTO Familias (id_padre, carnet_estudiante) VALUES
 (1, 1001),

@@ -13,5 +13,8 @@ SET password = crypt(CONCAT('password', id::text), gen_salt('bf', 10));
 UPDATE administrativos 
 SET password = crypt(CONCAT('password', id::text), gen_salt('bf', 10));
 
+UPDATE directores 
+SET password = crypt(CONCAT('password', id::text), gen_salt('bf', 10));
+
 UPDATE SuperUsuarios
 SET password = crypt(CONCAT('password', id::text), gen_salt('bf', 10));
