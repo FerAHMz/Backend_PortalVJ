@@ -180,7 +180,7 @@ const updateUser = async (req, res) => {
     const { id } = req.params;
     const { nombre, apellido, email, telefono, rol, rolAnterior } = req.body;
     let client;
-    
+
     try {
         if (!nombre?.trim() || !apellido?.trim() || !email?.trim() || !telefono?.trim() || !rol || !rolAnterior) {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
@@ -299,7 +299,7 @@ const updateUser = async (req, res) => {
                         RETURNING id, nombre, apellido, email, telefono, 'Director' as rol, activo`,
                         [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
                     );
-                    break;  
+                    break;
                 default:
                     await client.query('ROLLBACK');
                     return res.status(400).json({ error: 'Rol no válido' });
@@ -311,45 +311,45 @@ const updateUser = async (req, res) => {
             switch (rol) {
                 case 'SUP':
                     result = await client.query(
-                        `UPDATE SuperUsuarios 
-                         SET nombre = $1, apellido = $2, email = $3, telefono = $4 
-                         WHERE id = $5 
+                        `UPDATE SuperUsuarios
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                         WHERE id = $5
                          RETURNING id, nombre, apellido, email, telefono, 'SUP' as rol, activo`,
                         [nombre, apellido, email, telefono, id]
                     );
                     break;
                 case 'Administrativo':
                     result = await client.query(
-                        `UPDATE Administrativos 
-                         SET nombre = $1, apellido = $2, email = $3, telefono = $4 
-                         WHERE id = $5 
+                        `UPDATE Administrativos
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                         WHERE id = $5
                          RETURNING id, nombre, apellido, email, telefono, 'Administrativo' as rol, activo`,
                         [nombre, apellido, email, telefono, id]
                     );
                     break;
                 case 'Maestro':
                     result = await client.query(
-                        `UPDATE Maestros 
-                         SET nombre = $1, apellido = $2, email = $3, telefono = $4 
-                         WHERE id = $5 
+                        `UPDATE Maestros
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                         WHERE id = $5
                          RETURNING id, nombre, apellido, email, telefono, 'Maestro' as rol, activo`,
                         [nombre, apellido, email, telefono, id]
                     );
                     break;
                 case 'Padre':
                     result = await client.query(
-                        `UPDATE Padres 
-                         SET nombre = $1, apellido = $2, email = $3, telefono = $4 
-                         WHERE id = $5 
+                        `UPDATE Padres
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                         WHERE id = $5
                          RETURNING id, nombre, apellido, email, telefono, 'Padre' as rol, activo`,
                         [nombre, apellido, email, telefono, id]
                     );
                     break;
                 case 'Director':
                     result = await client.query(
-                        `UPDATE Directores 
-                        SET nombre = $1, apellido = $2, email = $3, telefono = $4 
-                        WHERE id = $5 
+                        `UPDATE Directores
+                        SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                        WHERE id = $5
                         RETURNING id, nombre, apellido, email, telefono, 'Director' as rol, activo`,
                         [nombre, apellido, email, telefono, id]
                     );
@@ -387,7 +387,7 @@ const deleteUser = async (req, res) => {
         switch (rol) {
             case 'SUP':
                 result = await client.query(
-                    `UPDATE SuperUsuarios 
+                    `UPDATE SuperUsuarios
                      SET activo = false
                      WHERE id = $1 RETURNING id`,
                     [id]
@@ -396,7 +396,7 @@ const deleteUser = async (req, res) => {
 
             case 'Administrativo':
                 result = await client.query(
-                    `UPDATE Administrativos 
+                    `UPDATE Administrativos
                      SET activo = false
                      WHERE id = $1 RETURNING id`,
                     [id]
@@ -405,7 +405,7 @@ const deleteUser = async (req, res) => {
 
             case 'Maestro':
                 result = await client.query(
-                    `UPDATE Maestros 
+                    `UPDATE Maestros
                      SET activo = false
                      WHERE id = $1 RETURNING id`,
                     [id]
@@ -414,7 +414,7 @@ const deleteUser = async (req, res) => {
 
             case 'Padre':
                 result = await client.query(
-                    `UPDATE Padres 
+                    `UPDATE Padres
                      SET activo = false
                      WHERE id = $1 RETURNING id`,
                     [id]
@@ -454,17 +454,17 @@ const searchUsers = async (req, res) => {
     try {
         client = await db.getPool().connect();
         const query = `
-            SELECT id, nombre, apellido, 'Maestro' as rol FROM Maestros 
+            SELECT id, nombre, apellido, 'Maestro' as rol FROM Maestros
             WHERE (LOWER(nombre) LIKE LOWER($1) OR LOWER(apellido) LIKE LOWER($1))
             AND activo = true
             UNION ALL
-            SELECT id, nombre, apellido, 'Padre' as rol FROM Padres 
+            SELECT id, nombre, apellido, 'Padre' as rol FROM Padres
             WHERE (LOWER(nombre) LIKE LOWER($1) OR LOWER(apellido) LIKE LOWER($1))
             AND activo = true
             ORDER BY rol, nombre, apellido
             LIMIT 10
         `;
-        
+
         const result = await client.query(query, [`%${name}%`]);
         res.json({ users: result.rows });
     } catch (error) {
@@ -475,10 +475,100 @@ const searchUsers = async (req, res) => {
     }
 };
 
+const getUserProfile = async (req, res) => {
+    const { id: userId, role: userRole } = req.user;
+    let client;
+
+    try {
+        client = await db.getPool().connect();
+        let result;
+
+        // Query based on user role
+        switch (userRole) {
+            case 'SUP':
+                result = await client.query(`
+                    SELECT id, nombre, apellido, email, telefono, 'SUP' as rol
+                    FROM SuperUsuarios
+                    WHERE id = $1
+                `, [userId]);
+                break;
+
+            case 'Administrativo':
+                result = await client.query(`
+                    SELECT id, nombre, apellido, email, telefono, 'Administrativo' as rol
+                    FROM Administrativos
+                    WHERE id = $1
+                `, [userId]);
+                break;
+
+            case 'Maestro':
+                result = await client.query(`
+                    SELECT m.id, m.nombre, m.apellido, m.email, m.telefono, 'Maestro' as rol
+                    FROM Maestros m
+                    WHERE m.id = $1
+                `, [userId]);
+                break;
+
+            case 'Padre':
+                result = await client.query(`
+                    SELECT p.id, p.nombre, p.apellido, p.email, p.telefono, 'Padre' as rol,
+                           e.nombre as nombre_estudiante, e.apellido as apellido_estudiante, e.carnet
+                    FROM Padres p
+                    LEFT JOIN Estudiantes e ON p.carnet_estudiante = e.carnet
+                    WHERE p.id = $1
+                `, [userId]);
+                break;
+
+            default:
+                return res.status(400).json({
+                    success: false,
+                    error: 'Rol de usuario no válido'
+                });
+        }
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: 'Usuario no encontrado'
+            });        }
+        
+        const userProfile = result.rows[0];
+        console.log('User profile found:', userProfile); // Debug log
+          // For parents, format the student information
+        if (userRole === 'Padre' && userProfile.carnet) {
+            userProfile.estudiante = {
+                carnet: userProfile.carnet,
+                nombre: userProfile.nombre_estudiante,
+                apellido: userProfile.apellido_estudiante
+            };
+            
+            // Remove individual student fields from the main object
+            delete userProfile.carnet;
+            delete userProfile.nombre_estudiante;
+            delete userProfile.apellido_estudiante;
+        }
+
+        res.json({
+            success: true,
+            user: userProfile
+        });
+
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Error interno del servidor'
+        });
+    } finally {
+        if (client) client.release();
+    }
+};
+
 module.exports = {
     getAllUsers,
     createUser,
     updateUser,
     deleteUser,
-    searchUsers
+    searchUsers,
+    getUserProfile
 };

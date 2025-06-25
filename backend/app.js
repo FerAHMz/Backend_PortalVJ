@@ -5,6 +5,7 @@ const bodyParser = require('body-parser');
 const paymentRoutes = require('./routes/paymentRoutes');
 const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
+const profileRoutes = require('./routes/profileRoutes');
 
 // Configure CORS with specific options
 app.use(cors({
@@ -19,6 +20,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use('/api/payments', paymentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/user', profileRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
