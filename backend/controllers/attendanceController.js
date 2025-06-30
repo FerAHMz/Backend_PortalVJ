@@ -46,7 +46,7 @@ async function postAttendance(req, res) {
       [courseId, date]
     )
 
-    //Insertar o actualizar todos los estados (present, absent o null)
+    //Insertar o actualizar todos los estados (present, absent, late o null)
     const insertQ = `
       INSERT INTO Asistencia (id_curso, carnet_estudiante, fecha, estado)
       VALUES ($1, $2, $3, $4)
@@ -55,7 +55,7 @@ async function postAttendance(req, res) {
     `
 
     for (const [carnet, status] of Object.entries(attendance)) {
-      if (status === 'present' || status === 'absent') {
+      if (status === 'present' || status === 'absent'|| status === 'late') {
         await db.getPool().query(insertQ, [
           courseId,
           carnet,
