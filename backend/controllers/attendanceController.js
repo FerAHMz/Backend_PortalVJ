@@ -72,7 +72,50 @@ async function postAttendance(req, res) {
   }
 }
 
+async function getAttendanceReport(req, res) {
+  const { courseId } = req.params;
+  const { startDate, endDate } = req.query;
+
+  try {
+    const reportQuery = `
+      SELECT 
+        e.carnet,
+        e.nombre,
+        e.apellido,
+        COUNT(a.*) FILTER (
+          WHERE EXTRACT(DOW FROM a.fecha) NOT IN (0, 6)
+        ) AS total_school_days,
+        COUNT(a.*) FILTER (
+          WHERE a.estado = 'present' AND EXTRACT(DOW FROM a.fecha) NOT IN (0, 6)
+        ) AS present_count,
+        COUNT(a.*) FILTER (
+          WHERE a.estado = 'late' AND EXTRACT(DOW FROM a.fecha) NOT IN (0, 6)
+        ) AS late_count,
+        COUNT(a.*) FILTER (
+          WHERE a.estado = 'absent' AND EXTRACT(DOW FROM a.fecha) NOT IN (0, 6)
+        ) AS absent_count
+      FROM Estudiantes e
+      LEFT JOIN Asistencia a ON e.carnet = a.carnet_estudiante
+        AND a.id_curso = $1
+        AND DATE(a.fecha) BETWEEN $2 AND $3
+      WHERE e.id_grado_seccion = (
+        SELECT id_grado_seccion FROM Cursos WHERE id = $1
+      )
+      GROUP BY e.carnet, e.nombre, e.apellido
+      ORDER BY e.apellido, e.nombre
+    `;
+
+    const { rows } = await db.getPool().query(reportQuery, [courseId, startDate, endDate]);
+    
+    res.json({ report: rows });
+  } catch (error) {
+    console.error('Error en getAttendanceReport:', error);
+    res.status(500).json({ error: 'Error al generar el reporte' });
+  }
+}
+
 module.exports = {
   getAttendance,
-  postAttendance
+  postAttendance,
+  getAttendanceReport
 }
