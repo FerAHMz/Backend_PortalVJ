@@ -40,6 +40,15 @@ create table Grados (
     grado varchar(50) not null
 );
 
+-- Relacion de los grados con los directores
+CREATE TABLE IF NOT EXISTS Grados_director (
+    id serial primary key not null,
+    id_grado int not null,
+    id_director int not null,
+    foreign key (id_grado) references Grados (id),
+    foreign key (id_director) references Directores (id)
+);
+
 -- Creación Tabla Maestros
 create table Maestros (
   id serial primary key not null,
@@ -174,4 +183,33 @@ CREATE TABLE Observaciones (
     puntos_de_accion TEXT,
     FOREIGN KEY (carnet_estudiante) REFERENCES Estudiantes(carnet),
     FOREIGN KEY (id_curso) REFERENCES Cursos(id)
+);
+
+-- Creación de la tabla para las planificaciones de los cursos
+CREATE TABLE Planificaciones (
+    id SERIAL PRIMARY KEY,
+    id_curso INT NOT NULL REFERENCES Cursos(id),
+    mes VARCHAR(15) NOT NULL CHECK (
+        mes IN ('enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre')
+    ),
+    ciclo_escolar VARCHAR(4) NOT NULL,
+    estado VARCHAR(20) NOT NULL DEFAULT 'en revision' CHECK (estado IN ('en revision', 'aceptada', 'rechazada'))
+);
+
+-- Detalle de las planificaciones
+CREATE TABLE Detalle_planificacion (
+    id SERIAL PRIMARY KEY,
+    id_planificacion INT NOT NULL REFERENCES Planificaciones(id),
+    tema_tarea VARCHAR(255) NULL,
+    puntos_tarea FLOAT NOT NULL CHECK (puntos_tarea >= 0)
+);
+
+-- Revisiones de las planificaciones
+CREATE TABLE Revisiones_planificacion (
+    id SERIAL PRIMARY KEY,
+    id_planificacion INT NOT NULL REFERENCES Planificaciones(id),
+    id_director INT NOT NULL REFERENCES Directores(id),
+    observaciones TEXT NOT NULL,
+    fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

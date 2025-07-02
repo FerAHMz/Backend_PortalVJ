@@ -32,6 +32,23 @@ const {
     updateObservation,
     deleteObservation
 } = require('../controllers/observationController');
+
+const {
+    createPlanning,
+    getPlannings,
+    getPlanningById,
+    updatePlanning,
+    deletePlanning,
+    getPlanningObservations,
+    getPlanningTasks,
+    createPlanningTask,
+    updatePlanningTask,
+    deletePlanningTask,
+    createPlanningObservation,
+    updatePlanningObservation,
+    deletePlanningObservation
+} = require('../controllers/coursePlanningController');
+
 const { verify } = require('jsonwebtoken');
 
 // Rutas del maestro
@@ -61,5 +78,28 @@ router.get('/grade-sections/:gradeSectionId/report-card/', verifyToken, getStude
 router.get('/grade-sections', verifyToken, getGradeSections);
 router.get('/report-card/grade-sections/:gradeSectionId/:carnetEstudiante/observaciones', verifyToken, getObservationsAndActionPoints);
 router.get('/report-card/student-grade/:gradeSectionId', verifyToken, getGrade);
+
+// Planificaciones por curso
+router.get('/courses/:courseId/planning', verifyToken, getPlannings);
+router.post('/courses/:courseId/planning', verifyToken, createPlanning);
+
+// Obtener planificación por ID
+router.get('/courses/:courseId/planning/:id', verifyToken, getPlanningById);
+router.put('/courses/:courseId/planning/:id', verifyToken, updatePlanning);
+router.delete('/courses/:courseId/planning/:id', verifyToken, deletePlanning);
+
+// Tareas de planificación
+router.get('/courses/:courseId/planning/:planId/tasks', verifyToken, getPlanningTasks);
+router.post('/courses/:courseId/planning/:planId/tasks', verifyToken, createPlanningTask);
+router.put('/courses/:courseId/planning/:planId/tasks/:id', verifyToken, updatePlanningTask);
+router.delete('/courses/:courseId/planning/:planId/tasks/:id', verifyToken, deletePlanningTask);
+
+// Observaciones de planificación
+router.get('/courses/:courseId/planning/:planId/observations', verifyToken, getPlanningObservations);
+router.post('/courses/:courseId/planning/:planId/observations', verifyToken, createPlanningObservation);
+router.put('/courses/:courseId/planning/:planId/observations/:id', verifyToken, updatePlanningObservation);
+router.delete('/courses/:courseId/planning/:planId/observations/:id', verifyToken, deletePlanningObservation);
+
+
 
 module.exports = router;

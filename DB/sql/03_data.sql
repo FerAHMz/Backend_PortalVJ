@@ -655,3 +655,37 @@ INSERT INTO Boleta_calificaciones (carnet_estudiante, fecha, ciclo_escolar, trim
 (1008, '2023-03-31', '2023', 1),
 (1009, '2023-03-31', '2023', 1),
 (1010, '2023-03-31', '2023', 1);
+
+-- data para planificaciones
+
+-- director de primaria con los grados de primaria
+INSERT INTO Grados_director (id_grado, id_director) VALUES
+(1, 1), 
+(2, 1), 
+(3, 1), 
+(4, 1), 
+(5, 1),
+(6, 1);
+
+INSERT INTO Planificaciones (id_curso, mes, ciclo_escolar) VALUES
+(1, 'enero', '2023'),
+(1, 'febrero', '2023');
+
+INSERT INTO Detalle_planificacion (id_planificacion, tema_tarea, puntos_tarea) VALUES
+(1, 'Sumas hasta el 10', 5),
+(1, 'Restas simples', 5),
+(1, 'Identificación de figuras geométricas', 3),
+(1, 'Series numéricas (1-20)', 4),
+(1, 'Problemas con sumas', 6),
+(1, 'Medición con unidades no estándar (lápices, cubos)', 3),
+(1, 'Clasificación de objetos por tamaño', 2),
+(1, 'Introducción a las monedas', 4),
+(1, 'Conteo de 10 en 10', 3),
+(1, 'Juego: Resolver laberintos numéricos', 5),
+(2, 'Sumas y restas hasta el 50', 8),
+(2, 'Tablas de multiplicar (2, 5, 10)', 10),
+(2, 'Problemas con monedas y billetes', 5);
+
+INSERT INTO Revisiones_planificacion (id_planificacion, id_director, observaciones) VALUES
+(2, 1, 'Revisar la secuencia de sumas y restas para asegurar que los estudiantes comprendan bien antes de avanzar a las tablas de multiplicar.'),
+(2, 1, 'Agregar más actividades prácticas');
