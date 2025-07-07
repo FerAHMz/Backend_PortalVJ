@@ -207,13 +207,14 @@ const deletePlanningTask = async (req, res) => {
 
 // Crear observación
 const createPlanningObservation = async (req, res) => {
-  const { id_planificacion, id_director, observaciones } = req.body
+  const { id_director, observaciones } = req.body
+  const { planId } = req.params
 
   try {
     const result = await db.getPool().query(
       `INSERT INTO Revisiones_planificacion (id_planificacion, id_director, observaciones)
        VALUES ($1, $2, $3) RETURNING *`,
-      [id_planificacion, id_director, observaciones]
+      [planId, id_director, observaciones]
     )
     res.status(201).json(result.rows[0])
   } catch (error) {
@@ -263,6 +264,32 @@ const deletePlanningObservation = async (req, res) => {
   }
 }
 
+const updatePlanningEstado = async (req, res) => {
+  const { courseId, planId } = req.params
+  const { estado } = req.body
+
+  try {
+    const validStates = ['en revision', 'aceptada', 'rechazada']
+    if (!validStates.includes(estado)) {
+      return res.status(400).json({ error: 'Estado inválido' })
+    }
+
+    const result = await db.getPool().query(
+      'UPDATE planificaciones SET estado = $1 WHERE id = $2 AND id_curso = $3 RETURNING *',
+      [estado, planId, courseId]
+    )
+
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Planificación no encontrada' })
+    }
+
+    res.json({ message: 'Estado actualizado', planificacion: result.rows[0] })
+  } catch (err) {
+    console.error('Error al actualizar el estado:', err)
+    res.status(500).json({ error: 'Error del servidor' })
+  }
+}
+
 
 module.exports = {
   // Planificaciones
@@ -282,5 +309,8 @@ module.exports = {
   // Observaciones
   createPlanningObservation,
   updatePlanningObservation,
-  deletePlanningObservation
+  deletePlanningObservation,
+
+  // Estado
+  updatePlanningEstado
 };

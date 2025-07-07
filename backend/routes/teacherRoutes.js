@@ -43,10 +43,7 @@ const {
     getPlanningTasks,
     createPlanningTask,
     updatePlanningTask,
-    deletePlanningTask,
-    createPlanningObservation,
-    updatePlanningObservation,
-    deletePlanningObservation
+    deletePlanningTask
 } = require('../controllers/coursePlanningController');
 
 const { verify } = require('jsonwebtoken');
@@ -96,10 +93,5 @@ router.delete('/courses/:courseId/planning/:planId/tasks/:id', verifyToken, dele
 
 // Observaciones de planificación
 router.get('/courses/:courseId/planning/:planId/observations', verifyToken, getPlanningObservations);
-router.post('/courses/:courseId/planning/:planId/observations', verifyToken, createPlanningObservation);
-router.put('/courses/:courseId/planning/:planId/observations/:id', verifyToken, updatePlanningObservation);
-router.delete('/courses/:courseId/planning/:planId/observations/:id', verifyToken, deletePlanningObservation);
-
-
 
 module.exports = router;

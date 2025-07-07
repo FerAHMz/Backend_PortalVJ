@@ -7,6 +7,7 @@ const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 
+
 // Configure CORS with specific options
 app.use(cors({
     origin: ['http://localhost:5173', 'http://localhost:3000'],
