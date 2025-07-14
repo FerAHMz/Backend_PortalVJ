@@ -16,6 +16,7 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const parentRoutes = require('./routes/parentRoutes');
 
 // Middleware
 app.use(cors());
@@ -109,6 +110,7 @@ app.use('/api/courses', attendanceRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/user', profileRoutes);
+app.use('/api/parent', parentRoutes);
 
 // Erro handeling middleware
 app.use((err, req, res, next) => {
