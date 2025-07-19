@@ -1,18 +1,47 @@
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('../config/config');
 
-exports.authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  if (!authHeader) return res.status(401).json({ error: 'No token' });
-  const token = authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'No token' });
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'Invalid token' });
+const verifyToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    console.log('Auth Header:', authHeader); // Debug log
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Token no proporcionado' 
+      });
+    }
+
+    const token = authHeader.split(' ')[1];
+    
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    console.log('Decoded token:', decoded); // Debug log
+
+    // Set the user object in the request
     req.user = {
-      userId: user.id,
-      role: user.rol,
-      type: user.type
+      id: decoded.id,
+      rol: decoded.rol || decoded.role, // Check both possible fields
+      type: decoded.type
     };
+
+    console.log('User set in request:', req.user); // Debug log
+
+    if (!req.user.rol) {
+      return res.status(403).json({
+        success: false,
+        error: 'Token no contiene información del rol'
+      });
+    }
+
     next();
-  });
+  } catch (error) {
+    console.error('Auth middleware error:', error);
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Token inválido' 
+    });
+  }
 };
+
+module.exports = { verifyToken };
