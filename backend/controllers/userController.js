@@ -68,10 +68,16 @@ const getAllUsers = async (req, res) => {
             ORDER BY rol_order ASC, id ASC
         `);
         
-        // Eliminar duplicados en el backend manteniendo el ordenamiento
-        const uniqueUsers = result.rows.filter((user, index, self) => 
-            index === self.findIndex(u => u.email === user.email && u.rol === user.rol)
-        );
+        // Eliminar duplicados usando una clave única compuesta (id + rol)
+        const seenKeys = new Set();
+        const uniqueUsers = result.rows.filter(user => {
+            const uniqueKey = `${user.id}-${user.rol}`;
+            if (seenKeys.has(uniqueKey)) {
+                return false;
+            }
+            seenKeys.add(uniqueKey);
+            return true;
+        });
         
         // Ordenar una vez más para asegurar consistencia
         uniqueUsers.sort((a, b) => {
