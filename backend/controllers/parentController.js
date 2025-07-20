@@ -80,7 +80,7 @@ exports.getChildPaymentHistory = async (req, res) => {
       });
     }
 
-    // Construir query con filtros de fecha opcionales y año actual
+    // Construir query con filtros de fecha opcionales
     const currentYear = new Date().getFullYear();
     
     let query = `
@@ -103,11 +103,18 @@ exports.getChildPaymentHistory = async (req, res) => {
       JOIN Solvencias s ON p.id = s.id_pagos
       JOIN Metodo_pago mp ON s.id_metodo_pago = mp.id
       WHERE p.carnet_estudiante = $1 AND p.id_padre = $2
-      AND EXTRACT(YEAR FROM s.fecha_pago) = $3
     `;
 
-    const queryParams = [studentId, parentId, currentYear];
-    let paramCount = 3;
+    const queryParams = [studentId, parentId];
+    let paramCount = 2;
+
+    // Si no hay filtros de fecha, mostrar solo el año actual
+    // Si hay filtros de fecha, permitir búsqueda histórica
+    if (!startDate && !endDate) {
+      paramCount++;
+      query += ` AND EXTRACT(YEAR FROM s.fecha_pago) = $${paramCount}`;
+      queryParams.push(currentYear);
+    }
 
     if (startDate) {
       paramCount++;
@@ -125,7 +132,7 @@ exports.getChildPaymentHistory = async (req, res) => {
 
     const result = await db.getPool().query(query, queryParams);
 
-    // Obtener resumen de pagos para el año actual
+    // Obtener resumen de pagos con la misma lógica de filtrado
     let summaryQuery = `
       SELECT 
         COUNT(*) as total_pagos,
@@ -136,11 +143,18 @@ exports.getChildPaymentHistory = async (req, res) => {
       FROM Pagos p
       JOIN Solvencias s ON p.id = s.id_pagos
       WHERE p.carnet_estudiante = $1 AND p.id_padre = $2
-      AND EXTRACT(YEAR FROM s.fecha_pago) = $3
     `;
 
-    let summaryParams = [studentId, parentId, currentYear];
-    let summaryParamCount = 3;
+    let summaryParams = [studentId, parentId];
+    let summaryParamCount = 2;
+
+    // Si no hay filtros de fecha, mostrar solo el año actual
+    // Si hay filtros de fecha, permitir búsqueda histórica
+    if (!startDate && !endDate) {
+      summaryParamCount++;
+      summaryQuery += ` AND EXTRACT(YEAR FROM s.fecha_pago) = $${summaryParamCount}`;
+      summaryParams.push(currentYear);
+    }
 
     if (startDate) {
       summaryParamCount++;
