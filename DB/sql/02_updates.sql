@@ -37,9 +37,6 @@ CREATE TABLE Boleta_calificaciones (
 );
 
 
--- Modificar tabla Padres
-ALTER TABLE Padres
-    RENAME COLUMN apellido_estudiante TO apellido;
 
 -- Modificar tabla Estudiantes
 ALTER TABLE Estudiantes
@@ -108,18 +105,6 @@ CHECK (metodo_pago IN (
   'Transferencia', 'Cheque', 'PayPal', 'Bitcoin', 
   'Apple Pay', 'Google Pay', 'Pago Móvil'
 ));
-
-ALTER TABLE SuperUsuarios
-ADD COLUMN activo boolean DEFAULT true;
-
-ALTER TABLE Administrativos
-ADD COLUMN activo boolean DEFAULT true;
-
-ALTER TABLE Maestros
-ADD COLUMN activo boolean DEFAULT true;
-
-ALTER TABLE Padres
-ADD COLUMN activo boolean DEFAULT true;
 
 ALTER TABLE Asistencia
 ADD COLUMN estado VARCHAR(10) CHECK (estado IN ('present', 'absent', 'late'));

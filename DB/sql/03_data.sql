@@ -56,12 +56,12 @@ INSERT INTO Estudiantes (carnet, nombre, apellido, fecha_nacimiento, id_grado_se
 (1009, 'Pedro', 'Ramirez', '2010-01-30', 9),
 (1010, 'Lucia', 'Torres', '2011-02-05', 10);
 
-INSERT INTO Padres (carnet_estudiante, rol, nombre, apellido, email, telefono, password, activo) VALUES 
-(1001, 2, 'Carlos',     'Gomez',     'padre1@example.com', '12345678', 'password1', True),
-(1002, 2, 'Luis',       'Lopez',     'padre2@example.com', '23456789', 'password2', True),
-(1003, 2, 'Ricardo',    'Martinez',  'padre3@example.com', '34567890', 'password3', True),
-(1004, 2, 'Jorge',      'Perez',     'padre4@example.com', '45678901', 'password4', True),
-(1005, 2, 'Alejandro',  'Gonzalez',  'padre5@example.com', '56789012', 'password5', True);
+INSERT INTO Padres (rol, nombre, apellido, email, telefono, password, activo) VALUES 
+(2, 'Carlos',     'Gomez',     'padre1@example.com', '12345678', 'password1', True),
+(2, 'Luis',       'Lopez',     'padre2@example.com', '23456789', 'password2', True),
+(2, 'Ricardo',    'Martinez',  'padre3@example.com', '34567890', 'password3', True),
+(2, 'Jorge',      'Perez',     'padre4@example.com', '45678901', 'password4', True),
+(2, 'Alejandro',  'Gonzalez',  'padre5@example.com', '56789012', 'password5', True);
 
 
 INSERT INTO Administrativos (rol, nombre, apellido, email, telefono, password, activo) VALUES 
