@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 const db = require('../database_cn');
-const { JWT_SECRET } = require('../config/config');
+const JWT_SECRET = process.env.JWT_SECRET || 'portalvj-secret-2024';
 
 const verifyToken = (req, res, next) => {
   const token = req.headers.authorization?.split(' ')[1];

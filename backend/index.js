@@ -5,7 +5,7 @@ const cors = require('cors');
 const net = require('net');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { JWT_SECRET } = require('./config/config');
+const JWT_SECRET = process.env.JWT_SECRET || 'portalvj-secret-2024';
 
 //Routes
 const paymentRoutes = require('./routes/paymentRoutes');

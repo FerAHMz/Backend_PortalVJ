@@ -12,4 +12,10 @@ router.get('/:studentId/grades', verifyToken, parentController.getStudentGrades)
 // Obtener desglose de calificaciones por tarea en una asignatura
 router.get('/:studentId/grades/:subjectId/tasks', verifyToken, parentController.getStudentTaskGrades);
 
+// Obtener historial de pagos por hijo (con filtros de fecha opcionales)
+router.get('/:studentId/payments', verifyToken, parentController.getChildPaymentHistory);
+
+// Obtener pagos pendientes por hijo
+router.get('/:studentId/payments/pending', verifyToken, parentController.getChildPendingPayments);
+
 module.exports = router;
