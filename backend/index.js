@@ -67,7 +67,13 @@ app.post('/login', async (req, res) => {
     console.log('Query executed:', { rows: result.rows });
 
     if (result.rows.length > 0) {
-      const match = await bcrypt.compare(password, result.rows[0].hashed_password);
+      // Usar pgcrypto para verificar la contraseña
+      const passwordCheck = await db.getPool().query(
+        'SELECT $1 = crypt($2, $1) as match',
+        [result.rows[0].hashed_password, password]
+      );
+      
+      const match = passwordCheck.rows[0].match;
       console.log('Password match:', match);
 
       if (match) {
@@ -111,6 +117,16 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/user', profileRoutes);
 app.use('/api/parent', parentRoutes);
+
+// Debug endpoint para verificar el token
+const { verifyToken } = require('./middlewares/authMiddleware');
+app.get('/api/debug/token', verifyToken, (req, res) => {
+  res.json({
+    success: true,
+    user: req.user,
+    message: 'Token válido'
+  });
+});
 
 // Erro handeling middleware
 app.use((err, req, res, next) => {

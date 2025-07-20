@@ -6,63 +6,82 @@ const getAllUsers = async (req, res) => {
     try {
         client = await db.getPool().connect();
         const result = await client.query(`
-            SELECT DISTINCT ON (id, email) 
-                id, 
-                nombre, 
-                apellido, 
-                email, 
-                telefono, 
+            SELECT DISTINCT
+                s.id, 
+                s.nombre, 
+                s.apellido, 
+                s.email, 
+                s.telefono, 
                 'SUP' as rol,
                 1 as rol_order,
-                activo
-            FROM SuperUsuarios
+                s.activo
+            FROM SuperUsuarios s
+            WHERE s.activo = true
             UNION ALL
-            SELECT DISTINCT ON (id, email)
-                id, 
-                nombre, 
-                apellido, 
-                email, 
-                telefono, 
+            SELECT DISTINCT
+                d.id, 
+                d.nombre, 
+                d.apellido, 
+                d.email, 
+                d.telefono, 
                 'Director' as rol,
                 2 as rol_order,
-                activo
-            FROM Directores
+                d.activo
+            FROM Directores d
+            WHERE d.activo = true
             UNION ALL
-            SELECT DISTINCT ON (id, email)
-                id, 
-                nombre, 
-                apellido, 
-                email, 
-                telefono, 
+            SELECT DISTINCT
+                a.id, 
+                a.nombre, 
+                a.apellido, 
+                a.email, 
+                a.telefono, 
                 'Administrativo' as rol,
-                2 as rol_order,
-                activo
-            FROM Administrativos
-            UNION ALL
-            SELECT DISTINCT ON (id, email)
-                id, 
-                nombre, 
-                apellido, 
-                email, 
-                telefono, 
-                'Maestro' as rol,
                 3 as rol_order,
-                activo
-            FROM Maestros
+                a.activo
+            FROM Administrativos a
+            WHERE a.activo = true
             UNION ALL
-            SELECT DISTINCT ON (id, email)
-                id, 
-                nombre, 
-                apellido, 
-                email, 
-                telefono, 
-                'Padre' as rol,
+            SELECT DISTINCT
+                m.id, 
+                m.nombre, 
+                m.apellido, 
+                m.email, 
+                m.telefono, 
+                'Maestro' as rol,
                 4 as rol_order,
-                activo
-            FROM Padres
-            ORDER BY rol_order, nombre
+                m.activo
+            FROM Maestros m
+            WHERE m.activo = true
+            UNION ALL
+            SELECT DISTINCT
+                p.id, 
+                p.nombre, 
+                p.apellido, 
+                p.email, 
+                p.telefono, 
+                'Padre' as rol,
+                5 as rol_order,
+                p.activo
+            FROM Padres p
+            WHERE p.activo = true
+            ORDER BY rol_order ASC, id ASC
         `);
-        res.json(result.rows);
+        
+        // Eliminar duplicados en el backend manteniendo el ordenamiento
+        const uniqueUsers = result.rows.filter((user, index, self) => 
+            index === self.findIndex(u => u.email === user.email && u.rol === user.rol)
+        );
+        
+        // Ordenar una vez más para asegurar consistencia
+        uniqueUsers.sort((a, b) => {
+            if (a.rol_order !== b.rol_order) {
+                return a.rol_order - b.rol_order;
+            }
+            return a.id - b.id;
+        });
+        
+        res.json(uniqueUsers);
     } catch (error) {
         console.error('Error getting users:', error);
         res.status(500).json({ error: 'Error interno del servidor' });
@@ -79,9 +98,19 @@ const createUser = async (req, res) => {
             return res.status(400).json({ error: 'Todos los campos son requeridos' });
         }
 
+        // Validaciones adicionales
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'La contraseña debe tener al menos 8 caracteres' });
+        }
+
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({ error: 'Formato de email inválido' });
+        }
+
+        const phoneRegex = /^\d{8}$/;
+        if (!phoneRegex.test(telefono)) {
+            return res.status(400).json({ error: 'El teléfono debe contener exactamente 8 dígitos' });
         }
 
         client = await db.getPool().connect();
@@ -103,9 +132,9 @@ const createUser = async (req, res) => {
             return res.status(400).json({ error: 'El email ya está registrado' });
         }
 
-        // Obtener ID del rol desde la tabla Usuarios
+        // Obtener ID del rol desde la tabla Usuarios (con ordenamiento consistente)
         const rolResult = await client.query(
-            `SELECT id FROM Usuarios WHERE rol = $1 LIMIT 1`,
+            `SELECT id FROM Usuarios WHERE rol = $1 ORDER BY id ASC LIMIT 1`,
             [rol]
         );
 
@@ -189,6 +218,11 @@ const updateUser = async (req, res) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({ error: 'Formato de email inválido' });
+        }
+
+        const phoneRegex = /^\d{8}$/;
+        if (!phoneRegex.test(telefono)) {
+            return res.status(400).json({ error: 'El teléfono debe contener exactamente 8 dígitos' });
         }
 
         client = await db.getPool().connect();

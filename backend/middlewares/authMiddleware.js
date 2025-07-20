@@ -10,9 +10,11 @@ const verifyToken = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    console.log('Token decoded successfully:', { id: decoded.id, role: decoded.rol });
     req.user = { id: decoded.id, role: decoded.rol }; // Attach user details to the request
     next();
   } catch (error) {
+    console.error('Token verification failed:', error.message);
     res.status(401).json({ success: false, error: 'Invalid token.' });
   }
 };
@@ -34,9 +36,11 @@ const isSup = async (req, res, next) => {
        if (req.user.role === 'SUP') {
             next();
         } else {
+            console.log('Access denied - User role:', req.user.role, 'Required: SUP');
             res.status(403).json({ error: 'Acceso denegado. Se requiere rol Super Usuario' });
         }
     } catch (error) {
+        console.error('Error verifying SUP permissions:', error);
         res.status(500).json({ error: 'Error al verificar permisos' });
     }
 }
