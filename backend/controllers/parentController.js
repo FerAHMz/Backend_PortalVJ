@@ -11,7 +11,6 @@ exports.getChildren = async (req, res) => {
        WHERE f.id_padre = $1`,
       [parentId]
     );
-    console.log('parentId:', parentId, 'children result:', result.rows);
     res.json({ success: true, children: result.rows });
   } catch (error) {
     res.status(500).json({ success: false, error: 'Error al obtener hijos' });
