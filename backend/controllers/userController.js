@@ -16,7 +16,6 @@ const getAllUsers = async (req, res) => {
                 1 as rol_order,
                 s.activo
             FROM SuperUsuarios s
-            WHERE s.activo = true
             UNION ALL
             SELECT DISTINCT
                 d.id, 
@@ -28,7 +27,6 @@ const getAllUsers = async (req, res) => {
                 2 as rol_order,
                 d.activo
             FROM Directores d
-            WHERE d.activo = true
             UNION ALL
             SELECT DISTINCT
                 a.id, 
@@ -40,7 +38,6 @@ const getAllUsers = async (req, res) => {
                 3 as rol_order,
                 a.activo
             FROM Administrativos a
-            WHERE a.activo = true
             UNION ALL
             SELECT DISTINCT
                 m.id, 
@@ -52,7 +49,6 @@ const getAllUsers = async (req, res) => {
                 4 as rol_order,
                 m.activo
             FROM Maestros m
-            WHERE m.activo = true
             UNION ALL
             SELECT DISTINCT
                 p.id, 
@@ -64,7 +60,6 @@ const getAllUsers = async (req, res) => {
                 5 as rol_order,
                 p.activo
             FROM Padres p
-            WHERE p.activo = true
             ORDER BY rol_order ASC, id ASC
         `);
         
@@ -487,6 +482,77 @@ const deleteUser = async (req, res) => {
     }
 };
 
+const activateUser = async (req, res) => {
+    const { id } = req.params;
+    const { rol } = req.body;
+    let client;
+    try {
+        client = await db.getPool().connect();
+        let result;
+
+        switch (rol) {
+            case 'SUP':
+                result = await client.query(
+                    `UPDATE SuperUsuarios
+                     SET activo = true
+                     WHERE id = $1 RETURNING id`,
+                    [id]
+                );
+                break;
+
+            case 'Administrativo':
+                result = await client.query(
+                    `UPDATE Administrativos
+                     SET activo = true
+                     WHERE id = $1 RETURNING id`,
+                    [id]
+                );
+                break;
+
+            case 'Maestro':
+                result = await client.query(
+                    `UPDATE Maestros
+                     SET activo = true
+                     WHERE id = $1 RETURNING id`,
+                    [id]
+                );
+                break;
+
+            case 'Padre':
+                result = await client.query(
+                    `UPDATE Padres
+                     SET activo = true
+                     WHERE id = $1 RETURNING id`,
+                    [id]
+                );
+                break;
+
+            case 'Director':
+                result = await client.query(
+                    `UPDATE Directores
+                     SET activo = true
+                     WHERE id = $1 RETURNING id`,
+                    [id]
+                );
+                break;
+
+            default:
+                return res.status(400).json({ error: 'Rol de usuario no válido' });
+        }
+
+        if (result.rowCount === 0) {
+            return res.status(404).json({ error: 'Usuario no encontrado' });
+        }
+
+        res.json({ message: 'Usuario activado exitosamente' });
+    } catch (error) {
+        console.error('Error al activar usuario:', error);
+        res.status(500).json({ error: 'Error al activar usuario' });
+    } finally {
+        if (client) client.release();
+    }
+};
+
 const searchUsers = async (req, res) => {
     const { name } = req.query;
     let client;
@@ -617,6 +683,7 @@ module.exports = {
     createUser,
     updateUser,
     deleteUser,
+    activateUser,
     searchUsers,
     getUserProfile
 };
