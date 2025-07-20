@@ -17,6 +17,7 @@ const courseRoutes = require('./routes/courseRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const parentRoutes = require('./routes/parentRoutes');
+const directorRoutes = require('./routes/directorRoutes');
 
 // Middleware
 app.use(cors());
@@ -127,6 +128,7 @@ app.get('/api/debug/token', verifyToken, (req, res) => {
     message: 'Token válido'
   });
 });
+app.use('/api/director', directorRoutes);
 
 // Erro handeling middleware
 app.use((err, req, res, next) => {
