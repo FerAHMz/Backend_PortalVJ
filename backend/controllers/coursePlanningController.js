@@ -6,6 +6,12 @@ const createPlanning = async (req, res) => {
   const {  mes, ciclo_escolar } = req.body;
 
   try {
+    // Validar que el trimestre es válido
+    const validTrimestres = ['I', 'II', 'III'];
+    if (!validTrimestres.includes(mes)) {
+      return res.status(400).json({ message: 'Trimestre inválido. Debe ser I, II o III' });
+    }
+
     const result = await db.getPool().query(
       `INSERT INTO Planificaciones (id_curso, mes, ciclo_escolar)
        VALUES ($1, $2, $3) RETURNING *`,
@@ -68,6 +74,12 @@ const updatePlanning = async (req, res) => {
   const { mes, ciclo_escolar } = req.body;
 
   try {
+    // Validar que el trimestre es válido
+    const validTrimestres = ['I', 'II', 'III'];
+    if (!validTrimestres.includes(mes)) {
+      return res.status(400).json({ message: 'Trimestre inválido. Debe ser I, II o III' });
+    }
+
     const result = await db.getPool().query(
       `UPDATE Planificaciones
        SET mes = $1, ciclo_escolar = $2, estado = 'en revision'
