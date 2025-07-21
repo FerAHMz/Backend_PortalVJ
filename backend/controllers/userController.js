@@ -628,7 +628,8 @@ const getUserProfile = async (req, res) => {
                     SELECT p.id, p.nombre, p.apellido, p.email, p.telefono, 'Padre' as rol,
                            e.nombre as nombre_estudiante, e.apellido as apellido_estudiante, e.carnet
                     FROM Padres p
-                    LEFT JOIN Estudiantes e ON p.carnet_estudiante = e.carnet
+                    LEFT JOIN Familias f ON p.id = f.id_padre
+                    LEFT JOIN Estudiantes e ON f.carnet_estudiante = e.carnet
                     WHERE p.id = $1
                 `, [userId]);
                 break;
