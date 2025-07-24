@@ -8,13 +8,33 @@ exports.getConversations = async (req, res) => {
   try {
     client = await db.getPool().connect();
 
+    // Get all conversations where user is either sender or recipient
+    // Group by subject and get the latest message for each conversation
     const query = `
-      SELECT 
-        DISTINCT ON (sender_id, sender_role) sender_id, sender_role, 
-        recipient_id, recipient_role, subject, content, created_at, read
-      FROM messages
-      WHERE recipient_id = $1 AND recipient_role = $2
-      ORDER BY sender_id, sender_role, created_at DESC
+      WITH user_messages AS (
+        SELECT m.*, 
+               COALESCE(ms.nombre, ps.nombre) as sender_name,
+               COALESCE(ms.apellido, ps.apellido) as sender_lastname,
+               COALESCE(mr.nombre, pr.nombre) as recipient_name,
+               COALESCE(mr.apellido, pr.apellido) as recipient_lastname
+        FROM messages m
+        LEFT JOIN maestros ms ON (m.sender_id = ms.id AND m.sender_role = 'Maestro')
+        LEFT JOIN padres ps ON (m.sender_id = ps.id AND m.sender_role = 'Padre')
+        LEFT JOIN maestros mr ON (m.recipient_id = mr.id AND m.recipient_role = 'Maestro')
+        LEFT JOIN padres pr ON (m.recipient_id = pr.id AND m.recipient_role = 'Padre')
+        WHERE (m.sender_id = $1 AND m.sender_role = $2) 
+           OR (m.recipient_id = $1 AND m.recipient_role = $2)
+      ),
+      latest_messages AS (
+        SELECT DISTINCT ON (subject) 
+               subject, sender_id, sender_role, recipient_id, recipient_role, 
+               content, created_at, read, sender_name, sender_lastname, 
+               recipient_name, recipient_lastname
+        FROM user_messages
+        ORDER BY subject, created_at DESC
+      )
+      SELECT * FROM latest_messages
+      ORDER BY created_at DESC
     `;
 
     const result = await client.query(query, [id, rol]);
@@ -30,9 +50,16 @@ exports.getConversations = async (req, res) => {
 
 // Get all messages in a conversation
 exports.getConversationMessages = async (req, res) => {
-  const { otherId, otherRole, subject } = req.query;
+  const { subject } = req.query;
   const userId = req.user.id;
   const userRole = req.user.rol;
+
+  if (!subject) {
+    return res.status(400).json({ 
+      success: false, 
+      error: 'Subject parameter is required' 
+    });
+  }
 
   let client;
 
@@ -40,16 +67,35 @@ exports.getConversationMessages = async (req, res) => {
     client = await db.getPool().connect();
 
     const query = `
-      SELECT id, sender_id, sender_role, recipient_id, recipient_role, subject, content, created_at, read
-      FROM messages
-      WHERE subject = $1 AND (
-        (sender_id = $2 AND sender_role = $3 AND recipient_id = $4 AND recipient_role = $5) OR
-        (sender_id = $4 AND sender_role = $5 AND recipient_id = $2 AND recipient_role = $3)
+      SELECT m.id, m.sender_id, m.sender_role, m.recipient_id, m.recipient_role, 
+             m.subject, m.content, m.created_at, m.read,
+             COALESCE(ms.nombre, ps.nombre) as sender_nombre,
+             COALESCE(ms.apellido, ps.apellido) as sender_apellido,
+             COALESCE(mr.nombre, pr.nombre) as recipient_nombre,
+             COALESCE(mr.apellido, pr.apellido) as recipient_apellido
+      FROM messages m
+      LEFT JOIN maestros ms ON (m.sender_id = ms.id AND m.sender_role = 'Maestro')
+      LEFT JOIN padres ps ON (m.sender_id = ps.id AND m.sender_role = 'Padre')
+      LEFT JOIN maestros mr ON (m.recipient_id = mr.id AND m.recipient_role = 'Maestro')
+      LEFT JOIN padres pr ON (m.recipient_id = pr.id AND m.recipient_role = 'Padre')
+      WHERE m.subject = $1 AND (
+        (m.sender_id = $2 AND m.sender_role = $3) OR
+        (m.recipient_id = $2 AND m.recipient_role = $3)
       )
-      ORDER BY created_at ASC
+      ORDER BY m.created_at ASC
     `;
 
-    const result = await client.query(query, [subject, userId, userRole, otherId, otherRole]);
+    const result = await client.query(query, [subject, userId, userRole]);
+
+    // Mark messages as read for the current user
+    if (result.rows.length > 0) {
+      const markReadQuery = `
+        UPDATE messages 
+        SET read = true 
+        WHERE subject = $1 AND recipient_id = $2 AND recipient_role = $3 AND read = false
+      `;
+      await client.query(markReadQuery, [subject, userId, userRole]);
+    }
 
     res.json({ success: true, messages: result.rows });
   } catch (error) {
@@ -73,13 +119,13 @@ exports.searchUsers = async (req, res) => {
       FROM (
         SELECT id, nombre, apellido, 'Maestro' as rol, email 
         FROM maestros 
-        WHERE id != $1
+        WHERE id != $1 AND activo = true
         UNION ALL
         SELECT id, nombre, apellido, 'Padre' as rol, email 
         FROM padres
+        WHERE activo = true
       ) users
-      WHERE LOWER(nombre) LIKE LOWER($2) 
-      OR LOWER(apellido) LIKE LOWER($2)
+      WHERE (LOWER(nombre) LIKE LOWER($2) OR LOWER(apellido) LIKE LOWER($2))
       LIMIT 10
     `;
     
@@ -97,6 +143,10 @@ exports.searchUsers = async (req, res) => {
       // Padres can only message Maestros
       if (currentUserRole === 'Padre') {
         return user.rol === 'Maestro';
+      }
+      // Directors and Admins can message anyone
+      if (['Director', 'Administrativo'].includes(currentUserRole)) {
+        return true;
       }
       return false;
     });

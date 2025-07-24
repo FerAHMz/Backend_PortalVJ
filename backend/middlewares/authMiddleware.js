@@ -11,7 +11,7 @@ const verifyToken = (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     console.log('Token decoded successfully:', { id: decoded.id, role: decoded.rol });
-    req.user = { id: decoded.id, role: decoded.rol }; // Attach user details to the request
+    req.user = { id: decoded.id, role: decoded.rol, rol: decoded.rol }; // Attach user details to the request with both properties for compatibility
     next();
   } catch (error) {
     console.error('Token verification failed:', error.message);

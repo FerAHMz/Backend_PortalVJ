@@ -10,6 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'portalvj-secret-2024';
 //Routes
 const paymentRoutes = require('./routes/paymentRoutes');
 const superUserRoutes = require('./routes/superUserRoutes');
+const superUserPlanificationRoutes = require('./routes/superUserPlanificationRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 const gradeRoutes = require('./routes/gradeRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
@@ -111,6 +112,7 @@ app.post('/login', async (req, res) => {
 // API Routes
 app.use('/api/payments', paymentRoutes);
 app.use('/api/superusers', superUserRoutes);
+app.use('/api/superuser/planifications', superUserPlanificationRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/courses', gradeRoutes);
 app.use('/api/courses', attendanceRoutes);
@@ -127,6 +129,38 @@ app.get('/api/debug/token', verifyToken, (req, res) => {
     user: req.user,
     message: 'Token válido'
   });
+});
+
+// Simple test endpoint
+app.get('/api/test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'Test endpoint working',
+    jwtSecret: JWT_SECRET
+  });
+});
+
+// Quick fix: Add planifications routes directly in index.js
+const { verifyToken: verifyTokenLocal, isSup } = require('./middlewares/authMiddleware');
+
+app.get('/api/superuser/planifications/by-grade', verifyTokenLocal, isSup, async (req, res) => {
+  try {
+    const { getAllPlanificationsByGrade } = require('./controllers/superUserPlanificationController');
+    await getAllPlanificationsByGrade(req, res);
+  } catch (error) {
+    console.error('Error in planifications endpoint:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
+app.get('/api/superuser/planifications/statistics', verifyTokenLocal, isSup, async (req, res) => {
+  try {
+    const { getPlanificationsStatistics } = require('./controllers/superUserPlanificationController');
+    await getPlanificationsStatistics(req, res);
+  } catch (error) {
+    console.error('Error in planifications statistics endpoint:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
 });
 app.use('/api/director', directorRoutes);
 
