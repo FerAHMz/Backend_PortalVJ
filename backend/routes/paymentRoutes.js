@@ -88,10 +88,12 @@ router.post('/report', async (req, res) => {
     try {
         const query = `
             SELECT 
+                e.carnet AS carnet,
                 CONCAT(e.nombre, ' ', e.apellido) AS student,
                 g.grado AS grade,
                 s.monto AS amount,
-                s.mes_solvencia_new AS month
+                s.mes_solvencia_new AS month,
+                COALESCE(TO_CHAR(s.fecha_pago, 'DD/MM/YYYY'), 'No Pagado') AS paymentdate
             FROM estudiantes e
             LEFT JOIN pagos p ON e.carnet = p.carnet_estudiante
             LEFT JOIN solvencias s ON p.id = s.id_pagos
@@ -113,7 +115,20 @@ router.post('/report', async (req, res) => {
         ];
 
         const result = await db.getPool().query(query, values);
-        res.json(result.rows);
+
+        // Add logic to identify unpaid months
+        const updatedRows = result.rows.map(row => {
+            if (row.paymentdate === 'No Pagado') {
+                return {
+                    ...row,
+                    month: row.month ? `Mes pendiente: ${row.month}` : 'Mes no especificado',
+                    paymentdate: 'No se ha realizado el pago de este mes'
+                };
+            }
+            return row;
+        });
+
+        res.json(updatedRows);
     } catch (error) {
         console.error('Error generating report:', error);
         res.status(500).json({ error: 'Error al generar el reporte' });
@@ -140,7 +155,7 @@ router.get('/full-report', async (req, res) => {
                 g.grado AS grade,
                 s.monto AS amount,
                 s.mes_solvencia_new AS month,
-                s.fecha_pago AS paymentDate
+                COALESCE(TO_CHAR(s.fecha_pago, 'DD/MM/YYYY'), 'No Pagado') AS paymentdate
             FROM estudiantes e
             LEFT JOIN pagos p ON e.carnet = p.carnet_estudiante
             LEFT JOIN solvencias s ON p.id = s.id_pagos
@@ -151,13 +166,23 @@ router.get('/full-report', async (req, res) => {
         const summaryQuery = `
             SELECT 
                 g.grado AS grade,
-                COALESCE(COUNT(DISTINCT e.carnet), 0) AS upToDate
+                COUNT(DISTINCT CASE 
+                    WHEN student_payments.payment_count = 12 THEN student_payments.carnet 
+                    ELSE NULL 
+                END) AS upToDate
             FROM grados g
             LEFT JOIN grado_seccion gs ON g.id = gs.id_grado
             LEFT JOIN estudiantes e ON gs.id = e.id_grado_seccion
-            LEFT JOIN pagos p ON e.carnet = p.carnet_estudiante
-            LEFT JOIN solvencias s ON p.id = s.id_pagos AND s.mes_solvencia_new IS NOT NULL
-            GROUP BY g.grado
+            LEFT JOIN (
+                SELECT 
+                    p.carnet_estudiante as carnet,
+                    COUNT(s.id) as payment_count
+                FROM pagos p
+                LEFT JOIN solvencias s ON p.id = s.id_pagos
+                WHERE s.fecha_pago IS NOT NULL
+                GROUP BY p.carnet_estudiante
+            ) student_payments ON e.carnet = student_payments.carnet
+            GROUP BY g.grado, g.id
             ORDER BY g.grado
         `;
 
@@ -167,8 +192,8 @@ router.get('/full-report', async (req, res) => {
         ]);
 
         res.json({
-            payments: paymentsResult.rows,
             summary: summaryResult.rows,
+            payments: paymentsResult.rows,
         });
     } catch (error) {
         console.error('Error fetching full report:', error);

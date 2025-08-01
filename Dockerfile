@@ -8,10 +8,10 @@ WORKDIR /app
 COPY backend/package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN npm ci --only=production
 
-# Install bcrypt explicitly (required for authentication)
-RUN npm install bcrypt@^5.0.1
+# Rebuild bcrypt to ensure it's compiled for the correct architecture
+RUN npm rebuild bcrypt --build-from-source
 
 # Copy the backend application code to the working directory
 COPY backend/ .
