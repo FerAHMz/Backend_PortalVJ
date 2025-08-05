@@ -7,6 +7,7 @@ const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const profileRoutes = require('./routes/profileRoutes');
 const superUserPlanificationRoutes = require('./routes/superUserPlanificationRoutes');
+const familyRoutes = require('./routes/familyRoutes');
 
 
 // Configure CORS with specific options
@@ -24,6 +25,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/user', profileRoutes);
 app.use('/api/superuser/planifications', superUserPlanificationRoutes);
+app.use('/api/superuser/families', familyRoutes);
 
 app.use((err, req, res, next) => {
     console.error(err.stack);
