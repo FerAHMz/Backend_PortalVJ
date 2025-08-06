@@ -20,6 +20,7 @@ const profileRoutes = require('./routes/profileRoutes');
 const parentRoutes = require('./routes/parentRoutes');
 const directorRoutes = require('./routes/directorRoutes');
 const familyRoutes = require('./routes/familyRoutes');
+const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
 
 // Middleware
 app.use(cors());
@@ -122,6 +123,7 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/user', profileRoutes);
 app.use('/api/parent', parentRoutes);
+app.use('/api/students', studentAttendanceRoutes);
 
 // Debug endpoint para verificar el token
 const { verifyToken } = require('./middlewares/authMiddleware');
