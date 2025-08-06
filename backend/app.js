@@ -6,8 +6,10 @@ const paymentRoutes = require('./routes/paymentRoutes');
 const userRoutes = require('./routes/userRoutes');
 const messageRoutes = require('./routes/messageRoutes');
 const profileRoutes = require('./routes/profileRoutes');
+const superUserRoutes = require('./routes/superUserRoutes');
 const superUserPlanificationRoutes = require('./routes/superUserPlanificationRoutes');
 const familyRoutes = require('./routes/familyRoutes');
+const inscripcionRoutes = require('./routes/inscripcionRoutes');
 
 const attendanceRoutes = require('./routes/attendanceRoutes'); 
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes'); 
@@ -26,6 +28,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/messages', messageRoutes);
 app.use('/api/user', profileRoutes);
+app.use('/api/superuser', superUserRoutes);
 app.use('/api/superuser/planifications', superUserPlanificationRoutes);
 app.use('/api/superuser/families', familyRoutes);
 app.use('/api/courses', attendanceRoutes); 

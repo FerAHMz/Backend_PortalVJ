@@ -113,7 +113,7 @@ app.post('/login', async (req, res) => {
 
 // API Routes
 app.use('/api/payments', paymentRoutes);
-app.use('/api/superusers', superUserRoutes);
+app.use('/api/superuser', superUserRoutes);
 app.use('/api/superuser/planifications', superUserPlanificationRoutes);
 app.use('/api/superuser/families', familyRoutes);
 app.use('/api/teacher', teacherRoutes);

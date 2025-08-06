@@ -20,7 +20,8 @@ const getAllPlanificationsByGrade = async (req, res) => {
         SUM(dp.puntos_tarea) as total_puntos
       FROM Planificaciones p
       INNER JOIN Cursos c ON p.id_curso = c.id
-      INNER JOIN Grados g ON c.id_grado = g.id
+      INNER JOIN Grado_seccion gs ON c.id_grado_seccion = gs.id
+      INNER JOIN Grados g ON gs.id_grado = g.id
       INNER JOIN Materias m ON c.id_materia = m.id
       INNER JOIN Maestros ma ON c.id_maestro = ma.id
       LEFT JOIN Detalle_planificacion dp ON p.id = dp.id_planificacion
@@ -105,7 +106,8 @@ const getPlanificationDetailById = async (req, res) => {
         g.id as grado_id
       FROM Planificaciones p
       INNER JOIN Cursos c ON p.id_curso = c.id
-      INNER JOIN Grados g ON c.id_grado = g.id
+      INNER JOIN Grado_seccion gs ON c.id_grado_seccion = gs.id
+      INNER JOIN Grados g ON gs.id_grado = g.id
       INNER JOIN Materias m ON c.id_materia = m.id
       INNER JOIN Maestros ma ON c.id_maestro = ma.id
       WHERE p.id = $1
@@ -213,11 +215,12 @@ const getPlanificationsStatistics = async (req, res) => {
         COUNT(CASE WHEN p.estado = 'en revision' THEN 1 END) as en_revision,
         COUNT(CASE WHEN p.estado = 'aceptada' THEN 1 END) as aceptadas,
         COUNT(CASE WHEN p.estado = 'rechazada' THEN 1 END) as rechazadas,
-        COUNT(DISTINCT c.id_grado) as total_grados_con_planificaciones,
+        COUNT(DISTINCT gs.id_grado) as total_grados_con_planificaciones,
         COUNT(DISTINCT c.id_maestro) as total_maestros_con_planificaciones,
         p.ciclo_escolar
       FROM Planificaciones p
       INNER JOIN Cursos c ON p.id_curso = c.id
+      INNER JOIN Grado_seccion gs ON c.id_grado_seccion = gs.id
       INNER JOIN Maestros ma ON c.id_maestro = ma.id
       WHERE ma.activo = true
       GROUP BY p.ciclo_escolar
@@ -235,7 +238,8 @@ const getPlanificationsStatistics = async (req, res) => {
         COUNT(CASE WHEN p.estado = 'aceptada' THEN 1 END) as aceptadas,
         COUNT(CASE WHEN p.estado = 'rechazada' THEN 1 END) as rechazadas
       FROM Grados g
-      LEFT JOIN Cursos c ON g.id = c.id_grado
+      LEFT JOIN Grado_seccion gs ON g.id = gs.id_grado
+      LEFT JOIN Cursos c ON gs.id = c.id_grado_seccion
       LEFT JOIN Planificaciones p ON c.id = p.id_curso
       LEFT JOIN Maestros ma ON c.id_maestro = ma.id
       WHERE ma.activo = true OR ma.activo IS NULL
@@ -283,7 +287,8 @@ const getPlanificationsBySpecificGrade = async (req, res) => {
         SUM(dp.puntos_tarea) as total_puntos
       FROM Planificaciones p
       INNER JOIN Cursos c ON p.id_curso = c.id
-      INNER JOIN Grados g ON c.id_grado = g.id
+      INNER JOIN Grado_seccion gs ON c.id_grado_seccion = gs.id
+      INNER JOIN Grados g ON gs.id_grado = g.id
       INNER JOIN Materias m ON c.id_materia = m.id
       INNER JOIN Maestros ma ON c.id_maestro = ma.id
       LEFT JOIN Detalle_planificacion dp ON p.id = dp.id_planificacion
