@@ -8,6 +8,7 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 router.get('/', courseController.getCourses); 
 router.post('/', courseController.createCourse); 
 router.delete('/:id', courseController.deleteCourse); 
+router.get('/teacher/:teacherId', courseController.getCoursesByTeacher);
 
 // Ruta para obtener cursos de un maestro específico (compatibilidad con frontend)
 router.get('/teacher/:teacherId', verifyToken, teacherController.getTeacherCourses);
