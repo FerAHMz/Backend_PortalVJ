@@ -81,6 +81,7 @@ const getReportCard = async (req, res) => {
   }
 };
 
+// Obtener todos los grados y secciones
 const getGradeSections = async (req, res) => {
   let client;
   try {
@@ -100,6 +101,40 @@ const getGradeSections = async (req, res) => {
   } catch (error) {
     console.error('Error fetching grade sections rows:', error);
     res.status(500).json({ error: 'Error fetching grade sections' });
+  } finally {
+    if (client) client.release();
+  }
+};
+
+// Obtener solo los grados y secciones asignados al maestro autenticado
+const getTeacherGradeSections = async (req, res) => {
+  let client;
+  try {
+    // Obtener el ID del maestro desde el token JWT 
+    const maestroId = req.user.id; // 
+    console.log('Maestro ID from token:', maestroId);
+
+    client = await db.getPool().connect();
+
+    // Esta consulta obtiene los grados y secciones donde el maestro tiene cursos asignados
+    const result = await client.query(`
+      SELECT DISTINCT 
+        gs.id as id_grado_seccion,
+        g.grado,
+        s.seccion
+      FROM Grado_seccion gs
+      JOIN grados g on g.id = gs.id_grado
+      JOIN secciones s on s.id = gs.id_seccion
+      JOIN Cursos c ON c.id_grado_seccion = gs.id
+      WHERE c.id_maestro = $1
+      ORDER BY g.grado, s.seccion;
+    `, [maestroId]);
+
+    console.log('Teacher grade sections result:', result.rows);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching teacher grade sections:', error);
+    res.status(500).json({ error: 'Error fetching teacher grade sections' });
   } finally {
     if (client) client.release();
   }
@@ -168,6 +203,7 @@ module.exports = {
   getReportCard,
   getStudentsGradeSection,
   getGradeSections,
+  getTeacherGradeSections, 
   getObservationsAndActionPoints,
   getGrade
 };

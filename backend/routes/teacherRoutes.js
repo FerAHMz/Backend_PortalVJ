@@ -22,6 +22,7 @@ const {
     getReportCard,
     getStudentsGradeSection,
     getGradeSections,
+    getTeacherGradeSections, 
     getObservationsAndActionPoints,
     getGrade
 } = require('../controllers/reportCardController');
@@ -73,6 +74,8 @@ router.delete('/observations/:observationId', verifyToken, deleteObservation);
 router.get('/report-card/:carnetEstudiante/', verifyToken, getReportCard); 
 router.get('/grade-sections/:gradeSectionId/report-card/', verifyToken, getStudentsGradeSection);
 router.get('/grade-sections', verifyToken, getGradeSections);
+// Rutas para obtener grados y secciones del maestro autenticado
+router.get('/teacher-grade-sections', verifyToken, getTeacherGradeSections);
 router.get('/report-card/grade-sections/:gradeSectionId/:carnetEstudiante/observaciones', verifyToken, getObservationsAndActionPoints);
 router.get('/report-card/student-grade/:gradeSectionId', verifyToken, getGrade);
 
