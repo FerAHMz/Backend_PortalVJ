@@ -6,6 +6,7 @@ const courseController = require('../controllers/courseController');
 router.get('/', courseController.getCourses); 
 router.post('/', courseController.createCourse); 
 router.delete('/:id', courseController.deleteCourse); 
+router.get('/teacher/:teacherId', courseController.getCoursesByTeacher);
 
 // Rutas para datos relacionados
 router.get('/teachers', courseController.getTeachers);      

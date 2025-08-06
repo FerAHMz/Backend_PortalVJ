@@ -340,6 +340,40 @@ class CourseController {
             if (client) client.release();
         }
     }
+
+    async getCoursesByTeacher(req, res) {
+        const { teacherId } = req.params;
+        let client;
+        try {
+            client = await db.getPool().connect();
+            const result = await client.query(`
+                SELECT 
+                    c.id,
+                    c.id_maestro,
+                    c.id_materia,
+                    c.id_grado_seccion,
+                    m.nombre as materia,
+                    g.grado,
+                    s.seccion,
+                    ma.nombre as nombre_maestro,
+                    ma.apellido as apellido_maestro
+                FROM cursos c
+                JOIN materias m ON c.id_materia = m.id
+                JOIN grado_seccion gs ON c.id_grado_seccion = gs.id
+                JOIN grados g ON gs.id_grado = g.id
+                JOIN secciones s ON gs.id_seccion = s.id
+                JOIN maestros ma ON c.id_maestro = ma.id
+                WHERE c.id_maestro = $1
+                ORDER BY g.grado, s.seccion, m.nombre
+            `, [teacherId]);
+            res.json(result.rows);
+        } catch (error) {
+            console.error('Error al obtener cursos del maestro:', error);
+            res.status(500).json({ error: 'Error al obtener los cursos del maestro' });
+        } finally {
+            if (client) client.release();
+        }
+    }
 }
 
 module.exports = new CourseController();
