@@ -1,4 +1,4 @@
-Carnet,Nombres,Apellidos,Fecha_Nacimiento,ID_Grado_Seccion,Sire,Correo_Padres
+Carnet,Nombre,Apellido,Fecha_Nacimiento,ID_Grado_Seccion,Sire,Correo_Padres
 12345,Juan Carlos,Pérez García,2010-03-15,1,SIRE001,padres.juan@email.com
 67890,María Elena,López Martínez,2009-07-22,2,SIRE002,padres.maria@email.com
 11111,Carlos Alberto,Rodríguez Hernández,2011-01-10,3,SIRE003,padres.carlos@email.com

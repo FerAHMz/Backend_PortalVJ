@@ -41,12 +41,20 @@ const uploadMiddleware = upload.single('excelFile');
 // Obtener todas las inscripciones con información de grado y sección
 const getInscripciones = async (req, res) => {
     try {
+        // Agregar parámetro opcional para filtrar por estado
+        const { estado } = req.query;
+        
+        let whereClause = "WHERE i.estado_inscripcion != 'eliminado'";
+        if (estado && ['inscrito', 'estudiante_activo'].includes(estado)) {
+            whereClause = `WHERE i.estado_inscripcion = '${estado}'`;
+        }
+
         const result = await db.getPool().query(`
             SELECT 
                 i.id_inscripcion,
                 i.carnet,
-                i.nombres,
-                i.apellidos,
+                i.nombre,
+                i.apellido,
                 i.fecha_nacimiento,
                 i.sire,
                 i.correo_padres,
@@ -61,7 +69,7 @@ const getInscripciones = async (req, res) => {
             LEFT JOIN Grado_seccion gs ON i.id_grado_seccion = gs.id
             LEFT JOIN Grados g ON gs.id_grado = g.id
             LEFT JOIN Secciones s ON gs.id_seccion = s.id
-            WHERE i.estado_inscripcion != 'eliminado'
+            ${whereClause}
             ORDER BY i.fecha_inscripcion DESC
         `);
 
@@ -89,22 +97,22 @@ const getInscripcionById = async (req, res) => {
             SELECT 
                 i.id_inscripcion,
                 i.carnet,
-                i.nombres,
-                i.apellidos,
+                i.nombre,
+                i.apellido,
                 i.fecha_nacimiento,
                 i.sire,
                 i.correo_padres,
                 i.estado_inscripcion,
                 i.fecha_inscripcion,
                 i.fecha_actualizacion,
-                gs.id_grado_seccion,
-                g.grado_nombre,
-                s.seccion_nombre,
-                CONCAT(g.grado_nombre, ' - ', s.seccion_nombre) as grado_seccion_display
+                gs.id as id_grado_seccion,
+                g.grado as grado_nombre,
+                s.seccion as seccion_nombre,
+                CONCAT(g.grado, ' - ', s.seccion) as grado_seccion_display
             FROM Inscripciones i
-            LEFT JOIN Grado_seccion gs ON i.id_grado_seccion = gs.id_grado_seccion
-            LEFT JOIN Grados g ON gs.id_grado = g.id_grado
-            LEFT JOIN Secciones s ON gs.id_seccion = s.id_seccion
+            LEFT JOIN Grado_seccion gs ON i.id_grado_seccion = gs.id
+            LEFT JOIN Grados g ON gs.id_grado = g.id
+            LEFT JOIN Secciones s ON gs.id_seccion = s.id
             WHERE i.id_inscripcion = $1 AND i.estado_inscripcion != 'eliminado'
         `, [id]);
 
@@ -139,8 +147,8 @@ const createInscripcion = async (req, res) => {
 
         const {
             carnet,
-            nombres,
-            apellidos,
+            nombre,
+            apellido,
             fecha_nacimiento,
             id_grado_seccion,
             sire,
@@ -148,16 +156,16 @@ const createInscripcion = async (req, res) => {
         } = req.body;
 
         // Validaciones básicas
-        if (!carnet || !nombres || !apellidos || !fecha_nacimiento || !id_grado_seccion) {
+        if (!carnet || !nombre || !apellido || !fecha_nacimiento || !id_grado_seccion) {
             return res.status(400).json({
                 success: false,
-                message: 'Campos requeridos: carnet, nombres, apellidos, fecha_nacimiento, id_grado_seccion'
+                message: 'Campos requeridos: carnet, nombre, apellido, fecha_nacimiento, id_grado_seccion'
             });
         }
 
         // Verificar que el grado_seccion existe
         const gradoSeccionCheck = await client.query(
-            'SELECT id_grado_seccion FROM Grado_seccion WHERE id_grado_seccion = $1',
+            'SELECT id FROM Grado_seccion WHERE id = $1',
             [id_grado_seccion]
         );
 
@@ -169,52 +177,71 @@ const createInscripcion = async (req, res) => {
         }
 
         // Verificar si ya existe una inscripción activa para este carnet
-        const existingInscription = await client.query(
-            'SELECT id_inscripcion FROM Inscripciones WHERE carnet = $1 AND estado_inscripcion = $2',
-            [carnet, 'inscrito']
-        );
+        const existingInscription = await client.query(`
+            SELECT id_inscripcion, estado_inscripcion 
+            FROM Inscripciones 
+            WHERE carnet = $1 AND estado_inscripcion IN ('inscrito', 'estudiante_activo')
+        `, [carnet]);
 
         if (existingInscription.rows.length > 0) {
+            const inscription = existingInscription.rows[0];
+            if (inscription.estado_inscripcion === 'inscrito') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Ya existe una inscripción activa para este carnet'
+                });
+            } else if (inscription.estado_inscripcion === 'estudiante_activo') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Este carnet ya corresponde a un estudiante activo'
+                });
+            }
+        }
+
+        // Verificar si ya existe un estudiante activo con este carnet
+        const existingStudent = await client.query(`
+            SELECT carnet, estado 
+            FROM Estudiantes 
+            WHERE carnet = $1 AND estado = 'estudiante_activo'
+        `, [carnet]);
+
+        if (existingStudent.rows.length > 0) {
             return res.status(400).json({
                 success: false,
-                message: 'Ya existe una inscripción activa para este carnet'
+                message: 'Este carnet ya corresponde a un estudiante activo'
             });
         }
 
         // Crear o actualizar estudiante en la tabla Estudiantes
         const studentCheck = await client.query(
-            'SELECT id_estudiante FROM Estudiantes WHERE carnet = $1',
+            'SELECT carnet FROM Estudiantes WHERE carnet = $1',
             [carnet]
         );
 
-        let id_estudiante;
         if (studentCheck.rows.length === 0) {
-            // Crear nuevo estudiante
-            const newStudent = await client.query(`
-                INSERT INTO Estudiantes (carnet, nombres, apellidos, fecha_nacimiento)
-                VALUES ($1, $2, $3, $4)
-                RETURNING id_estudiante
-            `, [carnet, nombres, apellidos, fecha_nacimiento]);
-            id_estudiante = newStudent.rows[0].id_estudiante;
+            // Crear nuevo estudiante con estado inscrito
+            await client.query(`
+                INSERT INTO Estudiantes (carnet, nombre, apellido, fecha_nacimiento, id_grado_seccion, estado)
+                VALUES ($1, $2, $3, $4, $5, 'inscrito')
+            `, [carnet, nombre, apellido, fecha_nacimiento, id_grado_seccion]);
         } else {
             // Actualizar estudiante existente
-            id_estudiante = studentCheck.rows[0].id_estudiante;
             await client.query(`
                 UPDATE Estudiantes 
-                SET nombres = $1, apellidos = $2, fecha_nacimiento = $3
-                WHERE carnet = $4
-            `, [nombres, apellidos, fecha_nacimiento, carnet]);
+                SET nombre = $1, apellido = $2, fecha_nacimiento = $3, id_grado_seccion = $4, estado = 'inscrito'
+                WHERE carnet = $5
+            `, [nombre, apellido, fecha_nacimiento, id_grado_seccion, carnet]);
         }
 
         // Crear inscripción
         const inscripcionResult = await client.query(`
             INSERT INTO Inscripciones (
-                carnet, nombres, apellidos, fecha_nacimiento, 
+                carnet, nombre, apellido, fecha_nacimiento, 
                 id_grado_seccion, sire, correo_padres, estado_inscripcion
             )
             VALUES ($1, $2, $3, $4, $5, $6, $7, 'inscrito')
             RETURNING id_inscripcion, fecha_inscripcion
-        `, [carnet, nombres, apellidos, fecha_nacimiento, id_grado_seccion, sire, correo_padres]);
+        `, [carnet, nombre, apellido, fecha_nacimiento, id_grado_seccion, sire, correo_padres]);
 
         await client.query('COMMIT');
 
@@ -224,8 +251,8 @@ const createInscripcion = async (req, res) => {
             data: {
                 id_inscripcion: inscripcionResult.rows[0].id_inscripcion,
                 carnet,
-                nombres,
-                apellidos,
+                nombre,
+                apellido,
                 fecha_nacimiento,
                 id_grado_seccion,
                 sire,
@@ -258,8 +285,8 @@ const updateInscripcion = async (req, res) => {
         const { id } = req.params;
         const {
             carnet,
-            nombres,
-            apellidos,
+            nombre,
+            apellido,
             fecha_nacimiento,
             id_grado_seccion,
             sire,
@@ -282,7 +309,7 @@ const updateInscripcion = async (req, res) => {
         // Verificar que el grado_seccion existe (si se proporciona)
         if (id_grado_seccion) {
             const gradoSeccionCheck = await client.query(
-                'SELECT id_grado_seccion FROM Grado_seccion WHERE id_grado_seccion = $1',
+                'SELECT id FROM Grado_seccion WHERE id = $1',
                 [id_grado_seccion]
             );
 
@@ -304,14 +331,14 @@ const updateInscripcion = async (req, res) => {
             updateValues.push(carnet);
             paramCounter++;
         }
-        if (nombres !== undefined) {
-            updateFields.push(`nombres = $${paramCounter}`);
-            updateValues.push(nombres);
+        if (nombre !== undefined) {
+            updateFields.push(`nombre = $${paramCounter}`);
+            updateValues.push(nombre);
             paramCounter++;
         }
-        if (apellidos !== undefined) {
-            updateFields.push(`apellidos = $${paramCounter}`);
-            updateValues.push(apellidos);
+        if (apellido !== undefined) {
+            updateFields.push(`apellido = $${paramCounter}`);
+            updateValues.push(apellido);
             paramCounter++;
         }
         if (fecha_nacimiento !== undefined) {
@@ -355,18 +382,18 @@ const updateInscripcion = async (req, res) => {
         const result = await client.query(updateQuery, updateValues);
 
         // Actualizar también la tabla Estudiantes si se modificaron datos básicos
-        if (carnet !== undefined || nombres !== undefined || apellidos !== undefined || fecha_nacimiento !== undefined) {
+        if (carnet !== undefined || nombre !== undefined || apellido !== undefined || fecha_nacimiento !== undefined) {
             const oldCarnet = inscripcionCheck.rows[0].carnet;
             const newCarnet = carnet || oldCarnet;
             
             await client.query(`
                 UPDATE Estudiantes 
-                SET carnet = $1, nombres = $2, apellidos = $3, fecha_nacimiento = $4
+                SET carnet = $1, nombre = $2, apellido = $3, fecha_nacimiento = $4
                 WHERE carnet = $5
             `, [
                 newCarnet,
-                nombres || inscripcionCheck.rows[0].nombres,
-                apellidos || inscripcionCheck.rows[0].apellidos,
+                nombre || inscripcionCheck.rows[0].nombre,
+                apellido || inscripcionCheck.rows[0].apellido,
                 fecha_nacimiento || inscripcionCheck.rows[0].fecha_nacimiento,
                 oldCarnet
             ]);
@@ -467,8 +494,8 @@ const convertirAEstudiante = async (req, res) => {
                 data: {
                     id_inscripcion: id,
                     carnet: inscripcion.carnet,
-                    nombres: inscripcion.nombres,
-                    apellidos: inscripcion.apellidos,
+                    nombre: inscripcion.nombre,
+                    apellido: inscripcion.apellido,
                     nuevo_estado: 'estudiante_activo'
                 }
             });
@@ -564,9 +591,61 @@ const processExcelFile = async (req, res) => {
 
         // Obtener grados-secciones válidos para validación
         const gradosSeccionesValidos = await client.query(
-            'SELECT id_grado_seccion FROM Grado_seccion WHERE activo = true'
+            'SELECT id FROM Grado_seccion WHERE activo = true'
         );
-        const gradosValidos = new Set(gradosSeccionesValidos.rows.map(row => row.id_grado_seccion));
+        const gradosValidos = new Set(gradosSeccionesValidos.rows.map(row => row.id));
+
+        // Validar carnets duplicados dentro del archivo Excel
+        const carnetsEnArchivo = new Set();
+        const carnetsDuplicados = new Set();
+        
+        data.forEach((fila, index) => {
+            if (fila.Carnet) {
+                if (carnetsEnArchivo.has(fila.Carnet)) {
+                    carnetsDuplicados.add(fila.Carnet);
+                } else {
+                    carnetsEnArchivo.add(fila.Carnet);
+                }
+            }
+        });
+
+        // Si hay carnets duplicados, reportar error inmediatamente
+        if (carnetsDuplicados.size > 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({
+                success: false,
+                message: `Carnets duplicados encontrados en el archivo: ${Array.from(carnetsDuplicados).join(', ')}`,
+                carnets_duplicados: Array.from(carnetsDuplicados)
+            });
+        }
+
+        // Función para convertir fecha de Excel a formato ISO
+        const convertExcelDate = (dateValue) => {
+            if (!dateValue) return null;
+            
+            // Si ya es una fecha en formato string válido, devolverla
+            if (typeof dateValue === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(dateValue)) {
+                return dateValue;
+            }
+            
+            // Si es un número (formato Excel), convertirlo
+            if (typeof dateValue === 'number' || /^\d+$/.test(dateValue.toString())) {
+                const excelDate = parseInt(dateValue);
+                // Excel considera 1900-01-01 como día 1, pero hay un bug en Excel que cuenta 1900 como año bisiesto
+                // Por lo tanto, restamos 1 día más para corregir esto
+                const excelEpoch = new Date(1900, 0, 1);
+                const jsDate = new Date(excelEpoch.getTime() + (excelDate - 2) * 24 * 60 * 60 * 1000);
+                return jsDate.toISOString().split('T')[0];
+            }
+            
+            // Intentar parsear como fecha
+            const parsedDate = new Date(dateValue);
+            if (!isNaN(parsedDate.getTime())) {
+                return parsedDate.toISOString().split('T')[0];
+            }
+            
+            return null;
+        };
 
         for (let i = 0; i < data.length; i++) {
             const fila = data[i];
@@ -574,7 +653,7 @@ const processExcelFile = async (req, res) => {
 
             try {
                 // Validar campos requeridos
-                const camposRequeridos = ['Carnet', 'Nombres', 'Apellidos', 'Fecha_nacimiento', 'ID_Grado_Seccion'];
+                const camposRequeridos = ['Carnet', 'Nombre', 'Apellido', 'Fecha_Nacimiento', 'ID_Grado_Seccion'];
                 const camposFaltantes = camposRequeridos.filter(campo => !fila[campo]);
 
                 if (camposFaltantes.length > 0) {
@@ -582,6 +661,17 @@ const processExcelFile = async (req, res) => {
                         fila: numeroFila,
                         carnet: fila.Carnet || 'N/A',
                         error: `Campos faltantes: ${camposFaltantes.join(', ')}`
+                    });
+                    continue;
+                }
+
+                // Convertir la fecha de Excel a formato ISO
+                const fechaConvertida = convertExcelDate(fila.Fecha_Nacimiento);
+                if (!fechaConvertida) {
+                    resultados.errores.push({
+                        fila: numeroFila,
+                        carnet: fila.Carnet,
+                        error: `Fecha de nacimiento inválida: ${fila.Fecha_Nacimiento}`
                     });
                     continue;
                 }
@@ -597,64 +687,89 @@ const processExcelFile = async (req, res) => {
                 }
 
                 // Verificar si ya existe inscripción activa
-                const existingInscription = await client.query(
-                    'SELECT id_inscripcion FROM Inscripciones WHERE carnet = $1 AND estado_inscripcion = $2',
-                    [fila.Carnet, 'inscrito']
-                );
+                const existingInscription = await client.query(`
+                    SELECT id_inscripcion, estado_inscripcion 
+                    FROM Inscripciones 
+                    WHERE carnet = $1 AND estado_inscripcion IN ('inscrito', 'estudiante_activo')
+                `, [fila.Carnet]);
 
                 if (existingInscription.rows.length > 0) {
+                    const inscription = existingInscription.rows[0];
+                    let errorMessage = '';
+                    if (inscription.estado_inscripcion === 'inscrito') {
+                        errorMessage = 'Ya existe una inscripción activa para este carnet';
+                    } else if (inscription.estado_inscripcion === 'estudiante_activo') {
+                        errorMessage = 'Este carnet ya corresponde a un estudiante activo';
+                    }
+                    
                     resultados.errores.push({
                         fila: numeroFila,
                         carnet: fila.Carnet,
-                        error: 'Ya existe una inscripción activa para este carnet'
+                        error: errorMessage
+                    });
+                    continue;
+                }
+
+                // Verificar si ya existe un estudiante activo con este carnet
+                const existingStudent = await client.query(`
+                    SELECT carnet, estado 
+                    FROM Estudiantes 
+                    WHERE carnet = $1 AND estado = 'estudiante_activo'
+                `, [fila.Carnet]);
+
+                if (existingStudent.rows.length > 0) {
+                    resultados.errores.push({
+                        fila: numeroFila,
+                        carnet: fila.Carnet,
+                        error: 'Este carnet ya corresponde a un estudiante activo'
                     });
                     continue;
                 }
 
                 // Crear o actualizar estudiante
                 const studentCheck = await client.query(
-                    'SELECT id_estudiante FROM Estudiantes WHERE carnet = $1',
+                    'SELECT carnet FROM Estudiantes WHERE carnet = $1',
                     [fila.Carnet]
                 );
 
                 if (studentCheck.rows.length === 0) {
-                    // Crear nuevo estudiante
+                    // Crear nuevo estudiante con estado inscrito
                     await client.query(`
-                        INSERT INTO Estudiantes (carnet, nombres, apellidos, fecha_nacimiento)
-                        VALUES ($1, $2, $3, $4)
-                    `, [fila.Carnet, fila.Nombres, fila.Apellidos, fila.Fecha_nacimiento]);
+                        INSERT INTO Estudiantes (carnet, nombre, apellido, fecha_nacimiento, id_grado_seccion, estado)
+                        VALUES ($1, $2, $3, $4, $5, 'inscrito')
+                    `, [fila.Carnet, fila.Nombre, fila.Apellido, fechaConvertida, fila.ID_Grado_Seccion]);
                 } else {
                     // Actualizar estudiante existente
                     await client.query(`
                         UPDATE Estudiantes 
-                        SET nombres = $1, apellidos = $2, fecha_nacimiento = $3
-                        WHERE carnet = $4
-                    `, [fila.Nombres, fila.Apellidos, fila.Fecha_nacimiento, fila.Carnet]);
+                        SET nombre = $1, apellido = $2, fecha_nacimiento = $3, id_grado_seccion = $4, estado = 'inscrito'
+                        WHERE carnet = $5
+                    `, [fila.Nombre, fila.Apellido, fechaConvertida, fila.ID_Grado_Seccion, fila.Carnet]);
                 }
 
                 // Crear inscripción
                 const inscripcionResult = await client.query(`
                     INSERT INTO Inscripciones (
-                        carnet, nombres, apellidos, fecha_nacimiento, 
+                        carnet, nombre, apellido, fecha_nacimiento, 
                         id_grado_seccion, sire, correo_padres, estado_inscripcion
                     )
                     VALUES ($1, $2, $3, $4, $5, $6, $7, 'inscrito')
                     RETURNING id_inscripcion
                 `, [
                     fila.Carnet,
-                    fila.Nombres,
-                    fila.Apellidos,
-                    fila.Fecha_nacimiento,
+                    fila.Nombre,
+                    fila.Apellido,
+                    fechaConvertida,
                     parseInt(fila.ID_Grado_Seccion),
                     fila.SIRE || null,
-                    fila.Correo_padres || null
+                    fila.Correo_Padres || null
                 ]);
 
                 resultados.exitosos.push({
                     fila: numeroFila,
                     carnet: fila.Carnet,
-                    nombres: fila.Nombres,
-                    apellidos: fila.Apellidos,
+                    nombre: fila.Nombre,
+                    apellido: fila.Apellido,
                     id_inscripcion: inscripcionResult.rows[0].id_inscripcion
                 });
 

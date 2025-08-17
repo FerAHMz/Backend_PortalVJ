@@ -44,17 +44,17 @@ INSERT INTO Grado_seccion (id_grado, id_seccion) VALUES
 (9, 9),
 (10, 10);
 
-INSERT INTO Estudiantes (carnet, nombre, apellido, fecha_nacimiento, id_grado_seccion) VALUES 
-(1001, 'Juan', 'Gomez', '2010-05-15', 1),
-(1002, 'Maria', 'Lopez', '2011-06-20', 2),
-(1003, 'Carlos', 'Martinez', '2010-07-25', 3),
-(1004, 'Ana', 'Perez', '2011-08-30', 4),
-(1005, 'Luis', 'Gonzalez', '2010-09-10', 5),
-(1006, 'Sofia', 'Rodriguez', '2011-10-15', 6),
-(1007, 'Diego', 'Fernandez', '2010-11-20', 7),
-(1008, 'Laura', 'Sanchez', '2011-12-25', 8),
-(1009, 'Pedro', 'Ramirez', '2010-01-30', 9),
-(1010, 'Lucia', 'Torres', '2011-02-05', 10);
+INSERT INTO Estudiantes (carnet, nombre, apellido, fecha_nacimiento, id_grado_seccion, estado) VALUES 
+(1001, 'Juan', 'Gomez', '2010-05-15', 1, 'estudiante_activo'),
+(1002, 'Maria', 'Lopez', '2011-06-20', 2, 'estudiante_activo'),
+(1003, 'Carlos', 'Martinez', '2010-07-25', 3, 'estudiante_activo'),
+(1004, 'Ana', 'Perez', '2011-08-30', 4, 'estudiante_activo'),
+(1005, 'Luis', 'Gonzalez', '2010-09-10', 5, 'estudiante_activo'),
+(1006, 'Sofia', 'Rodriguez', '2011-10-15', 6, 'estudiante_activo'),
+(1007, 'Diego', 'Fernandez', '2010-11-20', 7, 'estudiante_activo'),
+(1008, 'Laura', 'Sanchez', '2011-12-25', 8, 'estudiante_activo'),
+(1009, 'Pedro', 'Ramirez', '2010-01-30', 9, 'estudiante_activo'),
+(1010, 'Lucia', 'Torres', '2011-02-05', 10, 'estudiante_activo');
 
 INSERT INTO Padres (rol, nombre, apellido, email, telefono, password, activo) VALUES 
 (2, 'Carlos',     'Gomez',     'padre1@example.com', '12345678', 'password1', True),
@@ -632,3 +632,12 @@ INSERT INTO Detalle_planificacion (id_planificacion, tema_tarea, puntos_tarea) V
 INSERT INTO Revisiones_planificacion (id_planificacion, id_director, observaciones) VALUES
 (2, 1, 'Revisar la secuencia de sumas y restas para asegurar que los estudiantes comprendan bien antes de avanzar a las tablas de multiplicar.'),
 (2, 1, 'Agregar más actividades prácticas');
+
+-- Actualizar todos los estudiantes existentes para que tengan el estado 'estudiante_activo'
+-- Esto se ejecuta después de agregar la columna estado en 02_updates.sql
+UPDATE Estudiantes 
+SET estado = 'estudiante_activo' 
+WHERE estado IS NULL OR estado = '';
+
+-- Agregar comentarios para documentación de la columna estado
+COMMENT ON COLUMN Estudiantes.estado IS 'Estado del estudiante: inscrito, estudiante_activo, inactivo';

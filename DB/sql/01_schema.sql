@@ -65,7 +65,7 @@ create table Maestros (
 
 -- Creación Tabla Estudiantes
 create table Estudiantes (
-  carnet int primary key not null,
+  carnet VARCHAR(20) primary key not null,
   nombre varchar(50) not null,
   apellido varchar(50) not null,
   fecha_nacimiento date not null,
@@ -91,7 +91,7 @@ CREATE TABLE Padres (
 Create table Familias (
   id serial primary key not null,
   id_padre int not null,
-  carnet_estudiante int not null,
+  carnet_estudiante VARCHAR(20) not null,
   foreign key (id_padre) references padres (id),
   foreign key (carnet_estudiante) references estudiantes (carnet)
 );
@@ -112,7 +112,7 @@ Create table Administrativos (
 -- Creación tabla Secciones
 Create table Secciones (
   id serial primary key not null,
-  carnet_estudiante int not null,
+  carnet_estudiante VARCHAR(20) not null,
   foreign key (carnet_estudiante) references Estudiantes (carnet)
 );
 
@@ -120,7 +120,7 @@ Create table Secciones (
 Create table Pagos (
 	id serial primary key not null,
 	id_padre int references Padres(id),
-	carnet_estudiante int references Estudiantes (carnet)
+	carnet_estudiante VARCHAR(20) references Estudiantes (carnet)
 );
 
 -- Creación tabla solvencias
@@ -159,7 +159,7 @@ Create table Cursos_tareas (
 CREATE TABLE Asistencia (
     id SERIAL PRIMARY KEY NOT NULL,
     id_curso INT NOT NULL,
-    carnet_estudiante INT NOT NULL,
+    carnet_estudiante VARCHAR(20) NOT NULL,
     fecha TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_curso) REFERENCES Cursos(id),
     FOREIGN KEY (carnet_estudiante) REFERENCES Estudiantes(carnet)
@@ -168,7 +168,7 @@ CREATE TABLE Asistencia (
 -- Creación de la tabla Calificaciones
 CREATE TABLE Calificaciones (
     id SERIAL PRIMARY KEY NOT NULL,
-    carnet_estudiante INT NOT NULL,
+    carnet_estudiante VARCHAR(20) NOT NULL,
     id_curso INT NOT NULL,
     nota FLOAT NOT NULL CHECK(nota >= 0 and nota <= 100), 
     fecha DATE NOT NULL DEFAULT CURRENT_DATE,
@@ -179,7 +179,7 @@ CREATE TABLE Calificaciones (
 -- Creación de la tabla Observaciones
 CREATE TABLE Observaciones (
     id SERIAL PRIMARY KEY NOT NULL,
-    carnet_estudiante INT NOT NULL,
+    carnet_estudiante VARCHAR(20) NOT NULL,
     id_curso INT NOT NULL,
     observaciones TEXT,
     puntos_de_accion TEXT,
