@@ -1,0 +1,10 @@
+{
+  "timeout": 10000,
+  "recursive": true,
+  "reporter": "spec",
+  "spec": "./backend/tests/integration/**/*.test.js",
+  "exit": true,
+  "slow": 1000,
+  "bail": false,
+  "color": true
+}

@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const inscripcionController = require('../controllers/inscripcionController');
-const authMiddleware = require('../middleware/authMiddleware');
+const { verifyToken } = require('../middlewares/authMiddleware');
 
 // Middleware de autenticación para todas las rutas
-router.use(authMiddleware);
+router.use(verifyToken);
 
 // Ruta para obtener todas las inscripciones
 router.get('/', inscripcionController.getInscripciones);

@@ -1,0 +1,7 @@
+{
+  "timeout": 10000,
+  "recursive": true,
+  "spec": "./backend/tests/integration/framework-verification.test.js",
+  "reporter": "spec",
+  "require": []
+}
