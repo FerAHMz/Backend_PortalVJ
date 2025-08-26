@@ -26,7 +26,14 @@ const familyRoutes = require('./routes/familyRoutes');
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
 
 // Middleware
-app.use(cors());
+const corsOptions = {
+  origin: ['http://localhost:5173', 'http://localhost:3000'], // Allow frontend and backend
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  credentials: true
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use((req, res, next) => {

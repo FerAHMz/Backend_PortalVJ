@@ -3,6 +3,11 @@ const db = require('../database_cn');
 const JWT_SECRET = process.env.JWT_SECRET || 'portalvj-secret-2024';
 
 const verifyToken = (req, res, next) => {
+  // Skip authentication for OPTIONS requests (CORS preflight)
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+  
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
     return res.status(401).json({ success: false, error: 'Access denied. No token provided.' });
@@ -20,6 +25,11 @@ const verifyToken = (req, res, next) => {
 };
 
 const isAdmin = async (req, res, next) => {
+    // Skip role check for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+    
     try {
         if (req.user.role === 'Administrativo') {
             next();
@@ -32,6 +42,11 @@ const isAdmin = async (req, res, next) => {
 };
 
 const isSup = async (req, res, next) => {
+    // Skip role check for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+    
     try {
        if (req.user.role === 'SUP') {
             next();
@@ -46,6 +61,11 @@ const isSup = async (req, res, next) => {
 }
 
 const isTeacher = (req, res, next) => {
+    // Skip role check for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+    
     if (req.user.role === 'Maestro') {
       next();
     } else {
@@ -54,6 +74,11 @@ const isTeacher = (req, res, next) => {
   };
 
 const isDirector = async (req, res, next) => {
+    // Skip role check for OPTIONS requests (CORS preflight)
+    if (req.method === 'OPTIONS') {
+        return next();
+    }
+    
     try {
         if (req.user.role === 'Director') {
             next();
