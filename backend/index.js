@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
 const db = require('./database_cn');
@@ -167,6 +170,16 @@ app.get('/api/superuser/planifications/statistics', verifyTokenLocal, isSup, asy
   }
 });
 app.use('/api/director', directorRoutes);
+
+// Health check endpoint for Docker
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    status: 'OK',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    service: 'Portal Vanguardia Juvenil Backend'
+  });
+});
 
 // Erro handeling middleware
 app.use((err, req, res, next) => {

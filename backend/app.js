@@ -1,3 +1,6 @@
+// Load environment variables
+require('dotenv').config();
+
 const express = require('express');
 const app = express();
 const cors = require('cors');
@@ -23,6 +26,12 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Serve uploaded files statically in development
+if (process.env.NODE_ENV === 'development') {
+    const path = require('path');
+    app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+}
 
 app.use('/api/payments', paymentRoutes);
 app.use('/api/users', userRoutes);

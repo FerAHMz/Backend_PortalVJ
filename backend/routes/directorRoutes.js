@@ -11,7 +11,9 @@ const {
     createPlanningObservation,
     updatePlanningObservation,
     deletePlanningObservation,
-    updatePlanningEstado
+    updatePlanningEstado,
+    getPlanificationFiles,
+    downloadPlanificationFile
 } = require('../controllers/coursePlanningController');
 
 router.get('/grados', verifyToken, isDirector, getGradosDelDirector);
@@ -26,5 +28,12 @@ router.delete('/courses/:courseId/planning/:planId/observations/:id', verifyToke
 
 // Ruta para actualizar el estado de una planificación
 router.put('/courses/:courseId/planning/:planId/estado', verifyToken, isDirector, updatePlanningEstado);
+
+// 📁 File Routes for Planifications (Director access)
+// Get all files for a planification
+router.get('/planning/:planificationId/files', verifyToken, isDirector, getPlanificationFiles);
+
+// Download/Get download URL for a specific file
+router.get('/planning/files/:fileId/download', verifyToken, isDirector, downloadPlanificationFile);
 
 module.exports = router;

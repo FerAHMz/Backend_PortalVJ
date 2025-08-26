@@ -1,0 +1,58 @@
+# Multi-stage Dockerfile for better bcrypt compatibility
+# Stage 1: Build dependencies
+FROM node:18-alpine AS builder
+
+# Install build dependencies
+RUN apk add --no-cache \
+    make \
+    gcc \
+    g++ \
+    python3 \
+    py3-pip
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install ALL dependencies (including dev)
+RUN npm ci
+
+# Stage 2: Production image
+FROM node:18-alpine AS production
+
+# Install only runtime dependencies for native modules
+RUN apk add --no-cache make gcc g++ python3
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install only production dependencies with fresh native bindings
+RUN npm ci --only=production && npm rebuild bcrypt --build-from-source
+
+# Copy application code
+COPY . .
+
+# Create necessary directories
+RUN mkdir -p uploads logs
+
+# Remove development dependencies and clean cache
+RUN npm cache clean --force
+
+# Add non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001
+RUN chown -R nodejs:nodejs /app
+USER nodejs
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node healthcheck.js || exit 1
+
+# Start application
+CMD ["node", "index.js"]

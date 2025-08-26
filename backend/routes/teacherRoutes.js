@@ -44,7 +44,12 @@ const {
     getPlanningTasks,
     createPlanningTask,
     updatePlanningTask,
-    deletePlanningTask
+    deletePlanningTask,
+    upload,
+    uploadPlanificationFile,
+    getPlanificationFiles,
+    deletePlanificationFile,
+    downloadPlanificationFile
 } = require('../controllers/coursePlanningController');
 
 const { verify } = require('jsonwebtoken');
@@ -96,5 +101,18 @@ router.delete('/courses/:courseId/planning/:planId/tasks/:id', verifyToken, dele
 
 // Observaciones de planificación
 router.get('/courses/:courseId/planning/:planId/observations', verifyToken, getPlanningObservations);
+
+// 📁 File Upload Routes for Planifications
+// Upload a file to a planification
+router.post('/planning/:planificationId/upload', verifyToken, upload.single('file'), uploadPlanificationFile);
+
+// Get all files for a planification
+router.get('/planning/:planificationId/files', verifyToken, getPlanificationFiles);
+
+// Delete a specific file
+router.delete('/planning/files/:fileId', verifyToken, deletePlanificationFile);
+
+// Download/Get download URL for a specific file
+router.get('/planning/files/:fileId/download', verifyToken, downloadPlanificationFile);
 
 module.exports = router;

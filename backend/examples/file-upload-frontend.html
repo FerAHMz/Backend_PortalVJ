@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Vanguardia Juvenil - Subir Planificación</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .header {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 30px;
+        }
+        .upload-section {
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+            margin: 20px 0;
+            background-color: #f8f9fa;
+        }
+        .upload-section.dragover {
+            background-color: #e3f2fd;
+            border-color: #2196f3;
+        }
+        .file-input {
+            display: none;
+        }
+        .upload-btn {
+            background-color: #3498db;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px;
+        }
+        .upload-btn:hover {
+            background-color: #2980b9;
+        }
+        .file-info {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #e8f4fd;
+            border-radius: 5px;
+            border-left: 4px solid #3498db;
+        }
+        .files-list {
+            margin-top: 30px;
+        }
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin: 10px 0;
+            background-color: #fff;
+        }
+        .file-info-text {
+            flex-grow: 1;
+        }
+        .file-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .btn-download {
+            background-color: #27ae60;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .error {
+            color: #e74c3c;
+            background-color: #fdf2f2;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #e74c3c;
+            margin: 10px 0;
+        }
+        .success {
+            color: #27ae60;
+            background-color: #f2fdf2;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #27ae60;
+            margin: 10px 0;
+        }
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #f0f0f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #3498db;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📚 Subir Planificación de Clase</h1>
+            <p>Sube archivos PDF, DOC o DOCX para tu planificación de clase</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="upload-section" id="uploadArea">
+            <div id="uploadContent">
+                <h3>📁 Arrastra y suelta tu archivo aquí</h3>
+                <p>o</p>
+                <button class="upload-btn" onclick="document.getElementById('fileInput').click()">
+                    Seleccionar Archivo
+                </button>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf,.doc,.docx" onchange="handleFileSelect(event)">
+                <p><small>Tipos permitidos: PDF, DOC, DOCX (máximo 10MB)</small></p>
+            </div>
+            
+            <div id="uploadProgress" style="display: none;">
+                <h3>Subiendo archivo...</h3>
+                <div class="progress">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+                <p id="progressText">0%</p>
+            </div>
+        </div>
+
+        <!-- File Info -->
+        <div id="fileInfo" style="display: none;" class="file-info">
+            <h4>Archivo seleccionado:</h4>
+            <p id="fileName"></p>
+            <p id="fileSize"></p>
+            <textarea id="fileDescription" placeholder="Descripción del archivo (opcional)" style="width: 100%; height: 80px; margin: 10px 0; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+            <button class="upload-btn" onclick="uploadFile()">📤 Subir Archivo</button>
+            <button class="upload-btn" onclick="cancelUpload()" style="background-color: #95a5a6;">❌ Cancelar</button>
+        </div>
+
+        <!-- Messages -->
+        <div id="messages"></div>
+
+        <!-- Files List -->
+        <div class="files-list">
+            <h3>📄 Archivos de la Planificación</h3>
+            <div id="filesList">
+                <p>Cargando archivos...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'http://localhost:3000/api/teacher'; // Adjust as needed
+        const PLANIFICATION_ID = 1; // This would come from the current planification
+        let authToken = localStorage.getItem('authToken') || 'Bearer mock-teacher-token'; // Replace with actual token
+
+        let selectedFile = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadExistingFiles();
+            setupDragAndDrop();
+        });
+
+        // Drag and Drop functionality
+        function setupDragAndDrop() {
+            const uploadArea = document.getElementById('uploadArea');
+            
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            });
+
+            uploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+            });
+
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    handleFileSelect({ target: { files: files } });
+                }
+            });
+        }
+
+        // Handle file selection
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!allowedTypes.includes(file.type)) {
+                showMessage('error', 'Tipo de archivo no válido. Solo se permiten archivos PDF, DOC y DOCX.');
+                return;
+            }
+
+            // Validate file size (10MB)
+            const maxSize = 10 * 1024 * 1024;
+            if (file.size > maxSize) {
+                showMessage('error', 'El archivo es demasiado grande. Tamaño máximo: 10MB.');
+                return;
+            }
+
+            selectedFile = file;
+            
+            // Show file info
+            document.getElementById('fileName').textContent = `Nombre: ${file.name}`;
+            document.getElementById('fileSize').textContent = `Tamaño: ${formatFileSize(file.size)}`;
+            document.getElementById('fileInfo').style.display = 'block';
+            
+            clearMessages();
+        }
+
+        // Upload file
+        function uploadFile() {
+            if (!selectedFile) return;
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+            formData.append('description', document.getElementById('fileDescription').value);
+
+            // Show progress
+            document.getElementById('uploadContent').style.display = 'none';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'block';
+
+            // Simulate upload progress (replace with actual implementation)
+            simulateUploadProgress()
+                .then(() => {
+                    return fetch(`${API_BASE_URL}/planning/${PLANIFICATION_ID}/upload`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': authToken
+                        },
+                        body: formData
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showMessage('success', 'Archivo subido correctamente');
+                        loadExistingFiles();
+                        resetUploadForm();
+                    } else {
+                        showMessage('error', data.message || 'Error al subir el archivo');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showMessage('error', 'Error de conexión al subir el archivo');
+                })
+                .finally(() => {
+                    resetUploadForm();
+                });
+        }
+
+        // Simulate upload progress
+        function simulateUploadProgress() {
+            return new Promise((resolve) => {
+                let progress = 0;
+                const interval = setInterval(() => {
+                    progress += 10;
+                    document.getElementById('progressBar').style.width = progress + '%';
+                    document.getElementById('progressText').textContent = progress + '%';
+                    
+                    if (progress >= 100) {
+                        clearInterval(interval);
+                        resolve();
+                    }
+                }, 100);
+            });
+        }
+
+        // Cancel upload
+        function cancelUpload() {
+            resetUploadForm();
+            clearMessages();
+        }
+
+        // Reset upload form
+        function resetUploadForm() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileDescription').value = '';
+            document.getElementById('fileInfo').style.display = 'none';
+            document.getElementById('uploadProgress').style.display = 'none';
+            document.getElementById('uploadContent').style.display = 'block';
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('progressText').textContent = '0%';
+        }
+
+        // Load existing files
+        function loadExistingFiles() {
+            fetch(`${API_BASE_URL}/planning/${PLANIFICATION_ID}/files`, {
+                headers: {
+                    'Authorization': authToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayFiles(data.files);
+                } else {
+                    document.getElementById('filesList').innerHTML = '<p>Error al cargar los archivos</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('filesList').innerHTML = '<p>Error de conexión</p>';
+            });
+        }
+
+        // Display files
+        function displayFiles(files) {
+            const filesList = document.getElementById('filesList');
+            
+            if (files.length === 0) {
+                filesList.innerHTML = '<p>No hay archivos subidos para esta planificación</p>';
+                return;
+            }
+
+            let html = '';
+            files.forEach(file => {
+                html += `
+                    <div class="file-item">
+                        <div class="file-info-text">
+                            <strong>${file.original_name}</strong><br>
+                            <small>Tamaño: ${formatFileSize(file.file_size)} | Tipo: ${getFileTypeLabel(file.mime_type)}</small><br>
+                            <small>Subido: ${formatDate(file.uploaded_at)} por ${file.uploaded_by_email}</small>
+                            ${file.description ? `<br><small>Descripción: ${file.description}</small>` : ''}
+                        </div>
+                        <div class="file-actions">
+                            <button class="btn-download" onclick="downloadFile(${file.id})">📥 Descargar</button>
+                            <button class="btn-delete" onclick="deleteFile(${file.id})">🗑️ Eliminar</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            filesList.innerHTML = html;
+        }
+
+        // Download file
+        function downloadFile(fileId) {
+            fetch(`${API_BASE_URL}/planning/files/${fileId}/download`, {
+                headers: {
+                    'Authorization': authToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Open download URL in new tab
+                    window.open(data.downloadUrl, '_blank');
+                } else {
+                    showMessage('error', data.message || 'Error al generar enlace de descarga');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error', 'Error al descargar el archivo');
+            });
+        }
+
+        // Delete file
+        function deleteFile(fileId) {
+            if (!confirm('¿Estás seguro de que quieres eliminar este archivo?')) {
+                return;
+            }
+
+            fetch(`${API_BASE_URL}/planning/files/${fileId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': authToken
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showMessage('success', 'Archivo eliminado correctamente');
+                    loadExistingFiles();
+                } else {
+                    showMessage('error', data.message || 'Error al eliminar el archivo');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showMessage('error', 'Error al eliminar el archivo');
+            });
+        }
+
+        // Utility functions
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        function getFileTypeLabel(mimeType) {
+            const types = {
+                'application/pdf': 'PDF',
+                'application/msword': 'Word (DOC)',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'Word (DOCX)'
+            };
+            return types[mimeType] || 'Desconocido';
+        }
+
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showMessage(type, message) {
+            const messagesDiv = document.getElementById('messages');
+            messagesDiv.innerHTML = `<div class="${type}">${message}</div>`;
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    messagesDiv.innerHTML = '';
+                }, 5000);
+            }
+        }
+
+        function clearMessages() {
+            document.getElementById('messages').innerHTML = '';
+        }
+    </script>
+</body>
+</html>
