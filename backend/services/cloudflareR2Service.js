@@ -149,6 +149,18 @@ class CloudflareR2Service {
    */
   async deleteFile(fileName) {
     try {
+      // Check if we're in development mode
+      const isDevMode = (process.env.NODE_ENV === 'development' && process.env.FORCE_CLOUDFLARE_R2 !== 'true') || 
+                       !this.accessKeyId ||
+                       !this.secretAccessKey ||
+                       !this.endpoint;
+
+      if (isDevMode) {
+        console.log('Development mode: attempting to delete local file');
+        return await this.deleteFileLocally(fileName);
+      }
+
+      console.log('Production mode: deleting from Cloudflare R2');
       const deleteParams = {
         Bucket: this.bucketName,
         Key: fileName
@@ -164,6 +176,45 @@ class CloudflareR2Service {
     } catch (error) {
       console.error('Error deleting file from Cloudflare R2:', error);
       throw new Error(`File deletion failed: ${error.message}`);
+    }
+  }
+
+  /**
+   * Delete file locally for development
+   * @param {string} fileName - File name to delete
+   * @returns {Promise<Object>} Deletion result
+   */
+  async deleteFileLocally(fileName) {
+    const fs = require('fs').promises;
+    const path = require('path');
+    
+    try {
+      // Extract the actual filename from the path
+      const actualFileName = fileName.includes('/') ? fileName.split('/').pop() : fileName;
+      const filePath = path.join(__dirname, '..', 'uploads', 'profile-images', actualFileName);
+
+      // Check if file exists
+      try {
+        await fs.access(filePath);
+        await fs.unlink(filePath);
+        console.log(`Local file deleted: ${filePath}`);
+      } catch (error) {
+        if (error.code === 'ENOENT') {
+          console.log(`File not found (already deleted?): ${filePath}`);
+        } else {
+          throw error;
+        }
+      }
+
+      return {
+        success: true,
+        message: 'File deleted successfully (local)',
+        fileName: fileName,
+        isDevelopment: true
+      };
+    } catch (error) {
+      console.error('Error deleting local file:', error);
+      throw new Error(`Local file deletion failed: ${error.message}`);
     }
   }
 

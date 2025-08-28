@@ -593,7 +593,7 @@ const getUserProfile = async (req, res) => {
         switch (userRole) {
             case 'SUP':
                 result = await client.query(`
-                    SELECT id, nombre, apellido, email, telefono, 'SUP' as rol
+                    SELECT id, nombre, apellido, email, telefono, profile_image_url, 'SUP' as rol
                     FROM SuperUsuarios
                     WHERE id = $1
                 `, [userId]);
@@ -601,7 +601,7 @@ const getUserProfile = async (req, res) => {
 
             case 'Director':
                 result = await client.query(`
-                    SELECT id, nombre, apellido, email, telefono, 'Director' as rol
+                    SELECT id, nombre, apellido, email, telefono, profile_image_url, 'Director' as rol
                     FROM Directores
                     WHERE id = $1
                 `, [userId]);
@@ -609,7 +609,7 @@ const getUserProfile = async (req, res) => {
 
             case 'Administrativo':
                 result = await client.query(`
-                    SELECT id, nombre, apellido, email, telefono, 'Administrativo' as rol
+                    SELECT id, nombre, apellido, email, telefono, profile_image_url, 'Administrativo' as rol
                     FROM Administrativos
                     WHERE id = $1
                 `, [userId]);
@@ -617,7 +617,7 @@ const getUserProfile = async (req, res) => {
 
             case 'Maestro':
                 result = await client.query(`
-                    SELECT m.id, m.nombre, m.apellido, m.email, m.telefono, 'Maestro' as rol
+                    SELECT m.id, m.nombre, m.apellido, m.email, m.telefono, m.profile_image_url, 'Maestro' as rol
                     FROM Maestros m
                     WHERE m.id = $1
                 `, [userId]);
@@ -625,7 +625,7 @@ const getUserProfile = async (req, res) => {
 
             case 'Padre':
                 result = await client.query(`
-                    SELECT p.id, p.nombre, p.apellido, p.email, p.telefono, 'Padre' as rol,
+                    SELECT p.id, p.nombre, p.apellido, p.email, p.telefono, p.profile_image_url, 'Padre' as rol,
                            e.nombre as nombre_estudiante, e.apellido as apellido_estudiante, e.carnet
                     FROM Padres p
                     LEFT JOIN Familias f ON p.id = f.id_padre
@@ -645,11 +645,13 @@ const getUserProfile = async (req, res) => {
             return res.status(404).json({
                 success: false,
                 error: 'Usuario no encontrado'
-            });        }
+            });
+        }
         
         const userProfile = result.rows[0];
         console.log('User profile found:', userProfile); // Debug log
-          // For parents, format the student information
+        
+        // For parents, format the student information
         if (userRole === 'Padre' && userProfile.carnet) {
             userProfile.estudiante = {
                 carnet: userProfile.carnet,

@@ -24,6 +24,7 @@ const parentRoutes = require('./routes/parentRoutes');
 const directorRoutes = require('./routes/directorRoutes');
 const familyRoutes = require('./routes/familyRoutes');
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
+const profileImageRoutes = require('./routes/profileImageRoutes');
 
 // Middleware
 const corsOptions = {
@@ -35,6 +36,9 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+
+// Servir archivos estáticos para modo desarrollo
+app.use('/uploads', express.static('uploads'));
 
 app.use((req, res, next) => {
   console.log('Request:', {
@@ -134,6 +138,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/user', profileRoutes);
 app.use('/api/parent', parentRoutes);
 app.use('/api/students', studentAttendanceRoutes);
+app.use('/api/profile', profileImageRoutes);
 
 // Debug endpoint para verificar el token
 const { verifyToken } = require('./middlewares/authMiddleware');
