@@ -251,3 +251,27 @@ BEGIN
     RETURN resultado;
 END;
 $$ LANGUAGE plpgsql;
+
+-- Tabla para tokens de reset de contraseña
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INT NOT NULL,
+    user_role VARCHAR(20) NOT NULL CHECK (user_role IN ('Maestro', 'Padre', 'Administrativo', 'Director', 'SUP')),
+    token VARCHAR(64) NOT NULL UNIQUE,
+    expires_at TIMESTAMP NOT NULL,
+    used BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_token ON password_reset_tokens(token);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user ON password_reset_tokens(user_id, user_role);
+CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_expires ON password_reset_tokens(expires_at);
+
+-- Comentarios para documentación
+COMMENT ON TABLE password_reset_tokens IS 'Tabla para gestión de tokens de recuperación de contraseña';
+COMMENT ON COLUMN password_reset_tokens.user_id IS 'ID del usuario en su tabla correspondiente';
+COMMENT ON COLUMN password_reset_tokens.user_role IS 'Rol del usuario para identificar la tabla correcta';
+COMMENT ON COLUMN password_reset_tokens.token IS 'Token único generado para el reset';
+COMMENT ON COLUMN password_reset_tokens.expires_at IS 'Fecha y hora de expiración del token';
+COMMENT ON COLUMN password_reset_tokens.used IS 'Indica si el token ya fue utilizado';

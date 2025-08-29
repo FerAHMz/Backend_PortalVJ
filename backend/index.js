@@ -25,6 +25,7 @@ const directorRoutes = require('./routes/directorRoutes');
 const familyRoutes = require('./routes/familyRoutes');
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
 const profileImageRoutes = require('./routes/profileImageRoutes');
+const passwordResetRoutes = require('./routes/passwordResetRoutes');
 
 // Middleware
 const corsOptions = {
@@ -85,21 +86,45 @@ app.post('/login', async (req, res) => {
     console.log('Query executed:', { rows: result.rows });
 
     if (result.rows.length > 0) {
-      // Usar pgcrypto para verificar la contraseña
-      const passwordCheck = await db.getPool().query(
-        'SELECT $1 = crypt($2, $1) as match',
-        [result.rows[0].hashed_password, password]
-      );
-      
-      const match = passwordCheck.rows[0].match;
-      console.log('Password match:', match);
+      const user = result.rows[0];
+      const hashedPassword = user.hashed_password;
+      let match = false;
+
+      try {
+        // Intentar primero con pgcrypto (para compatibilidad con contraseñas existentes)
+        const passwordCheck = await db.getPool().query(
+          'SELECT $1 = crypt($2, $1) as match',
+          [hashedPassword, password]
+        );
+        
+        match = passwordCheck.rows[0].match;
+        console.log('pgcrypto match:', match);
+
+        // Si pgcrypto falla, intentar con bcrypt de Node.js
+        if (!match && hashedPassword.startsWith('$2')) {
+          match = await bcrypt.compare(password, hashedPassword);
+          console.log('bcrypt match:', match);
+        }
+      } catch (error) {
+        console.error('Error verifying password:', error);
+        // Si hay error con pgcrypto, intentar solo con bcrypt
+        if (hashedPassword.startsWith('$2')) {
+          try {
+            match = await bcrypt.compare(password, hashedPassword);
+            console.log('bcrypt fallback match:', match);
+          } catch (bcryptError) {
+            console.error('Bcrypt error:', bcryptError);
+            match = false;
+          }
+        }
+      }
 
       if (match) {
         const token = jwt.sign(
           { 
-            id: result.rows[0].id,
-            rol: result.rows[0].rol,
-            type: result.rows[0].user_type
+            id: user.id,
+            rol: user.rol,
+            type: user.user_type
           },
           JWT_SECRET
         );
@@ -107,9 +132,9 @@ app.post('/login', async (req, res) => {
         res.json({ 
           success: true, 
           user: {
-            id: result.rows[0].id,
-            rol: result.rows[0].rol,
-            type: result.rows[0].user_type
+            id: user.id,
+            rol: user.rol,
+            type: user.user_type
           },
           token: token 
         });
@@ -139,6 +164,7 @@ app.use('/api/user', profileRoutes);
 app.use('/api/parent', parentRoutes);
 app.use('/api/students', studentAttendanceRoutes);
 app.use('/api/profile', profileImageRoutes);
+app.use('/api/password', passwordResetRoutes);
 
 // Debug endpoint para verificar el token
 const { verifyToken } = require('./middlewares/authMiddleware');
@@ -157,6 +183,35 @@ app.get('/api/test', (req, res) => {
     message: 'Test endpoint working',
     jwtSecret: JWT_SECRET
   });
+});
+
+// Test endpoint para verificar la funcionalidad de reset de contraseña
+app.get('/api/test/password-reset', async (req, res) => {
+  try {
+    // Verificar que la tabla existe
+    const result = await db.getPool().query(
+      "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'password_reset_tokens')"
+    );
+    
+    res.json({
+      success: true,
+      message: 'Password reset system ready',
+      tableExists: result.rows[0].exists,
+      endpoints: {
+        generateToken: 'POST /api/password/request-reset',
+        validateToken: 'GET /api/password/validate-token/:token',
+        resetPassword: 'POST /api/password/reset',
+        cleanupTokens: 'DELETE /api/password/cleanup-tokens'
+      }
+    });
+  } catch (error) {
+    console.error('Error testing password reset:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error testing password reset system',
+      error: error.message
+    });
+  }
 });
 
 // Quick fix: Add planifications routes directly in index.js
@@ -211,10 +266,32 @@ app.use((req, res) => {
 });
 
 // arrancar el servidor
-app.listen(3000, (err) => {
+app.listen(3000, async (err) => {
   if (err) {
     console.error('Error starting server:', err);
     process.exit(1);
   }
   console.log('Servidor listo en http://localhost:3000');
+  
+  // Configurar limpieza automática de tokens de reset de contraseña
+  try {
+    const { autoCleanupTokens } = require('./controllers/passwordResetController');
+    
+    // Ejecutar limpieza inicial
+    const tokensRemoved = await autoCleanupTokens();
+    console.log(`Limpieza inicial de tokens: ${tokensRemoved} tokens eliminados`);
+    
+    // Configurar limpieza automática cada 24 horas
+    setInterval(async () => {
+      try {
+        const removed = await autoCleanupTokens();
+        console.log(`Limpieza automática de tokens: ${removed} tokens eliminados`);
+      } catch (error) {
+        console.error('Error en limpieza automática de tokens:', error);
+      }
+    }, 24 * 60 * 60 * 1000); // 24 horas
+    
+  } catch (error) {
+    console.error('Error configurando limpieza automática de tokens:', error);
+  }
 });

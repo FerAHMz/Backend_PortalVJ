@@ -11,7 +11,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Clean install to ensure fresh native bindings
-RUN npm ci --only=production
+RUN npm install
 
 # Copy application code
 COPY . .

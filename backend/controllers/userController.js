@@ -190,7 +190,7 @@ const createUser = async (req, res) => {
                     RETURNING id, nombre, apellido, email, telefono, 'Director' as rol, activo`,
                     [nombre, apellido, email, telefono, hashedPassword, rolId]
                 );
-                break
+                break;
 
             default:
                 return res.status(400).json({ error: 'Rol de usuario no válido' });
@@ -297,42 +297,42 @@ const updateUser = async (req, res) => {
             switch (rol) {
                 case 'SUP':
                     result = await client.query(
-                        `INSERT INTO SuperUsuarios (id, nombre, apellido, email, telefono, password, rol, activo)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        `INSERT INTO SuperUsuarios (id, nombre, apellido, email, telefono, password, activo)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)
                          RETURNING id, nombre, apellido, email, telefono, 'SUP' as rol, activo`,
-                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                        [id, nombre, apellido, email, telefono, currentUser.password, currentUser.activo]
                     );
                     break;
                 case 'Administrativo':
                     result = await client.query(
-                        `INSERT INTO Administrativos (id, nombre, apellido, email, telefono, password, rol, activo)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        `INSERT INTO Administrativos (id, nombre, apellido, email, telefono, password, activo)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)
                          RETURNING id, nombre, apellido, email, telefono, 'Administrativo' as rol, activo`,
-                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                        [id, nombre, apellido, email, telefono, currentUser.password, currentUser.activo]
                     );
                     break;
                 case 'Maestro':
                     result = await client.query(
-                        `INSERT INTO Maestros (id, nombre, apellido, email, telefono, password, rol, activo)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        `INSERT INTO Maestros (id, nombre, apellido, email, telefono, password, activo)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)
                          RETURNING id, nombre, apellido, email, telefono, 'Maestro' as rol, activo`,
-                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                        [id, nombre, apellido, email, telefono, currentUser.password, currentUser.activo]
                     );
                     break;
                 case 'Padre':
                     result = await client.query(
-                        `INSERT INTO Padres (id, nombre, apellido, email, telefono, password, rol, activo)
-                         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        `INSERT INTO Padres (id, nombre, apellido, email, telefono, password, activo)
+                         VALUES ($1, $2, $3, $4, $5, $6, $7)
                          RETURNING id, nombre, apellido, email, telefono, 'Padre' as rol, activo`,
-                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                        [id, nombre, apellido, email, telefono, currentUser.password, currentUser.activo]
                     );
                     break;
                 case 'Director':
                     result = await client.query(
-                        `INSERT INTO Directores (id, nombre, apellido, email, telefono, password, rol, activo)
-                        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                        `INSERT INTO Directores (id, nombre, apellido, email, telefono, password, activo)
+                        VALUES ($1, $2, $3, $4, $5, $6, $7)
                         RETURNING id, nombre, apellido, email, telefono, 'Director' as rol, activo`,
-                        [id, nombre, apellido, email, telefono, currentUser.password, rolId, currentUser.activo]
+                        [id, nombre, apellido, email, telefono, currentUser.password, currentUser.activo]
                     );
                     break;
                 default:
