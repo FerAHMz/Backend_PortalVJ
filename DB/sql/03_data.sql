@@ -641,3 +641,35 @@ WHERE estado IS NULL OR estado = '';
 
 -- Agregar comentarios para documentación de la columna estado
 COMMENT ON COLUMN Estudiantes.estado IS 'Estado del estudiante: inscrito, estudiante_activo, inactivo';
+
+-- Resetting sequences to avoid conflicts with manually inserted IDs
+-- This ensures that auto-generated IDs will not conflict with existing records
+SELECT setval('maestros_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Maestros), false);
+SELECT setval('superusuarios_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM SuperUsuarios), false);
+SELECT setval('directores_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Directores), false);
+SELECT setval('administrativos_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Administrativos), false);
+SELECT setval('padres_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Padres), false);
+SELECT setval('usuarios_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Usuarios), false);
+SELECT setval('grados_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Grados), false);
+SELECT setval('secciones_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Secciones), false);
+SELECT setval('materias_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Materias), false);
+SELECT setval('cursos_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Cursos), false);
+SELECT setval('pagos_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Pagos), false);
+SELECT setval('solvencias_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Solvencias), false);
+SELECT setval('tareas_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Tareas), false);
+SELECT setval('asistencia_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Asistencia), false);
+SELECT setval('calificaciones_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Calificaciones), false);
+SELECT setval('observaciones_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Observaciones), false);
+SELECT setval('planificaciones_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Planificaciones), false);
+SELECT setval('detalle_planificacion_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Detalle_planificacion), false);
+SELECT setval('revisiones_planificacion_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Revisiones_planificacion), false);
+SELECT setval('familias_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Familias), false);
+SELECT setval('grados_director_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Grados_director), false);
+SELECT setval('grado_seccion_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Grado_seccion), false);
+-- Additional sequences from 02_updates.sql
+SELECT setval('metodo_pago_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Metodo_pago), false);
+SELECT setval('estudiante_grado_seccion_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Estudiante_grado_seccion), false);
+SELECT setval('trimestres_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Trimestres), false);
+SELECT setval('boleta_calificaciones_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM Boleta_calificaciones), false);
+SELECT setval('auditoria_pagos_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM auditoria_pagos), false);
+SELECT setval('inscripciones_id_inscripcion_seq', (SELECT COALESCE(MAX(id_inscripcion), 0) + 1 FROM Inscripciones), false);
