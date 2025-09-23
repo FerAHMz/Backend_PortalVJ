@@ -208,7 +208,7 @@ const createUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
     const { id } = req.params;
-    const { nombre, apellido, email, telefono, rol, rolAnterior } = req.body;
+    const { nombre, apellido, email, telefono, rol, rolAnterior, activo } = req.body;
     let client;
 
     try {
@@ -347,46 +347,46 @@ const updateUser = async (req, res) => {
                 case 'SUP':
                     result = await client.query(
                         `UPDATE SuperUsuarios
-                         SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4, activo = $6
                          WHERE id = $5
                          RETURNING id, nombre, apellido, email, telefono, 'SUP' as rol, activo`,
-                        [nombre, apellido, email, telefono, id]
+                        [nombre, apellido, email, telefono, id, activo !== undefined ? activo : currentUser.activo]
                     );
                     break;
                 case 'Administrativo':
                     result = await client.query(
                         `UPDATE Administrativos
-                         SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4, activo = $6
                          WHERE id = $5
                          RETURNING id, nombre, apellido, email, telefono, 'Administrativo' as rol, activo`,
-                        [nombre, apellido, email, telefono, id]
+                        [nombre, apellido, email, telefono, id, activo !== undefined ? activo : currentUser.activo]
                     );
                     break;
                 case 'Maestro':
                     result = await client.query(
                         `UPDATE Maestros
-                         SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4, activo = $6
                          WHERE id = $5
                          RETURNING id, nombre, apellido, email, telefono, 'Maestro' as rol, activo`,
-                        [nombre, apellido, email, telefono, id]
+                        [nombre, apellido, email, telefono, id, activo !== undefined ? activo : currentUser.activo]
                     );
                     break;
                 case 'Padre':
                     result = await client.query(
                         `UPDATE Padres
-                         SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                         SET nombre = $1, apellido = $2, email = $3, telefono = $4, activo = $6
                          WHERE id = $5
                          RETURNING id, nombre, apellido, email, telefono, 'Padre' as rol, activo`,
-                        [nombre, apellido, email, telefono, id]
+                        [nombre, apellido, email, telefono, id, activo !== undefined ? activo : currentUser.activo]
                     );
                     break;
                 case 'Director':
                     result = await client.query(
                         `UPDATE Directores
-                        SET nombre = $1, apellido = $2, email = $3, telefono = $4
+                        SET nombre = $1, apellido = $2, email = $3, telefono = $4, activo = $6
                         WHERE id = $5
                         RETURNING id, nombre, apellido, email, telefono, 'Director' as rol, activo`,
-                        [nombre, apellido, email, telefono, id]
+                        [nombre, apellido, email, telefono, id, activo !== undefined ? activo : currentUser.activo]
                     );
                     break;
                 default:
