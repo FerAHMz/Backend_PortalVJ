@@ -1,0 +1,78 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    # Prueba de calentamiento - 5 usuarios por 1 minuto
+    - duration: 60
+      arrivalRate: 5
+      name: "Warm up"
+    
+    # Prueba de carga normal - 20 usuarios por 3 minutos
+    - duration: 180
+      arrivalRate: 20
+      name: "Normal load"
+    
+    # Prueba de estrés - 50 usuarios por 2 minutos
+    - duration: 120
+      arrivalRate: 50
+      name: "Stress test"
+
+scenarios:
+  - name: "User Authentication Flow"
+    weight: 40
+    flow:
+      - post:
+          url: "/api/users/login"
+          json:
+            email: "test@example.com"
+            password: "testpassword"
+          capture:
+            - json: "$.token"
+              as: "authToken"
+      - get:
+          url: "/api/users/profile"
+          headers:
+            Authorization: "Bearer {{ authToken }}"
+
+  - name: "Course Management"
+    weight: 30
+    flow:
+      - post:
+          url: "/api/users/login"
+          json:
+            email: "admin@example.com"
+            password: "adminpassword"
+          capture:
+            - json: "$.token"
+              as: "adminToken"
+      - get:
+          url: "/api/courses"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+      - get:
+          url: "/api/grades"
+          headers:
+            Authorization: "Bearer {{ adminToken }}"
+
+  - name: "Payment System"
+    weight: 20
+    flow:
+      - post:
+          url: "/api/users/login"
+          json:
+            email: "parent@example.com"
+            password: "parentpassword"
+          capture:
+            - json: "$.token"
+              as: "parentToken"
+      - get:
+          url: "/api/payments"
+          headers:
+            Authorization: "Bearer {{ parentToken }}"
+
+  - name: "Basic Health Check"
+    weight: 10
+    flow:
+      - get:
+          url: "/health"
+      - get:
+          url: "/api/health"

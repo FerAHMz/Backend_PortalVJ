@@ -1,17 +1,7 @@
-#!/usr/bin/env node
-
-/**
- * Portal Vanguardia Juvenil - Integration Test Runner
- * 
- * This script runs the complete integration test suite for the backend API.
- * It includes tests for all major subsystems: authentication, users, courses,
- * payments, messages, and more.
- */
-
 const { spawn } = require('child_process');
 const path = require('path');
 
-console.log('🚀 Portal Vanguardia Juvenil - Integration Test Suite');
+console.log('Portal Vanguardia Juvenil - Integration Test Suite');
 console.log('=====================================================\n');
 
 // Configuration
@@ -31,13 +21,13 @@ function runTests() {
     '--recursive'
   ];
 
-  console.log('📋 Test Configuration:');
+  console.log('Test Configuration:');
   console.log(`   • Timeout: ${TEST_CONFIG.timeout}ms`);
   console.log(`   • Reporter: ${TEST_CONFIG.reporter}`);
   console.log(`   • Pattern: ${TEST_CONFIG.testPattern}`);
   console.log(`   • Coverage: ${TEST_CONFIG.coverage ? 'enabled' : 'disabled'}\n`);
 
-  console.log('🧪 Running Integration Tests...\n');
+  console.log('Running Integration Tests...\n');
 
   const mochaProcess = spawn('npx', ['mocha', ...mochaArgs], {
     stdio: 'inherit',
@@ -46,12 +36,12 @@ function runTests() {
   });
 
   mochaProcess.on('close', (code) => {
-    console.log('\n📊 Test Results Summary:');
+    console.log('\nTest Results Summary:');
     if (code === 0) {
-      console.log('   ✅ All tests passed successfully!');
-      console.log('   🎉 Integration test suite completed without errors.\n');
+      console.log('    All tests passed successfully!');
+      console.log('    Integration test suite completed without errors.\n');
       
-      console.log('📝 Test Coverage Areas:');
+      console.log('   Test Coverage Areas:');
       console.log('   • Authentication & Authorization');
       console.log('   • User Management');
       console.log('   • Course Management');
@@ -61,17 +51,17 @@ function runTests() {
       console.log('   • HTTP Methods & Status Codes');
       console.log('   • Data Validation Functions\n');
       
-      console.log('🔧 Next Steps:');
+      console.log('   Next Steps:');
       console.log('   1. Review test results above');
       console.log('   2. Run with coverage: COVERAGE=true npm run test:integration');
       console.log('   3. Add more specific tests for edge cases');
       console.log('   4. Integration with CI/CD pipeline\n');
     } else {
-      console.log('   ❌ Some tests failed or encountered errors');
-      console.log(`   📋 Exit code: ${code}`);
-      console.log('   🔍 Check the test output above for details\n');
+      console.log('    Some tests failed or encountered errors');
+      console.log(`    Exit code: ${code}`);
+      console.log('    Check the test output above for details\n');
       
-      console.log('🔧 Troubleshooting:');
+      console.log('   Troubleshooting:');
       console.log('   1. Ensure all dependencies are installed');
       console.log('   2. Check database connection settings');
       console.log('   3. Verify environment variables');
@@ -97,20 +87,20 @@ function validateEnvironment() {
   for (const pkg of requiredPackages) {
     try {
       require.resolve(pkg);
-      console.log(`   ✅ ${pkg} - available`);
+      console.log(`    ${pkg} - available`);
     } catch (error) {
-      console.log(`   ❌ ${pkg} - missing`);
+      console.log(`    ${pkg} - missing`);
       missingPackages.push(pkg);
     }
   }
   
   if (missingPackages.length > 0) {
-    console.log(`\n❌ Missing required packages: ${missingPackages.join(', ')}`);
+    console.log(`\nMissing required packages: ${missingPackages.join(', ')}`);
     console.log('   Run: npm install --save-dev ' + missingPackages.join(' '));
     process.exit(1);
   }
   
-  console.log('   ✅ All required packages available\n');
+  console.log('    All required packages available\n');
 }
 
 // Main execution

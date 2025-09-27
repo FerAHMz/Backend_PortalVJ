@@ -1,0 +1,35 @@
+config:
+  target: 'http://localhost:3000'
+  phases:
+    # Prueba básica - 10 usuarios por 30 segundos
+    - duration: 30
+      arrivalRate: 10
+      name: "Basic load test"
+    
+    # Prueba de estrés - 30 usuarios por 1 minuto
+    - duration: 60
+      arrivalRate: 30
+      name: "Stress test"
+
+scenarios:
+  - name: "Health Check"
+    weight: 30
+    flow:
+      - get:
+          url: "/health"
+      
+  - name: "API Health Check"
+    weight: 20
+    flow:
+      - get:
+          url: "/api/health"
+          
+  - name: "Basic Endpoints"
+    weight: 50
+    flow:
+      - get:
+          url: "/api/courses"
+      - get:
+          url: "/api/grades"
+      - get:
+          url: "/api/users"
