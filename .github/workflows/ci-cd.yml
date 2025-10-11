@@ -94,7 +94,7 @@ jobs:
         run: npm test
 
       - name: Upload backend test coverage
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backend-test-coverage
@@ -365,7 +365,7 @@ jobs:
           npm run test:integration || npm test
 
       - name: Upload integration test results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: integration-test-results
