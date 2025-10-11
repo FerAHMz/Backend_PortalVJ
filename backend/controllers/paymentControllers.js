@@ -1,6 +1,8 @@
 const multer = require('multer');
-const XLSX = require('xlsx');
+const ExcelJS = require('exceljs');
 const { validateExcelContent } = require('../utils/excelValidators');
+const fs = require('fs');
+const path = require('path');
 const db = require('../database_cn');
 
 const storage = multer.memoryStorage();
@@ -28,26 +30,29 @@ const uploadPayments = async (req, res) => {
       });
     }
 
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-
-    if (!workbook || !workbook.SheetNames || workbook.SheetNames.length === 0) {
-      console.log('Invalid Excel format');
-      return res.status(400).json({
-        success: false,
-        error: 'Formato de Excel inválido o archivo vacío'
-      });
+    // Create temporary file for ExcelJS
+    const tempFilePath = path.join(__dirname, '../uploads', `temp-${Date.now()}.xlsx`);
+    
+    // Ensure uploads directory exists
+    const uploadDir = path.dirname(tempFilePath);
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
     }
+    
+    // Write buffer to temporary file
+    fs.writeFileSync(tempFilePath, req.file.buffer);
 
-    const validation = validateExcelContent(workbook);
+    try {
+      const validation = await validateExcelContent(tempFilePath);
+      
+      if (!validation || !validation.isValid) {
+        return res.status(400).json({
+          success: false,
+          errors: validation?.errors || ['Error al validar el archivo']
+        });
+      }
 
-    if (!validation || !validation.isValid) {
-      return res.status(400).json({
-        success: false,
-        errors: validation?.errors || ['Error al validar el archivo']
-      });
-    }
-
-    client = await db.getPool().connect();
+      client = await db.getPool().connect();
     await client.query('BEGIN');
 
     const result = {
@@ -121,14 +126,20 @@ const uploadPayments = async (req, res) => {
       }
     }
 
-    await client.query('COMMIT');
-    res.status(200).json({
-      success: true,
-      message: 'Pagos procesados exitosamente',
-      insertedCount: result.insertedCount,
-      duplicatesCount: result.duplicates.length,
-      duplicates: result.duplicates
-    });
+      await client.query('COMMIT');
+      res.status(200).json({
+        success: true,
+        message: 'Pagos procesados exitosamente',
+        insertedCount: result.insertedCount,
+        duplicatesCount: result.duplicates.length,
+        duplicates: result.duplicates
+      });
+    } finally {
+      // Clean up temporary file
+      if (fs.existsSync(tempFilePath)) {
+        fs.unlinkSync(tempFilePath);
+      }
+    }
   } catch (error) {
     console.error('Upload error:', error);
     if (client) await client.query('ROLLBACK');
