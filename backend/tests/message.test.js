@@ -1,7 +1,7 @@
 const request = require('supertest');
 const express = require('express');
 const messageRoutes = require('../routes/messageRoutes');
-const { verifyToken } = require('../middlewares/authMiddleware');
+const { verifyToken: _verifyToken } = require('../middlewares/authMiddleware');
 const db = require('../database_cn');
 
 // Mock the database
@@ -30,7 +30,7 @@ describe('Message API Tests', () => {
       query: jest.fn(),
       release: jest.fn()
     };
-    
+
     db.getPool = jest.fn().mockReturnValue({
       connect: jest.fn().mockResolvedValue(mockClient),
       query: jest.fn()

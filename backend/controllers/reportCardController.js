@@ -72,7 +72,7 @@ const getReportCard = async (req, res) => {
     `, trimestreId ? [carnetEstudiante, gradeSectionId, trimestreId] : [carnetEstudiante, gradeSectionId]);
 
     res.json(result.rows);
-    console.log('backend get report card', result.rows)
+    console.log('backend get report card', result.rows);
   } catch (error) {
     console.error('Error fetching report card:', error);
     res.status(500).json({ error: 'Error fetching report card' });
@@ -110,8 +110,8 @@ const getGradeSections = async (req, res) => {
 const getTeacherGradeSections = async (req, res) => {
   let client;
   try {
-    // Obtener el ID del maestro desde el token JWT 
-    const maestroId = req.user.id; // 
+    // Obtener el ID del maestro desde el token JWT
+    const maestroId = req.user.id; //
     console.log('Maestro ID from token:', maestroId);
 
     client = await db.getPool().connect();
@@ -190,7 +190,7 @@ const getGrade = async (req, res) => {
     `, [gradeSectionId]);
 
     res.json(result.rows);
-    console.log('backend get grade', result.rows)
+    console.log('backend get grade', result.rows);
   } catch (error) {
     console.error('Error fetching grades:', error);
     res.status(500).json({ error: 'Error fetching grades' });
@@ -203,7 +203,7 @@ module.exports = {
   getReportCard,
   getStudentsGradeSection,
   getGradeSections,
-  getTeacherGradeSections, 
+  getTeacherGradeSections,
   getObservationsAndActionPoints,
   getGrade
 };

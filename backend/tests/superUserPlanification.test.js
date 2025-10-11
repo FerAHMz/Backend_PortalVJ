@@ -29,7 +29,7 @@ describe('SuperUser Planifications API Tests', () => {
       query: jest.fn(),
       release: jest.fn()
     };
-    
+
     db.getPool = jest.fn().mockReturnValue({
       connect: jest.fn().mockResolvedValue(mockClient),
       query: jest.fn()

@@ -55,9 +55,9 @@ exports.getConversationMessages = async (req, res) => {
   const userRole = req.user.rol;
 
   if (!subject) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'Subject parameter is required' 
+    return res.status(400).json({
+      success: false,
+      error: 'Subject parameter is required'
     });
   }
 
@@ -128,9 +128,9 @@ exports.searchUsers = async (req, res) => {
       WHERE (LOWER(nombre) LIKE LOWER($2) OR LOWER(apellido) LIKE LOWER($2))
       LIMIT 10
     `;
-    
+
     const result = await client.query(searchQuery, [
-      currentUserId, 
+      currentUserId,
       `%${query}%`
     ]);
 
@@ -233,7 +233,7 @@ exports.getMessages = async (req, res) => {
 
   try {
     client = await db.getPool().connect();
-    
+
     // Only get messages where user is sender or recipient
     const query = `
       SELECT 
@@ -273,13 +273,13 @@ exports.getConversation = async (req, res) => {
         (recipient_id = $2 AND recipient_role = $3)
       )
     `;
-    
+
     const result = await client.query(query, [conversationId, userId, userRole]);
 
     if (result.rows.length === 0) {
-      return res.status(403).json({ 
-        success: false, 
-        error: 'No tienes permiso para ver esta conversación' 
+      return res.status(403).json({
+        success: false,
+        error: 'No tienes permiso para ver esta conversación'
       });
     }
 

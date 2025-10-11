@@ -29,41 +29,41 @@ global.createTestUser = async (userData = {}) => {
     rol: 2, // Assuming role 2 exists
     activo: true
   };
-  
+
   const user = { ...defaultUser, ...userData };
-  
+
   // Determine which table to use based on role
   let tableName = 'SuperUsuarios'; // Default
   if (user.rol === 3) tableName = 'Maestros';
   else if (user.rol === 4) tableName = 'Padres';
   else if (user.rol === 5) tableName = 'Directores';
-  
+
   const query = `
     INSERT INTO ${tableName} (nombre, apellido, email, telefono, password, rol, activo)
     VALUES ($1, $2, $3, $4, $5, $6, $7)
     RETURNING *
   `;
-  
+
   const result = await global.testDb.query(query, [
     user.nombre, user.apellido, user.email, user.telefono, user.password, user.rol, user.activo
   ]);
-  
+
   return result.rows[0];
 };
 
 global.cleanupTestData = async () => {
   try {
     // Clean up test data in reverse order of dependencies
-    await global.testDb.query("DELETE FROM Mensajes WHERE id > 0");
-    await global.testDb.query("DELETE FROM Pagos WHERE id > 0");
-    await global.testDb.query("DELETE FROM Calificaciones WHERE id > 0");
-    await global.testDb.query("DELETE FROM Asistencias WHERE id > 0");
-    await global.testDb.query("DELETE FROM Inscripciones WHERE id > 0");
-    await global.testDb.query("DELETE FROM Cursos WHERE id > 0");
-    await global.testDb.query("DELETE FROM Maestros WHERE email LIKE '%test%'");
-    await global.testDb.query("DELETE FROM Padres WHERE email LIKE '%test%'");
-    await global.testDb.query("DELETE FROM SuperUsuarios WHERE email LIKE '%test%'");
-    await global.testDb.query("DELETE FROM Directores WHERE email LIKE '%test%'");
+    await global.testDb.query('DELETE FROM Mensajes WHERE id > 0');
+    await global.testDb.query('DELETE FROM Pagos WHERE id > 0');
+    await global.testDb.query('DELETE FROM Calificaciones WHERE id > 0');
+    await global.testDb.query('DELETE FROM Asistencias WHERE id > 0');
+    await global.testDb.query('DELETE FROM Inscripciones WHERE id > 0');
+    await global.testDb.query('DELETE FROM Cursos WHERE id > 0');
+    await global.testDb.query('DELETE FROM Maestros WHERE email LIKE \'%test%\'');
+    await global.testDb.query('DELETE FROM Padres WHERE email LIKE \'%test%\'');
+    await global.testDb.query('DELETE FROM SuperUsuarios WHERE email LIKE \'%test%\'');
+    await global.testDb.query('DELETE FROM Directores WHERE email LIKE \'%test%\'');
   } catch (error) {
     console.warn('Cleanup warning:', error.message);
   }
@@ -83,7 +83,7 @@ if (!process.env.VERBOSE_TESTS) {
 before(async function() {
   this.timeout(15000);
   console.log('Setting up integration test environment...');
-  
+
   // Test database connection
   try {
     await global.testDb.query('SELECT NOW()');

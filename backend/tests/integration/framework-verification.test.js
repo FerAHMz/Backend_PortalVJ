@@ -13,25 +13,25 @@ describe('Basic Integration Test Framework Verification', function() {
     // Create a simple test Express app
     testApp = express();
     testApp.use(express.json());
-    
+
     // Simple test route
     testApp.get('/test', (req, res) => {
       res.json({ success: true, message: 'Test endpoint working' });
     });
-    
+
     // Mock login endpoint
     testApp.post('/login', (req, res) => {
       const { email, password } = req.body;
       if (email === 'test@test.com' && password === 'test123') {
-        res.json({ 
-          success: true, 
+        res.json({
+          success: true,
           token: 'mock-jwt-token',
           user: { id: 1, email: 'test@test.com', rol: 'SUP' }
         });
       } else {
-        res.status(401).json({ 
-          success: false, 
-          error: 'Invalid credentials' 
+        res.status(401).json({
+          success: false,
+          error: 'Invalid credentials'
         });
       }
     });
@@ -119,10 +119,10 @@ describe('Basic Integration Test Framework Verification', function() {
     it('should handle environment variables', function() {
       // Set a test environment variable
       process.env.TEST_VAR = 'test_value';
-      
+
       expect(process.env.TEST_VAR).to.equal('test_value');
       expect(process.env).to.exist;
-      
+
       // Clean up
       delete process.env.TEST_VAR;
     });

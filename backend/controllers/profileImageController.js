@@ -10,16 +10,16 @@ const upload = multer({
   },
   fileFilter: (req, file, cb) => {
     console.log('File filter - MIME type:', file.mimetype);
-    
+
     // Permitir tipos de imagen comunes
     const allowedTypes = [
       'image/jpeg',
-      'image/jpg', 
+      'image/jpg',
       'image/png',
       'image/gif',
       'image/webp'
     ];
-    
+
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
@@ -34,12 +34,12 @@ const upload = multer({
 function getUserTable(userRole) {
   const tableMap = {
     'SUP': 'SuperUsuarios',
-    'Director': 'Directores', 
+    'Director': 'Directores',
     'Maestro': 'Maestros',
     'Padre': 'Padres',
     'Administrativo': 'Administrativos'
   };
-  
+
   return tableMap[userRole];
 }
 
@@ -79,7 +79,7 @@ async function uploadProfileImage(req, res) {
     const timestamp = Date.now();
     const fileExtension = file.originalname.split('.').pop();
     const fileName = `profile-${userId}-${timestamp}.${fileExtension}`;
-    
+
     console.log('Uploading file to Cloudflare R2:', {
       fileName,
       fileSize: file.buffer.length,
@@ -88,12 +88,12 @@ async function uploadProfileImage(req, res) {
 
     // Subir a Cloudflare R2 usando el servicio existente
     const uploadResult = await cloudflareR2Service.uploadFile(
-      file.buffer, 
-      fileName, 
-      file.mimetype, 
+      file.buffer,
+      fileName,
+      file.mimetype,
       'profile-images'
     );
-    
+
     console.log('Cloudflare upload result:', uploadResult);
 
     if (uploadResult.success) {
@@ -151,7 +151,7 @@ async function updateProfileImageUrl(req, res) {
     // Verificar que el usuario existe y obtener la imagen actual
     const getUserQuery = `SELECT id, profile_image_url FROM ${userTable} WHERE id = $1`;
     const { rows: userRows } = await db.getPool().query(getUserQuery, [userId]);
-    
+
     if (userRows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -162,7 +162,7 @@ async function updateProfileImageUrl(req, res) {
     const currentUser = userRows[0];
 
     // Si hay una imagen anterior y es diferente a la nueva, intentar eliminarla de Cloudflare
-    if (currentUser.profile_image_url && 
+    if (currentUser.profile_image_url &&
         currentUser.profile_image_url !== profileImageUrl) {
       try {
         // Extraer el nombre del archivo de la URL
@@ -184,7 +184,7 @@ async function updateProfileImageUrl(req, res) {
       WHERE id = $2
       RETURNING id, profile_image_url
     `;
-    
+
     const { rows: updatedRows } = await db.getPool().query(updateQuery, [profileImageUrl, userId]);
 
     if (updatedRows.length === 0) {
@@ -235,7 +235,7 @@ async function deleteProfileImage(req, res) {
     // Verificar que el usuario existe y obtener la imagen actual
     const getUserQuery = `SELECT id, profile_image_url FROM ${userTable} WHERE id = $1`;
     const { rows: userRows } = await db.getPool().query(getUserQuery, [userId]);
-    
+
     if (userRows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -267,7 +267,7 @@ async function deleteProfileImage(req, res) {
       WHERE id = $1
       RETURNING id
     `;
-    
+
     const { rows: updatedRows } = await db.getPool().query(updateQuery, [userId]);
 
     if (updatedRows.length === 0) {
@@ -321,12 +321,12 @@ async function getProfileWithImage(req, res) {
       WHERE table_name = $1 
       AND column_name = 'profile_image_url'
     `;
-    
+
     const { rows: columnCheck } = await db.getPool().query(
-      checkColumnQuery, 
+      checkColumnQuery,
       [userTable.toLowerCase()]
     );
-    
+
     const hasProfileImageColumn = columnCheck.length > 0;
 
     // Construir la consulta dinámicamente
@@ -344,9 +344,9 @@ async function getProfileWithImage(req, res) {
         WHERE id = $1
       `;
     }
-    
+
     const { rows: userRows } = await db.getPool().query(getUserQuery, [userId]);
-    
+
     if (userRows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -368,8 +368,8 @@ async function getProfileWithImage(req, res) {
         rol: userRole
       },
       hasProfileImageSupport: hasProfileImageColumn,
-      message: hasProfileImageColumn ? 
-        'Perfil obtenido con soporte de imágenes' : 
+      message: hasProfileImageColumn ?
+        'Perfil obtenido con soporte de imágenes' :
         'Perfil obtenido sin soporte de imágenes (ejecutar migración de BD)'
     });
 

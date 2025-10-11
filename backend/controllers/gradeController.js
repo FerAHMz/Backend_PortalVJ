@@ -18,9 +18,9 @@ exports.getNetAverages = async (req, res) => {
 
     if (courseRes.rows.length === 0) {
       console.log(`Curso ${courseId} no encontrado`);
-      return res.status(404).json({ 
+      return res.status(404).json({
         success: false,
-        error: 'Curso no encontrado' 
+        error: 'Curso no encontrado'
       });
     }
 
@@ -43,7 +43,7 @@ exports.getNetAverages = async (req, res) => {
       WHERE c.id = $1
       ORDER BY e.carnet, t.id
     `;
-    
+
     const { rows } = await db.getPool().query(gradesQuery, [courseId]);
     console.log(`Datos obtenidos: ${rows.length} registros`);
 
@@ -62,7 +62,7 @@ exports.getNetAverages = async (req, res) => {
       }
 
       const student = students.get(row.carnet);
-      
+
       if (row.points_earned !== null) {
         student.tasks.push({
           taskId: row.task_id,
@@ -88,18 +88,18 @@ exports.getNetAverages = async (req, res) => {
     const studentResults = Array.from(students.entries()).map(([carnet, data]) => ({
       carnet,
       ...data,
-      average: data.totalPossible > 0 
+      average: data.totalPossible > 0
         ? parseFloat(((data.totalEarned / data.totalPossible) * 100).toFixed(2))
         : null,
     }));
-      
+
     const validAverages = studentResults.filter(s => s.average !== null);
     const classAverage = validAverages.length > 0
       ? parseFloat((
-          validAverages.reduce((sum, s) => sum + s.average, 0) / validAverages.length
-        ).toFixed(2))
+        validAverages.reduce((sum, s) => sum + s.average, 0) / validAverages.length
+      ).toFixed(2))
       : null;
-      
+
 
     console.log(`Procesamiento completado para curso ${courseId}`);
     res.json({
@@ -119,10 +119,10 @@ exports.getNetAverages = async (req, res) => {
       stack: error.stack,
       courseId: req.params.courseId
     });
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Error al calcular promedios',
-      details: error.message 
+      details: error.message
     });
   }
 };
@@ -136,10 +136,10 @@ exports.getTaskGrades = async (req, res) => {
       [courseId, taskId]
     );
     res.json({ success: true, data: result.rows });
-  } catch (error) {
-    res.status(500).json({ 
+  } catch {
+    res.status(500).json({
       success: false,
-      error: 'Error al obtener calificaciones' 
+      error: 'Error al obtener calificaciones'
     });
   }
 };
@@ -148,7 +148,7 @@ exports.updateGrade = async (req, res) => {
   try {
     const { courseId, taskId, studentId } = req.params;
     const { nota } = req.body;
-    
+
     await db.getPool().query(
       `INSERT INTO calificaciones (id_curso, id_tarea, carnet_estudiante, nota)
        VALUES ($1, $2, $3, $4)
@@ -156,12 +156,12 @@ exports.updateGrade = async (req, res) => {
        DO UPDATE SET nota = EXCLUDED.nota`,
       [courseId, taskId, studentId, nota]
     );
-    
+
     res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ 
+  } catch {
+    res.status(500).json({
       success: false,
-      error: 'Error al actualizar calificación' 
+      error: 'Error al actualizar calificación'
     });
   }
 };

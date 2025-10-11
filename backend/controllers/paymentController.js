@@ -24,7 +24,7 @@ const createPayment = async (req, res) => {
 // Fetch all payments
 const getPayments = async (req, res) => {
   try {
-    const result = await db.getPool().query(`SELECT * FROM payments ORDER BY created_at DESC`);
+    const result = await db.getPool().query('SELECT * FROM payments ORDER BY created_at DESC');
     res.json({ success: true, payments: result.rows });
   } catch (error) {
     console.error('Error fetching payments:', error);

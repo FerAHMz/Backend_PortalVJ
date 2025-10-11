@@ -53,9 +53,9 @@ router.post('/conversation', validateMessageRole, async (req, res) => {
   const { id: senderId, rol: senderRole } = req.user;
 
   if (!subject || !content) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'Subject and content are required' 
+    return res.status(400).json({
+      success: false,
+      error: 'Subject and content are required'
     });
   }
 
@@ -68,18 +68,18 @@ router.post('/conversation', validateMessageRole, async (req, res) => {
       ORDER BY created_at DESC
       LIMIT 1
     `;
-    
+
     const lastMessageResult = await db.getPool().query(lastMessageQuery, [subject]);
-    
+
     if (!lastMessageResult || lastMessageResult.rows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Conversation not found' 
+      return res.status(404).json({
+        success: false,
+        error: 'Conversation not found'
       });
     }
 
     const lastMessage = lastMessageResult.rows[0];
-    
+
     // Determine recipient based on who the current user is
     let recipientId, recipientRole;
     if (senderId === lastMessage.sender_id && senderRole === lastMessage.sender_role) {
@@ -97,13 +97,13 @@ router.post('/conversation', validateMessageRole, async (req, res) => {
       subject,
       content
     };
-    
+
     return messageController.sendMessage(req, res);
   } catch (error) {
     console.error('Error adding message to conversation:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Error al agregar mensaje a la conversación' 
+    res.status(500).json({
+      success: false,
+      error: 'Error al agregar mensaje a la conversación'
     });
   }
 });

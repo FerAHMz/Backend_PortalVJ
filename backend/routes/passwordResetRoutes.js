@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const {
-    generateResetToken,
-    validateResetToken,
-    resetPassword,
-    cleanupExpiredTokens
+  generateResetToken,
+  validateResetToken,
+  resetPassword,
+  cleanupExpiredTokens
 } = require('../controllers/passwordResetController');
 
 // Generar token de reset (público)

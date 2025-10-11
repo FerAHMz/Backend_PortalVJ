@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk');
-const mimeTypes = require('mime-types');
 
 /**
  * Cloudflare R2 Storage Service
@@ -34,7 +33,7 @@ class CloudflareR2Service {
   async uploadFile(fileBuffer, fileName, mimeType, folder = 'uploads') {
     try {
       // Check if we're in development mode or have invalid credentials
-      const isDevMode = (process.env.NODE_ENV === 'development' && process.env.FORCE_CLOUDFLARE_R2 !== 'true') || 
+      const isDevMode = (process.env.NODE_ENV === 'development' && process.env.FORCE_CLOUDFLARE_R2 !== 'true') ||
                        !this.accessKeyId ||
                        !this.secretAccessKey ||
                        !this.endpoint ||
@@ -61,7 +60,7 @@ class CloudflareR2Service {
       console.log('Using production mode: uploading to Cloudflare R2');
       // Generate unique file name with timestamp
       const timestamp = Date.now();
-      const fileExtension = fileName.split('.').pop();
+      const _fileExtension = fileName.split('.').pop();
       const uniqueFileName = `${folder}/${timestamp}-${fileName}`;
 
       const uploadParams = {
@@ -108,7 +107,7 @@ class CloudflareR2Service {
   async uploadFileLocally(fileBuffer, fileName, mimeType, folder = 'uploads') {
     const fs = require('fs').promises;
     const path = require('path');
-    
+
     try {
       // Create uploads directory if it doesn't exist
       const uploadsDir = path.join(__dirname, '..', 'uploads', folder);
@@ -116,7 +115,7 @@ class CloudflareR2Service {
 
       // Generate unique file name with timestamp
       const timestamp = Date.now();
-      const fileExtension = fileName.split('.').pop();
+      const _fileExtension = fileName.split('.').pop();
       const uniqueFileName = `${timestamp}-${fileName}`;
       const filePath = path.join(uploadsDir, uniqueFileName);
 
@@ -150,7 +149,7 @@ class CloudflareR2Service {
   async deleteFile(fileName) {
     try {
       // Check if we're in development mode
-      const isDevMode = (process.env.NODE_ENV === 'development' && process.env.FORCE_CLOUDFLARE_R2 !== 'true') || 
+      const isDevMode = (process.env.NODE_ENV === 'development' && process.env.FORCE_CLOUDFLARE_R2 !== 'true') ||
                        !this.accessKeyId ||
                        !this.secretAccessKey ||
                        !this.endpoint;
@@ -187,7 +186,7 @@ class CloudflareR2Service {
   async deleteFileLocally(fileName) {
     const fs = require('fs').promises;
     const path = require('path');
-    
+
     try {
       // Extract the actual filename from the path
       const actualFileName = fileName.includes('/') ? fileName.split('/').pop() : fileName;

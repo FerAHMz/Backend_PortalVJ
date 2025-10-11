@@ -14,7 +14,7 @@ describe('App Loading Test', function() {
   it('should be able to make a basic request', function(done) {
     chai.request(app)
       .get('/api/test') // This might not exist, but we'll test the app structure
-      .end((err, res) => {
+      .end((err, _res) => {
         // We don't care about the response, just that the app can handle requests
         expect(err).to.be.null;
         done();

@@ -1,39 +1,39 @@
-const express = require('express');
+﻿const express = require('express');
 const router = express.Router();
 const { upload, uploadPayments } = require('../controllers/paymentControllers');
 const { verifyToken, isAdmin } = require('../middlewares/authMiddleware');
-const { 
-    addPayment,
-    getPayments,
-    updatePayment,
-    invalidatePayment
-  } = require('../controllers/manualPaymentsController');
-const db = require('../database_cn'); 
+const {
+  addPayment,
+  getPayments,
+  updatePayment,
+  invalidatePayment
+} = require('../controllers/manualPaymentsController');
+const db = require('../database_cn');
 
 router.post('/upload', verifyToken, isAdmin, (req, res) => {
-    upload(req, res, async (err) => {
-        if (err) {
-            return res.status(400).json({
-                success: false,
-                error: err.message
-            });
-        }
-        
-        if (!req.file) {
-            return res.status(400).json({
-                success: false,
-                error: 'No se ha seleccionado ningún archivo'
-            });
-        }
-        
-        await uploadPayments(req, res);
-    });
+  upload(req, res, async (err) => {
+    if (err) {
+      return res.status(400).json({
+        success: false,
+        error: err.message
+      });
+    }
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        error: 'No se ha seleccionado ningún archivo'
+      });
+    }
+
+    await uploadPayments(req, res);
+  });
 });
 
 // Student payments route
 router.get('/students-payments', async (req, res) => {
-    try {
-        const result = await db.getPool().query(`
+  try {
+    const result = await db.getPool().query(`
             SELECT 
                 e.carnet AS id,
                 CONCAT(e.nombre, ' ', e.apellido) AS name,
@@ -49,17 +49,17 @@ router.get('/students-payments', async (req, res) => {
             LEFT JOIN grados g ON gs.id_grado = g.id
             GROUP BY e.carnet, e.nombre, e.apellido, g.grado
         `);
-        res.json(result.rows);
-    } catch (error) {
-      console.error('Error fetching students payments:', error)
-      res.status(500).json({ error: 'Error fetching students payments' })
-    }
-  })
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching students payments:', error);
+    res.status(500).json({ error: 'Error fetching students payments' });
+  }
+});
 
 // Student status route
 router.get('/students-status', async (req, res) => {
-    try {
-        const result = await db.getPool().query(`
+  try {
+    const result = await db.getPool().query(`
             SELECT 
                 e.carnet AS id,
                 CONCAT(e.nombre, ' ', e.apellido) AS name,
@@ -75,18 +75,18 @@ router.get('/students-status', async (req, res) => {
             LEFT JOIN grados g ON gs.id_grado = g.id
             GROUP BY e.carnet, e.nombre, e.apellido, g.grado
         `);
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error fetching students status:', error);
-        res.status(500).json({ error: 'Error fetching students status' });
-    }
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching students status:', error);
+    res.status(500).json({ error: 'Error fetching students status' });
+  }
 });
 
 router.post('/report', async (req, res) => {
-    const { searchQuery, carnetQuery, grade, startDate, endDate } = req.body;
+  const { searchQuery, carnetQuery, grade, startDate, endDate } = req.body;
 
-    try {
-        const query = `
+  try {
+    const query = `
             SELECT 
                 e.carnet AS carnet,
                 CONCAT(e.nombre, ' ', e.apellido) AS student,
@@ -106,49 +106,49 @@ router.post('/report', async (req, res) => {
               AND ($5::date IS NULL OR s.fecha_pago <= $5)
         `;
 
-        const values = [
-            searchQuery || null,
-            carnetQuery || null,
-            grade || null,
-            startDate || null,
-            endDate || null,
-        ];
+    const values = [
+      searchQuery || null,
+      carnetQuery || null,
+      grade || null,
+      startDate || null,
+      endDate || null,
+    ];
 
-        const result = await db.getPool().query(query, values);
+    const result = await db.getPool().query(query, values);
 
-        // Add logic to identify unpaid months
-        const updatedRows = result.rows.map(row => {
-            if (row.paymentdate === 'No Pagado') {
-                return {
-                    ...row,
-                    month: row.month ? `Mes pendiente: ${row.month}` : 'Mes no especificado',
-                    paymentdate: 'No se ha realizado el pago de este mes'
-                };
-            }
-            return row;
-        });
+    // Add logic to identify unpaid months
+    const updatedRows = result.rows.map(row => {
+      if (row.paymentdate === 'No Pagado') {
+        return {
+          ...row,
+          month: row.month ? `Mes pendiente: ${row.month}` : 'Mes no especificado',
+          paymentdate: 'No se ha realizado el pago de este mes'
+        };
+      }
+      return row;
+    });
 
-        res.json(updatedRows);
-    } catch (error) {
-        console.error('Error generating report:', error);
-        res.status(500).json({ error: 'Error al generar el reporte' });
-    }
+    res.json(updatedRows);
+  } catch (error) {
+    console.error('Error generating report:', error);
+    res.status(500).json({ error: 'Error al generar el reporte' });
+  }
 });
 
 router.get('/grades', async (req, res) => {
-    try {
-        const result = await db.getPool().query('SELECT id, grado FROM grados');
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error fetching grades:', error);
-        res.status(500).json({ error: 'Error fetching grades' });
-    }
-})
+  try {
+    const result = await db.getPool().query('SELECT id, grado FROM grados');
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching grades:', error);
+    res.status(500).json({ error: 'Error fetching grades' });
+  }
+});
 
 // Full report route
 router.get('/full-report', async (req, res) => {
-    try {
-        const paymentsQuery = `
+  try {
+    const paymentsQuery = `
             SELECT 
                 e.carnet AS carnet,
                 CONCAT(e.nombre, ' ', e.apellido) AS student,
@@ -163,7 +163,7 @@ router.get('/full-report', async (req, res) => {
             LEFT JOIN grados g ON gs.id_grado = g.id
         `;
 
-        const summaryQuery = `
+    const summaryQuery = `
             SELECT 
                 g.grado AS grade,
                 COUNT(DISTINCT CASE 
@@ -186,19 +186,19 @@ router.get('/full-report', async (req, res) => {
             ORDER BY g.grado
         `;
 
-        const [paymentsResult, summaryResult] = await Promise.all([
-            db.getPool().query(paymentsQuery),
-            db.getPool().query(summaryQuery),
-        ]);
+    const [paymentsResult, summaryResult] = await Promise.all([
+      db.getPool().query(paymentsQuery),
+      db.getPool().query(summaryQuery),
+    ]);
 
-        res.json({
-            summary: summaryResult.rows,
-            payments: paymentsResult.rows,
-        });
-    } catch (error) {
-        console.error('Error fetching full report:', error);
-        res.status(500).json({ error: 'Error al generar el reporte completo' });
-    }
+    res.json({
+      summary: summaryResult.rows,
+      payments: paymentsResult.rows,
+    });
+  } catch (error) {
+    console.error('Error fetching full report:', error);
+    res.status(500).json({ error: 'Error al generar el reporte completo' });
+  }
 });
 
 //CRUD manual de pagos
@@ -207,4 +207,6 @@ router.put('/:id', verifyToken, isAdmin, updatePayment);
 router.put('/invalidate/:id', verifyToken, isAdmin, invalidatePayment);
 router.get('/', verifyToken, isAdmin, getPayments);
 
-module.exports = router;
+module.exports = router;
+
+

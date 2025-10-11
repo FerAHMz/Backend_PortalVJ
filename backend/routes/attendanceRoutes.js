@@ -1,21 +1,21 @@
-const express = require('express')
-const { getAttendance, postAttendance, getAttendanceReport } = require('../controllers/attendanceController')
-const { verifyToken } = require('../middlewares/authMiddleware')
+const express = require('express');
+const { getAttendance, postAttendance, getAttendanceReport } = require('../controllers/attendanceController');
+const { verifyToken } = require('../middlewares/authMiddleware');
 
-const router = express.Router()
+const router = express.Router();
 
-router.use(verifyToken)
+router.use(verifyToken);
 
 // Ruta para manejar la asistencia diaria
 router
   .route('/:courseId/attendance')
-  .get (getAttendance)   
-  .post(postAttendance) 
+  .get (getAttendance)
+  .post(postAttendance);
 
 // Ruta para los reportes por rango de fechas
 router.get(
-  '/:courseId/attendance/report', 
+  '/:courseId/attendance/report',
   getAttendanceReport
-)
+);
 
-module.exports = router
+module.exports = router;

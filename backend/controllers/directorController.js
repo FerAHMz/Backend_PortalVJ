@@ -28,7 +28,7 @@ const getCursosPorGrado = async (req, res) => {
   try {
     // Validar que el grado pertenece al director
     const gradoCheck = await db.getPool().query(
-      `SELECT 1 FROM Grados_director WHERE id_director = $1 AND id_grado = $2`,
+      'SELECT 1 FROM Grados_director WHERE id_director = $1 AND id_grado = $2',
       [directorId, gradoId]
     );
 

@@ -24,10 +24,10 @@ describe('Basic Integration Test Framework Verification', function() {
     it('should handle environment variables', function() {
       // Set a test environment variable
       process.env.TEST_VAR = 'test_value';
-      
+
       expect(process.env.TEST_VAR).to.equal('test_value');
       expect(process.env).to.exist;
-      
+
       // Clean up
       delete process.env.TEST_VAR;
     });
@@ -56,14 +56,14 @@ describe('Basic Integration Test Framework Verification', function() {
       const testArray = [1, 2, 3, 4, 5];
       const doubled = testArray.map(x => x * 2);
       const filtered = testArray.filter(x => x > 2);
-      
+
       expect(doubled).to.deep.equal([2, 4, 6, 8, 10]);
       expect(filtered).to.deep.equal([3, 4, 5]);
     });
 
     it('should handle Error objects', function() {
       const error = new Error('Test error message');
-      
+
       expect(error).to.be.an('error');
       expect(error.message).to.equal('Test error message');
       expect(() => { throw error; }).to.throw('Test error message');
@@ -71,7 +71,7 @@ describe('Basic Integration Test Framework Verification', function() {
 
     it('should support Promises', function() {
       const testPromise = Promise.resolve('promise resolved');
-      
+
       return testPromise.then(result => {
         expect(result).to.equal('promise resolved');
       });
@@ -93,7 +93,7 @@ describe('Basic Integration Test Framework Verification', function() {
 
       expect(testUser).to.have.property('id', 123);
       expect(testUser).to.have.property('email');
-      expect(testUser.email).to.match(/^[\w\.-]+@[\w\.-]+\.\w+$/);
+      expect(testUser.email).to.match(/^[\w.-]+@[\w.-]+\.\w+$/);
       expect(testUser.permissions).to.be.an('array');
       expect(testUser.permissions).to.include('admin');
       expect(testUser.profile).to.be.an('object');
@@ -134,7 +134,7 @@ describe('Basic Integration Test Framework Verification', function() {
       expect(mockJwtPayload).to.have.property('rol');
       expect(mockJwtPayload).to.have.property('iat');
       expect(mockJwtPayload).to.have.property('exp');
-      
+
       expect(mockJwtPayload.exp).to.be.greaterThan(mockJwtPayload.iat);
       expect(mockJwtPayload.rol).to.be.oneOf(['SUP', 'Teacher', 'Parent', 'Director', 'Admin']);
     });
@@ -273,7 +273,7 @@ describe('Basic Integration Test Framework Verification', function() {
         const hasLowerCase = /[a-z]/.test(password);
         const hasNumbers = /\d/.test(password);
         const hasSpecialChars = /[!@#$%^&*(),.?":{}|<>]/.test(password);
-        
+
         return hasMinLength && hasUpperCase && hasLowerCase && hasNumbers && hasSpecialChars;
       };
 

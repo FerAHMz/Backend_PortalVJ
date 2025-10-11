@@ -1,4 +1,4 @@
-const db = require('../database_cn')
+const db = require('../database_cn');
 
 const createObservation = async (req, res) => {
   const { observaciones, puntos_de_accion, id_tarea, carnet_estudiante, id_curso } = req.body;
@@ -42,9 +42,9 @@ const createObservation = async (req, res) => {
   } catch (error) {
     if (client) await client.query('ROLLBACK');
     console.error('Error en createObservation:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Error al registrar la observación',
-      details: error.message 
+      details: error.message
     });
   } finally {
     if (client) client.release();
@@ -65,7 +65,7 @@ const getObservationsByCourseAndStudent = async (req, res) => {
 
   } catch (error) {
     console.error('Error en getObservationsByCourseAndStudent:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Error al obtener observaciones',
       details: error.message
@@ -93,7 +93,7 @@ const updateObservation = async (req, res) => {
 
   } catch (error) {
     console.error('Error en updateObservation:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Error al actualizar observación',
       details: error.message
@@ -118,7 +118,7 @@ const deleteObservation = async (req, res) => {
 
   } catch (error) {
     console.error('Error en deleteObservation:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
       error: 'Error al eliminar observación',
       details: error.message

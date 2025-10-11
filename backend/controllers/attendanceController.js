@@ -1,8 +1,8 @@
-const db = require('../database_cn')
+const db = require('../database_cn');
 
 async function getAttendance(req, res) {
-  const { courseId } = req.params
-  const { date } = req.query
+  const { courseId } = req.params;
+  const { date } = req.query;
 
   try {
     //Obtener todos los estudiantes del curso
@@ -11,40 +11,40 @@ async function getAttendance(req, res) {
       FROM Estudiantes e
       JOIN Cursos c ON e.id_grado_seccion = c.id_grado_seccion
       WHERE c.id = $1
-    `
-    const { rows: students } = await db.getPool().query(studentsQ, [courseId])
+    `;
+    const { rows: students } = await db.getPool().query(studentsQ, [courseId]);
 
     //Obtener el estado de asistencia para esa fecha y curso
     const attendanceQ = `
       SELECT carnet_estudiante, estado
       FROM Asistencia
       WHERE id_curso = $1 AND DATE(fecha) = $2
-    `
-    const { rows: attendanceRows } = await db.getPool().query(attendanceQ, [courseId, date])
+    `;
+    const { rows: attendanceRows } = await db.getPool().query(attendanceQ, [courseId, date]);
 
     //Mapear estados por carnet
-    const attendanceStatus = {}
+    const attendanceStatus = {};
     attendanceRows.forEach(r => {
-      attendanceStatus[r.carnet_estudiante] = r.estado
-    })
+      attendanceStatus[r.carnet_estudiante] = r.estado;
+    });
 
-    res.json({ students, attendanceStatus })
+    res.json({ students, attendanceStatus });
   } catch (error) {
-    console.error('Error en getAttendance:', error)
-    res.status(500).json({ error: 'Error al obtener asistencia' })
+    console.error('Error en getAttendance:', error);
+    res.status(500).json({ error: 'Error al obtener asistencia' });
   }
 }
 
 async function postAttendance(req, res) {
-  const { courseId } = req.params
-  const { date, attendance } = req.body
+  const { courseId } = req.params;
+  const { date, attendance } = req.body;
 
   try {
-    //Borrar registros previos para evitar duplicados 
+    //Borrar registros previos para evitar duplicados
     await db.getPool().query(
-      `DELETE FROM Asistencia WHERE id_curso = $1 AND DATE(fecha) = $2`,
+      'DELETE FROM Asistencia WHERE id_curso = $1 AND DATE(fecha) = $2',
       [courseId, date]
-    )
+    );
 
     //Insertar o actualizar todos los estados (present, absent, late o null)
     const insertQ = `
@@ -52,7 +52,7 @@ async function postAttendance(req, res) {
       VALUES ($1, $2, $3, $4)
       ON CONFLICT (id_curso, carnet_estudiante, fecha)
       DO UPDATE SET estado = EXCLUDED.estado
-    `
+    `;
 
     for (const [carnet, status] of Object.entries(attendance)) {
       if (status === 'present' || status === 'absent'|| status === 'late') {
@@ -61,14 +61,14 @@ async function postAttendance(req, res) {
           carnet,
           date,
           status
-        ])
+        ]);
       }
     }
 
-    res.json({ message: 'Asistencia registrada correctamente' })
+    res.json({ message: 'Asistencia registrada correctamente' });
   } catch (error) {
-    console.error('Error en postAttendance:', error)
-    res.status(500).json({ error: 'Error al guardar asistencia' })
+    console.error('Error en postAttendance:', error);
+    res.status(500).json({ error: 'Error al guardar asistencia' });
   }
 }
 
@@ -106,7 +106,7 @@ async function getAttendanceReport(req, res) {
     `;
 
     const { rows } = await db.getPool().query(reportQuery, [courseId, startDate, endDate]);
-    
+
     res.json({ report: rows });
   } catch (error) {
     console.error('Error en getAttendanceReport:', error);
@@ -118,4 +118,4 @@ module.exports = {
   getAttendance,
   postAttendance,
   getAttendanceReport
-}
+};

@@ -14,7 +14,7 @@ describe('Payment System Integration Tests', function() {
 
   before(async function() {
     this.timeout(10000);
-    
+
     // Create test superuser
     testSuperUser = await global.createTestUser({
       email: 'payment.admin@portalvj.com',
@@ -63,7 +63,7 @@ describe('Payment System Integration Tests', function() {
           expect(res.body.payment).to.have.property('id');
           expect(res.body.payment).to.have.property('monto', 150.00);
           expect(res.body.payment).to.have.property('tipo_pago', 'Mensualidad');
-          
+
           testPayment = res.body.payment;
           done();
         });
@@ -92,7 +92,7 @@ describe('Payment System Integration Tests', function() {
           expect(res.body).to.have.property('success', true);
           expect(res.body).to.have.property('payments');
           expect(res.body.payments).to.be.an('array');
-          
+
           // Should find the payment we created
           const studentPayment = res.body.payments.find(p => p.id === testPayment.id);
           expect(studentPayment).to.exist;
@@ -181,7 +181,7 @@ describe('Payment System Integration Tests', function() {
 
     it('should retrieve payments by date range', function(done) {
       const today = new Date().toISOString().split('T')[0];
-      
+
       chai.request(app)
         .get('/api/payments/range')
         .set('Authorization', `Bearer ${authToken}`)
@@ -207,7 +207,7 @@ describe('Payment System Integration Tests', function() {
           expect(res.body).to.have.property('success', true);
           expect(res.body).to.have.property('payments');
           expect(res.body.payments).to.be.an('array');
-          
+
           // All payments should be of type 'Mensualidad'
           res.body.payments.forEach(payment => {
             expect(payment).to.have.property('tipo_pago', 'Mensualidad');
@@ -320,7 +320,7 @@ describe('Payment System Integration Tests', function() {
           expect(res.body).to.have.property('success', true);
           expect(res.body).to.have.property('payments');
           expect(res.body.payments).to.be.an('array');
-          
+
           // All returned payments should be cash payments
           res.body.payments.forEach(payment => {
             expect(payment).to.have.property('metodo_pago', 'Efectivo');

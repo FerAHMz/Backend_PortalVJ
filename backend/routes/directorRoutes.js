@@ -2,18 +2,18 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken, isDirector } = require('../middlewares/authMiddleware');
 const {
-    getGradosDelDirector,
-    getCursosPorGrado
+  getGradosDelDirector,
+  getCursosPorGrado
 } = require('../controllers/directorController');
 
 const {
-    getPlanningObservations,
-    createPlanningObservation,
-    updatePlanningObservation,
-    deletePlanningObservation,
-    updatePlanningEstado,
-    getPlanificationFiles,
-    downloadPlanificationFile
+  getPlanningObservations,
+  createPlanningObservation,
+  updatePlanningObservation,
+  deletePlanningObservation,
+  updatePlanningEstado,
+  getPlanificationFiles,
+  downloadPlanificationFile
 } = require('../controllers/coursePlanningController');
 
 router.get('/grados', verifyToken, isDirector, getGradosDelDirector);

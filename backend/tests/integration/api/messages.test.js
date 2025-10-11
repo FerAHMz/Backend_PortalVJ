@@ -15,7 +15,7 @@ describe('Messaging System Integration Tests', function() {
 
   before(async function() {
     this.timeout(10000);
-    
+
     // Create test teacher
     testTeacher = await global.createTestUser({
       email: 'teacher.msg@portalvj.com',
@@ -68,7 +68,7 @@ describe('Messaging System Integration Tests', function() {
           expect(res.body.message).to.have.property('subject', messageData.subject);
           expect(res.body.message).to.have.property('sender_id', testTeacher.id);
           expect(res.body.message).to.have.property('recipient_id', testParent.id);
-          
+
           conversationId = res.body.message.conversation_id;
           done();
         });
@@ -261,8 +261,8 @@ describe('Messaging System Integration Tests', function() {
         RETURNING *
       `;
       const result = await global.testDb.query(messageQuery, [
-        testTeacher.id, 'Maestro', testParent.id, 'Padre', 
-        'Test Status Message', 'This is a test message for status testing', 
+        testTeacher.id, 'Maestro', testParent.id, 'Padre',
+        'Test Status Message', 'This is a test message for status testing',
         conversationId, false
       ]);
       messageId = result.rows[0].id;
@@ -361,11 +361,11 @@ describe('Messaging System Integration Tests', function() {
 
     it('should filter messages by date range', function(done) {
       const today = new Date().toISOString().split('T')[0];
-      
+
       chai.request(app)
         .get('/api/messages/filter')
         .set('Authorization', `Bearer ${parentToken}`)
-        .query({ 
+        .query({
           startDate: today,
           endDate: today
         })
@@ -390,8 +390,8 @@ describe('Messaging System Integration Tests', function() {
         RETURNING *
       `;
       const result = await global.testDb.query(messageQuery, [
-        testTeacher.id, 'Maestro', testParent.id, 'Padre', 
-        'Message for Deletion', 'This message will be deleted', 
+        testTeacher.id, 'Maestro', testParent.id, 'Padre',
+        'Message for Deletion', 'This message will be deleted',
         conversationId, false
       ]);
       testMessageId = result.rows[0].id;

@@ -31,7 +31,7 @@ describe('Basic Payment Controller Unit Tests', () => {
     });
   });
 
-  // Test Case 2: Create Payment - Success with valid data  
+  // Test Case 2: Create Payment - Success with valid data
   test('createPayment should create payment with valid data', async () => {
     // Arrange
     mockReq.body = {
@@ -43,7 +43,7 @@ describe('Basic Payment Controller Unit Tests', () => {
     // Act
     await createPayment(mockReq, mockRes);
 
-    // Assert  
+    // Assert
     expect(mockRes.status).toHaveBeenCalledWith(201);
     expect(mockRes.json).toHaveBeenCalledWith({
       success: true,

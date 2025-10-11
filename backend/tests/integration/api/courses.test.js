@@ -17,7 +17,7 @@ describe('Course & Academic Management Integration Tests', function() {
 
   before(async function() {
     this.timeout(15000);
-    
+
     // Create test superuser
     testSuperUser = await global.createTestUser({
       email: 'academic.admin@portalvj.com',
@@ -91,7 +91,7 @@ describe('Course & Academic Management Integration Tests', function() {
           expect(res.body.course).to.have.property('id');
           expect(res.body.course).to.have.property('nombre', courseData.nombre);
           expect(res.body.course).to.have.property('maestro_id', testTeacher.id);
-          
+
           testCourse = res.body.course;
           done();
         });
@@ -120,7 +120,7 @@ describe('Course & Academic Management Integration Tests', function() {
           expect(res.body).to.have.property('success', true);
           expect(res.body).to.have.property('courses');
           expect(res.body.courses).to.be.an('array');
-          
+
           // Should find the course we created
           const teacherCourse = res.body.courses.find(c => c.id === testCourse.id);
           expect(teacherCourse).to.exist;
@@ -236,7 +236,7 @@ describe('Course & Academic Management Integration Tests', function() {
           expect(res.body).to.have.property('students');
           expect(res.body.students).to.be.an('array');
           expect(res.body.students.length).to.be.at.least(1);
-          
+
           const enrolledStudent = res.body.students.find(s => s.id === testStudent.id);
           expect(enrolledStudent).to.exist;
           done();
@@ -252,7 +252,7 @@ describe('Course & Academic Management Integration Tests', function() {
           expect(res.body).to.have.property('success', true);
           expect(res.body).to.have.property('courses');
           expect(res.body.courses).to.be.an('array');
-          
+
           const studentCourse = res.body.courses.find(c => c.id === testCourse.id);
           expect(studentCourse).to.exist;
           done();
@@ -322,7 +322,7 @@ describe('Course & Academic Management Integration Tests', function() {
           expect(res.body).to.have.property('assignment');
           expect(res.body.assignment).to.have.property('id');
           expect(res.body.assignment).to.have.property('nombre', assignmentData.nombre);
-          
+
           assignmentId = res.body.assignment.id;
           done();
         });
@@ -360,7 +360,7 @@ describe('Course & Academic Management Integration Tests', function() {
           expect(res.body).to.have.property('grades');
           expect(res.body.grades).to.be.an('array');
           expect(res.body.grades.length).to.be.at.least(1);
-          
+
           const submittedGrade = res.body.grades.find(g => g.tarea_id === assignmentId);
           expect(submittedGrade).to.exist;
           expect(submittedGrade).to.have.property('calificacion', 85);
@@ -455,7 +455,7 @@ describe('Course & Academic Management Integration Tests', function() {
           expect(res.body).to.have.property('success', true);
           expect(res.body).to.have.property('attendance');
           expect(res.body.attendance).to.be.an('array');
-          
+
           const studentAttendance = res.body.attendance.find(a => a.estudiante_id === testStudent.id);
           expect(studentAttendance).to.exist;
           expect(studentAttendance).to.have.property('presente', true);
@@ -467,7 +467,7 @@ describe('Course & Academic Management Integration Tests', function() {
       chai.request(app)
         .get(`/api/students/${testStudent.id}/attendance`)
         .set('Authorization', `Bearer ${authToken}`)
-        .query({ 
+        .query({
           startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
           endDate: new Date().toISOString().split('T')[0]
         })

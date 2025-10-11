@@ -31,7 +31,7 @@ describe('Portal Vanguardia Juvenil - File Upload Integration Tests', function()
     // Mock file upload endpoints
     app.post('/api/teacher/planning/:planificationId/upload', mockAuth, (req, res) => {
       const { planificationId } = req.params;
-      
+
       // Simulate file validation
       if (!req.headers['content-type'] || !req.headers['content-type'].includes('multipart/form-data')) {
         return res.status(400).json({
@@ -61,7 +61,7 @@ describe('Portal Vanguardia Juvenil - File Upload Integration Tests', function()
 
     app.get('/api/teacher/planning/:planificationId/files', mockAuth, (req, res) => {
       const { planificationId } = req.params;
-      
+
       res.json({
         success: true,
         files: [
@@ -97,7 +97,7 @@ describe('Portal Vanguardia Juvenil - File Upload Integration Tests', function()
 
     app.delete('/api/teacher/planning/files/:fileId', mockAuth, (req, res) => {
       const { fileId } = req.params;
-      
+
       if (fileId === '999') {
         return res.status(404).json({
           success: false,
@@ -113,7 +113,7 @@ describe('Portal Vanguardia Juvenil - File Upload Integration Tests', function()
 
     app.get('/api/teacher/planning/files/:fileId/download', mockAuth, (req, res) => {
       const { fileId } = req.params;
-      
+
       if (fileId === '999') {
         return res.status(404).json({
           success: false,
@@ -133,7 +133,7 @@ describe('Portal Vanguardia Juvenil - File Upload Integration Tests', function()
     // Mock validation endpoints
     app.post('/api/teacher/planning/:planificationId/upload/validate', mockAuth, (req, res) => {
       const { fileType, fileSize } = req.body;
-      
+
       const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
       const maxSize = 10 * 1024 * 1024; // 10MB
 
@@ -216,7 +216,7 @@ describe('Portal Vanguardia Juvenil - File Upload Integration Tests', function()
           expect(res.body).to.have.property('files');
           expect(res.body.files).to.be.an('array');
           expect(res.body.files).to.have.length.above(0);
-          
+
           const file = res.body.files[0];
           expect(file).to.have.property('id');
           expect(file).to.have.property('original_name');

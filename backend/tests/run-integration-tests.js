@@ -40,7 +40,7 @@ function runTests() {
     if (code === 0) {
       console.log('    All tests passed successfully!');
       console.log('    Integration test suite completed without errors.\n');
-      
+
       console.log('   Test Coverage Areas:');
       console.log('   • Authentication & Authorization');
       console.log('   • User Management');
@@ -50,7 +50,7 @@ function runTests() {
       console.log('   • API Response Validation');
       console.log('   • HTTP Methods & Status Codes');
       console.log('   • Data Validation Functions\n');
-      
+
       console.log('   Next Steps:');
       console.log('   1. Review test results above');
       console.log('   2. Run with coverage: COVERAGE=true npm run test:integration');
@@ -60,14 +60,14 @@ function runTests() {
       console.log('    Some tests failed or encountered errors');
       console.log(`    Exit code: ${code}`);
       console.log('    Check the test output above for details\n');
-      
+
       console.log('   Troubleshooting:');
       console.log('   1. Ensure all dependencies are installed');
       console.log('   2. Check database connection settings');
       console.log('   3. Verify environment variables');
       console.log('   4. Review test logs for specific errors\n');
     }
-    
+
     process.exit(code);
   });
 
@@ -80,26 +80,26 @@ function runTests() {
 // Environment validation
 function validateEnvironment() {
   console.log('🔍 Validating test environment...');
-  
+
   const requiredPackages = ['mocha', 'chai', 'supertest'];
   const missingPackages = [];
-  
+
   for (const pkg of requiredPackages) {
     try {
       require.resolve(pkg);
       console.log(`    ${pkg} - available`);
-    } catch (error) {
+    } catch {
       console.log(`    ${pkg} - missing`);
       missingPackages.push(pkg);
     }
   }
-  
+
   if (missingPackages.length > 0) {
     console.log(`\nMissing required packages: ${missingPackages.join(', ')}`);
     console.log('   Run: npm install --save-dev ' + missingPackages.join(' '));
     process.exit(1);
   }
-  
+
   console.log('    All required packages available\n');
 }
 

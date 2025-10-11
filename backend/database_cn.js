@@ -4,7 +4,7 @@ class Database {
   constructor() {
     this.pool = new Pool({
       user: process.env.DB_USER,
-      host: process.env.DB_HOST,  
+      host: process.env.DB_HOST,
       database: process.env.DB_NAME,
       password: process.env.DB_PASSWORD,
       port: process.env.DB_PORT,
@@ -19,7 +19,7 @@ class Database {
         await this.pool.query('SELECT NOW()');
         console.log('PostgreSQL conectado');
         return;
-      } catch (err) {
+      } catch {
         console.log(`Intento de conexión ${i + 1}/${retries} fallido. Reintentando en ${interval/1000}s...`);
         await new Promise(resolve => setTimeout(resolve, interval));
       }

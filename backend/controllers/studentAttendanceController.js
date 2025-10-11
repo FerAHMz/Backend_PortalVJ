@@ -23,11 +23,11 @@ async function getStudentAttendance(req, res) {
       WHERE carnet = $1
     `;
     const { rows: studentRows } = await db.getPool().query(studentCheck, [studentCarnet]);
-    
+
     if (studentRows.length === 0) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Estudiante no encontrado' 
+      return res.status(404).json({
+        success: false,
+        error: 'Estudiante no encontrado'
       });
     }
 
@@ -56,17 +56,17 @@ async function getStudentAttendance(req, res) {
       WHERE a.carnet_estudiante = $1
         AND DATE(a.fecha) BETWEEN $2 AND $3
     `;
-    
+
     const queryParams = [studentCarnet, startDate, endDate];
-    
+
     // Filtrar por materia si se especifica
     if (subjectId) {
       attendanceQuery += ' AND c.id = $4';
       queryParams.push(subjectId);
     }
-    
+
     attendanceQuery += ' ORDER BY a.fecha DESC, m.nombre';
-    
+
     const { rows: attendanceRows } = await db.getPool().query(attendanceQuery, queryParams);
 
     // Formatear datos para el frontend
@@ -91,9 +91,9 @@ async function getStudentAttendance(req, res) {
       ORDER BY a.fecha DESC
       LIMIT 10
     `;
-    
+
     const { rows: recentRows } = await db.getPool().query(recentQuery, [studentCarnet]);
-    
+
     const recent = recentRows.map(row => ({
       date: row.fecha,
       status: row.estado,
@@ -110,9 +110,9 @@ async function getStudentAttendance(req, res) {
 
   } catch (error) {
     console.error('Error en getStudentAttendance:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Error al obtener la información de asistencia del estudiante' 
+      error: 'Error al obtener la información de asistencia del estudiante'
     });
   }
 }
@@ -128,27 +128,28 @@ async function getStudentAttendanceSummary(req, res) {
     // Calcular rango de fechas según el periodo
     let startDate = new Date();
     const endDate = new Date();
-    
+
     switch (period) {
-      case 'week':
-        startDate.setDate(endDate.getDate() - 7);
-        break;
-      case 'month':
-        startDate.setMonth(endDate.getMonth() - 1);
-        break;
-      case 'semester':
-        // Asumiendo semestre actual
-        const currentMonth = endDate.getMonth();
-        if (currentMonth >= 1 && currentMonth <= 6) {
-          // Primer semestre (feb-jun)
-          startDate = new Date(endDate.getFullYear(), 1, 1);
-        } else {
-          // Segundo semestre (ago-dic)
-          startDate = new Date(endDate.getFullYear(), 7, 1);
-        }
-        break;
-      default:
-        startDate.setMonth(endDate.getMonth() - 1);
+    case 'week':
+      startDate.setDate(endDate.getDate() - 7);
+      break;
+    case 'month':
+      startDate.setMonth(endDate.getMonth() - 1);
+      break;
+    case 'semester': {
+      // Asumiendo semestre actual
+      const currentMonth = endDate.getMonth();
+      if (currentMonth >= 1 && currentMonth <= 6) {
+        // Primer semestre (feb-jun)
+        startDate = new Date(endDate.getFullYear(), 1, 1);
+      } else {
+        // Segundo semestre (ago-dic)
+        startDate = new Date(endDate.getFullYear(), 7, 1);
+      }
+      break;
+    }
+    default:
+      startDate.setMonth(endDate.getMonth() - 1);
     }
 
     const summaryQuery = `
@@ -185,8 +186,8 @@ async function getStudentAttendanceSummary(req, res) {
     }, { present: 0, late: 0, absent: 0, total: 0 });
 
     // Calcular porcentaje de asistencia general
-    const attendancePercentage = totals.total > 0 ? 
-      (((totals.present + (totals.late * 0.5)) / totals.total) * 100).toFixed(1) : 
+    const attendancePercentage = totals.total > 0 ?
+      (((totals.present + (totals.late * 0.5)) / totals.total) * 100).toFixed(1) :
       '0.0';
 
     res.json({
@@ -202,8 +203,8 @@ async function getStudentAttendanceSummary(req, res) {
           late: parseInt(row.late_count) || 0,
           absent: parseInt(row.absent_count) || 0,
           total: parseInt(row.total_records) || 0,
-          percentage: row.total_records > 0 ? 
-            (((parseInt(row.present_count) + (parseInt(row.late_count) * 0.5)) / parseInt(row.total_records)) * 100).toFixed(1) : 
+          percentage: row.total_records > 0 ?
+            (((parseInt(row.present_count) + (parseInt(row.late_count) * 0.5)) / parseInt(row.total_records)) * 100).toFixed(1) :
             '0.0'
         }))
       }
@@ -211,9 +212,9 @@ async function getStudentAttendanceSummary(req, res) {
 
   } catch (error) {
     console.error('Error en getStudentAttendanceSummary:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Error al obtener el resumen de asistencia' 
+      error: 'Error al obtener el resumen de asistencia'
     });
   }
 }

@@ -106,7 +106,7 @@ describe('Portal Vanguardia Juvenil - API Integration Tests', function() {
     });
 
     // Error handling middleware
-    app.use((err, req, res, next) => {
+    app.use((err, req, res, _next) => {
       res.status(500).json({
         success: false,
         error: 'Internal server error'

@@ -1,13 +1,13 @@
 const db = require('../database_cn');
 
 const getTeacherCourses = async (req, res) => {
-    const { teacherId } = req.params;
-    let client;
+  const { teacherId } = req.params;
+  let client;
 
-    try {
-        client = await db.getPool().connect();
-        
-        const query = `
+  try {
+    client = await db.getPool().connect();
+
+    const query = `
             SELECT 
                 c.id,
                 m.nombre as materia,
@@ -20,24 +20,24 @@ const getTeacherCourses = async (req, res) => {
             JOIN secciones s ON gs.id_seccion = s.id
             WHERE c.id_maestro = $1
         `;
-        
-        const result = await client.query(query, [teacherId]);
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error al obtener cursos del maestro:', error);
-        res.status(500).json({ error: 'Error al obtener cursos' });
-    } finally {
-        if (client) client.release();
-    }
+
+    const result = await client.query(query, [teacherId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener cursos del maestro:', error);
+    res.status(500).json({ error: 'Error al obtener cursos' });
+  } finally {
+    if (client) client.release();
+  }
 };
 
 const getCourseGrades = async (req, res) => {
-    const { courseId } = req.params;
-    let client;
+  const { courseId } = req.params;
+  let client;
 
-    try {
-        client = await db.getPool().connect();
-        const query = `
+  try {
+    client = await db.getPool().connect();
+    const query = `
             SELECT 
                 c.id,
                 e.carnet,
@@ -52,45 +52,45 @@ const getCourseGrades = async (req, res) => {
             WHERE c.id_curso = $1
             ORDER BY e.apellido, e.nombre, t.fecha_entrega
         `;
-        const result = await client.query(query, [courseId]);
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error al obtener calificaciones:', error);
-        res.status(500).json({ error: 'Error al obtener calificaciones' });
-    } finally {
-        if (client) client.release();
-    }
+    const result = await client.query(query, [courseId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener calificaciones:', error);
+    res.status(500).json({ error: 'Error al obtener calificaciones' });
+  } finally {
+    if (client) client.release();
+  }
 };
 
 const registerGrade = async (req, res) => {
-    const { courseId } = req.params;
-    const { carnet_estudiante, id_tarea, nota } = req.body;
-    let client;
+  const { courseId } = req.params;
+  const { carnet_estudiante, id_tarea, nota } = req.body;
+  let client;
 
-    try {
-        client = await db.getPool().connect();
-        const query = `
+  try {
+    client = await db.getPool().connect();
+    const query = `
             INSERT INTO calificaciones (carnet_estudiante, id_curso, nota, id_tarea)
             VALUES ($1, $2, $3, $4)
             RETURNING id
         `;
-        const result = await client.query(query, [carnet_estudiante, courseId, nota, id_tarea]);
-        res.json({ success: true, gradeId: result.rows[0].id });
-    } catch (error) {
-        console.error('Error al registrar calificación:', error);
-        res.status(500).json({ error: 'Error al registrar calificación' });
-    } finally {
-        if (client) client.release();
-    }
+    const result = await client.query(query, [carnet_estudiante, courseId, nota, id_tarea]);
+    res.json({ success: true, gradeId: result.rows[0].id });
+  } catch (error) {
+    console.error('Error al registrar calificación:', error);
+    res.status(500).json({ error: 'Error al registrar calificación' });
+  } finally {
+    if (client) client.release();
+  }
 };
 
 const getStudentsByCourse = async (req, res) => {
-    const { courseId } = req.params;
-    let client;
+  const { courseId } = req.params;
+  let client;
 
-    try {
-        client = await db.getPool().connect();
-        const query = `
+  try {
+    client = await db.getPool().connect();
+    const query = `
             SELECT 
                 e.carnet,
                 e.nombre,
@@ -101,19 +101,19 @@ const getStudentsByCourse = async (req, res) => {
             WHERE c.id = $1
             ORDER BY e.apellido, e.nombre
         `;
-        const result = await client.query(query, [courseId]);
-        res.json(result.rows);
-    } catch (error) {
-        console.error('Error al obtener estudiantes:', error);
-        res.status(500).json({ error: 'Error al obtener estudiantes' });
-    } finally {
-        if (client) client.release();
-    }
+    const result = await client.query(query, [courseId]);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener estudiantes:', error);
+    res.status(500).json({ error: 'Error al obtener estudiantes' });
+  } finally {
+    if (client) client.release();
+  }
 };
 
 module.exports = {
-    getTeacherCourses,
-    getCourseGrades,
-    registerGrade,
-    getStudentsByCourse
+  getTeacherCourses,
+  getCourseGrades,
+  registerGrade,
+  getStudentsByCourse
 };

@@ -18,7 +18,7 @@ router.use(verifyToken, isSup);
 // Get all planifications grouped by grade
 router.get('/by-grade', getAllPlanificationsByGrade);
 
-// Get planifications statistics 
+// Get planifications statistics
 router.get('/statistics', getPlanificationsStatistics);
 
 // Get planifications by specific grade

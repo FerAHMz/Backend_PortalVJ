@@ -1,17 +1,16 @@
 const db = require('../database_cn');
 const cloudflareR2Service = require('../services/cloudflareR2Service');
 const multer = require('multer');
-const path = require('path');
 
 // ✅ Crear una planificación
 const createPlanning = async (req, res) => {
-  const courseId = req.params.courseId; 
+  const courseId = req.params.courseId;
   const {  mes, ciclo_escolar } = req.body;
 
   try {
     // Validar que el mes es válido según la base de datos
     const validMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-                        'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
     if (!validMeses.includes(mes)) {
       return res.status(400).json({ message: 'Mes inválido. Debe ser un mes válido en español' });
     }
@@ -33,13 +32,13 @@ const getPlannings = async (req, res) => {
   const { courseId } = req.params;
 
   try {
-    
+
     const result = await db.getPool().query(
-        `SELECT * FROM Planificaciones WHERE id_curso = $1 ORDER BY id ASC`,
-    [courseId]
+      'SELECT * FROM Planificaciones WHERE id_curso = $1 ORDER BY id ASC',
+      [courseId]
     );
     res.json(result.rows);
-    
+
   } catch (error) {
     console.error('Error al obtener planificación:', error);
     res.status(500).json({ message: 'Error al obtener planificación' });
@@ -51,7 +50,7 @@ const getPlanningById = async (req, res) => {
 
   try {
     const planRes = await db.getPool().query(
-      `SELECT * FROM Planificaciones WHERE id = $1`,
+      'SELECT * FROM Planificaciones WHERE id = $1',
       [id]
     );
     const plan = planRes.rows[0];
@@ -59,7 +58,7 @@ const getPlanningById = async (req, res) => {
     if (!plan) return res.status(404).json({ message: 'Planificación no encontrada' });
 
     const tasksRes = await db.getPool().query(
-      `SELECT * FROM Detalle_planificacion WHERE id_planificacion = $1`,
+      'SELECT * FROM Detalle_planificacion WHERE id_planificacion = $1',
       [id]
     );
 
@@ -109,13 +108,13 @@ const deletePlanning = async (req, res) => {
   try {
     // Primero borrar tareas relacionadas
     await db.getPool().query(
-      `DELETE FROM Detalle_planificacion WHERE id_planificacion = $1`,
+      'DELETE FROM Detalle_planificacion WHERE id_planificacion = $1',
       [id]
     );
 
     // Luego eliminar planificación
     const result = await db.getPool().query(
-      `DELETE FROM Planificaciones WHERE id = $1 RETURNING *`,
+      'DELETE FROM Planificaciones WHERE id = $1 RETURNING *',
       [id]
     );
 
@@ -152,42 +151,42 @@ const getPlanningObservations = async (req, res) => {
 
 // Obtener tareas por planificación
 const getPlanningTasks = async (req, res) => {
-  const { planId } = req.params
+  const { planId } = req.params;
 
   try {
     const result = await db.getPool().query(
-      `SELECT * FROM Detalle_planificacion WHERE id_planificacion = $1 ORDER BY id ASC`,
+      'SELECT * FROM Detalle_planificacion WHERE id_planificacion = $1 ORDER BY id ASC',
       [planId]
-    )
-    res.json(result.rows)
+    );
+    res.json(result.rows);
   } catch (error) {
-    console.error('Error al obtener tareas:', error)
-    res.status(500).json({ message: 'Error al obtener tareas' })
+    console.error('Error al obtener tareas:', error);
+    res.status(500).json({ message: 'Error al obtener tareas' });
   }
-}
+};
 
 // Crear nueva tarea
 const createPlanningTask = async (req, res) => {
   const id_planificacion = req.params.planId;
-  const { tema_tarea, puntos_tarea } = req.body
+  const { tema_tarea, puntos_tarea } = req.body;
 
   try {
     const result = await db.getPool().query(
       `INSERT INTO Detalle_planificacion (id_planificacion, tema_tarea, puntos_tarea)
        VALUES ($1, $2, $3) RETURNING *`,
       [id_planificacion, tema_tarea, puntos_tarea]
-    )
-    res.status(201).json(result.rows[0])
+    );
+    res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('Error al crear tarea:', error)
-    res.status(500).json({ message: 'Error al crear tarea' })
+    console.error('Error al crear tarea:', error);
+    res.status(500).json({ message: 'Error al crear tarea' });
   }
-}
+};
 
 // Actualizar tarea
 const updatePlanningTask = async (req, res) => {
-  const { id } = req.params
-  const { tema_tarea, puntos_tarea } = req.body
+  const { id } = req.params;
+  const { tema_tarea, puntos_tarea } = req.body;
 
   try {
     const result = await db.getPool().query(
@@ -195,49 +194,49 @@ const updatePlanningTask = async (req, res) => {
        SET tema_tarea = $1, puntos_tarea = $2
        WHERE id = $3 RETURNING *`,
       [tema_tarea, puntos_tarea, id]
-    )
-    if (result.rows.length === 0) return res.status(404).json({ message: 'Tarea no encontrada' })
-    res.json(result.rows[0])
+    );
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Tarea no encontrada' });
+    res.json(result.rows[0]);
   } catch (error) {
-    console.error('Error al actualizar tarea:', error)
-    res.status(500).json({ message: 'Error al actualizar tarea' })
+    console.error('Error al actualizar tarea:', error);
+    res.status(500).json({ message: 'Error al actualizar tarea' });
   }
-}
+};
 
 // Eliminar tarea
 const deletePlanningTask = async (req, res) => {
-  const { id } = req.params
+  const { id } = req.params;
 
   try {
     const result = await db.getPool().query(
-      `DELETE FROM Detalle_planificacion WHERE id = $1 RETURNING *`,
+      'DELETE FROM Detalle_planificacion WHERE id = $1 RETURNING *',
       [id]
-    )
-    if (result.rows.length === 0) return res.status(404).json({ message: 'Tarea no encontrada' })
-    res.json({ message: 'Tarea eliminada correctamente' })
+    );
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Tarea no encontrada' });
+    res.json({ message: 'Tarea eliminada correctamente' });
   } catch (error) {
-    console.error('Error al eliminar tarea:', error)
-    res.status(500).json({ message: 'Error al eliminar tarea' })
+    console.error('Error al eliminar tarea:', error);
+    res.status(500).json({ message: 'Error al eliminar tarea' });
   }
-}
+};
 
 // Crear observación
 const createPlanningObservation = async (req, res) => {
-  const { id_director, observaciones } = req.body
-  const { planId } = req.params
+  const { id_director, observaciones } = req.body;
+  const { planId } = req.params;
 
   try {
     const result = await db.getPool().query(
       `INSERT INTO Revisiones_planificacion (id_planificacion, id_director, observaciones)
        VALUES ($1, $2, $3) RETURNING *`,
       [planId, id_director, observaciones]
-    )
-    res.status(201).json(result.rows[0])
+    );
+    res.status(201).json(result.rows[0]);
   } catch (error) {
-    console.error('Error al crear observación:', error)
-    res.status(500).json({ message: 'Error al crear observación' })
+    console.error('Error al crear observación:', error);
+    res.status(500).json({ message: 'Error al crear observación' });
   }
-}
+};
 
 const updatePlanningObservation = async (req, res) => {
   const { id } = req.params;
@@ -265,46 +264,46 @@ const updatePlanningObservation = async (req, res) => {
 
 // Eliminar observación
 const deletePlanningObservation = async (req, res) => {
-  const { id } = req.params
+  const { id } = req.params;
 
   try {
     const result = await db.getPool().query(
-      `DELETE FROM Revisiones_planificacion WHERE id = $1 RETURNING *`,
+      'DELETE FROM Revisiones_planificacion WHERE id = $1 RETURNING *',
       [id]
-    )
-    if (result.rows.length === 0) return res.status(404).json({ message: 'Observación no encontrada' })
-    res.json({ message: 'Observación eliminada correctamente' })
+    );
+    if (result.rows.length === 0) return res.status(404).json({ message: 'Observación no encontrada' });
+    res.json({ message: 'Observación eliminada correctamente' });
   } catch (error) {
-    console.error('Error al eliminar observación:', error)
-    res.status(500).json({ message: 'Error al eliminar observación' })
+    console.error('Error al eliminar observación:', error);
+    res.status(500).json({ message: 'Error al eliminar observación' });
   }
-}
+};
 
 const updatePlanningEstado = async (req, res) => {
-  const { courseId, planId } = req.params
-  const { estado } = req.body
+  const { courseId, planId } = req.params;
+  const { estado } = req.body;
 
   try {
-    const validStates = ['en revision', 'aceptada', 'rechazada']
+    const validStates = ['en revision', 'aceptada', 'rechazada'];
     if (!validStates.includes(estado)) {
-      return res.status(400).json({ error: 'Estado inválido' })
+      return res.status(400).json({ error: 'Estado inválido' });
     }
 
     const result = await db.getPool().query(
       'UPDATE planificaciones SET estado = $1 WHERE id = $2 AND id_curso = $3 RETURNING *',
       [estado, planId, courseId]
-    )
+    );
 
     if (result.rowCount === 0) {
-      return res.status(404).json({ error: 'Planificación no encontrada' })
+      return res.status(404).json({ error: 'Planificación no encontrada' });
     }
 
-    res.json({ message: 'Estado actualizado', planificacion: result.rows[0] })
+    res.json({ message: 'Estado actualizado', planificacion: result.rows[0] });
   } catch (err) {
-    console.error('Error al actualizar el estado:', err)
-    res.status(500).json({ error: 'Error del servidor' })
+    console.error('Error al actualizar el estado:', err);
+    res.status(500).json({ error: 'Error del servidor' });
   }
-}
+};
 
 // 📁 Configure multer for file upload
 const storage = multer.memoryStorage();
@@ -383,7 +382,7 @@ const uploadPlanificationFile = async (req, res) => {
 
   } catch (error) {
     console.error('Error uploading planification file:', error);
-    
+
     if (error.message.includes('Tipo de archivo no válido')) {
       return res.status(400).json({
         success: false,

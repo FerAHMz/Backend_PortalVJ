@@ -7,7 +7,7 @@ const {
 } = require('../controllers/gradeController');
 const { verifyToken, isTeacher } = require('../middlewares/authMiddleware');
 
-router.get('/:courseId/grades', 
+router.get('/:courseId/grades',
   verifyToken,
   isTeacher,
   getNetAverages

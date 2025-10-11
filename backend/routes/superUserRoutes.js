@@ -1,11 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { 
-    getAllUsers, 
-    createUser, 
-    updateUser, 
-    deleteUser,
-    activateUser 
+const {
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  activateUser
 } = require('../controllers/userController');
 const inscripcionController = require('../controllers/inscripcionController');
 const { verifyToken, isSup } = require('../middlewares/authMiddleware');

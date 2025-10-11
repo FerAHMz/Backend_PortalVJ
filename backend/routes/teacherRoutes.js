@@ -2,57 +2,55 @@ const express = require('express');
 const router = express.Router();
 const { verifyToken } = require('../middlewares/authMiddleware');
 const {
-    getTeacherCourses,
-    getCourseGrades,
-    registerGrade,
-    getStudentsByCourse
+  getTeacherCourses,
+  getCourseGrades,
+  registerGrade,
+  getStudentsByCourse
 } = require('../controllers/teacherController');
 
 const {
-    getCourseTasks,
-    createTask,
-    getTaskGrades,
-    saveTaskGrades,
-    updateTaskGrade,
-    getAllHomework,
-    getAllTasksForUser
+  getCourseTasks,
+  createTask,
+  getTaskGrades,
+  saveTaskGrades,
+  updateTaskGrade,
+  getAllHomework,
+  getAllTasksForUser
 } = require('../controllers/taskController');
 
 const {
-    getReportCard,
-    getStudentsGradeSection,
-    getGradeSections,
-    getTeacherGradeSections, 
-    getObservationsAndActionPoints,
-    getGrade
+  getReportCard,
+  getStudentsGradeSection,
+  getGradeSections,
+  getTeacherGradeSections,
+  getObservationsAndActionPoints,
+  getGrade
 } = require('../controllers/reportCardController');
 
 const {
-    createObservation,
-    getObservationsByCourseAndStudent,
-    updateObservation,
-    deleteObservation
+  createObservation,
+  getObservationsByCourseAndStudent,
+  updateObservation,
+  deleteObservation
 } = require('../controllers/observationController');
 
 const {
-    createPlanning,
-    getPlannings,
-    getPlanningById,
-    updatePlanning,
-    deletePlanning,
-    getPlanningObservations,
-    getPlanningTasks,
-    createPlanningTask,
-    updatePlanningTask,
-    deletePlanningTask,
-    upload,
-    uploadPlanificationFile,
-    getPlanificationFiles,
-    deletePlanificationFile,
-    downloadPlanificationFile
+  createPlanning,
+  getPlannings,
+  getPlanningById,
+  updatePlanning,
+  deletePlanning,
+  getPlanningObservations,
+  getPlanningTasks,
+  createPlanningTask,
+  updatePlanningTask,
+  deletePlanningTask,
+  upload,
+  uploadPlanificationFile,
+  getPlanificationFiles,
+  deletePlanificationFile,
+  downloadPlanificationFile
 } = require('../controllers/coursePlanningController');
-
-const { verify } = require('jsonwebtoken');
 
 // Rutas del maestro
 router.get('/:teacherId/courses', verifyToken, getTeacherCourses);
@@ -76,7 +74,7 @@ router.put('/observations/:observationId', verifyToken, updateObservation);
 router.delete('/observations/:observationId', verifyToken, deleteObservation);
 
 // Rutas para boleta de calificaciones
-router.get('/report-card/:carnetEstudiante/', verifyToken, getReportCard); 
+router.get('/report-card/:carnetEstudiante/', verifyToken, getReportCard);
 router.get('/grade-sections/:gradeSectionId/report-card/', verifyToken, getStudentsGradeSection);
 router.get('/grade-sections', verifyToken, getGradeSections);
 // Rutas para obtener grados y secciones del maestro autenticado

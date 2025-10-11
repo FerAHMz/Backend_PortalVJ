@@ -49,7 +49,7 @@ describe('User Management Integration Tests', function() {
           expect(res.body.user).to.have.property('id');
           expect(res.body.user).to.have.property('email', newUser.email);
           expect(res.body.user).to.not.have.property('password');
-          
+
           createdUserId = res.body.user.id;
           done();
         });
@@ -186,7 +186,7 @@ describe('User Management Integration Tests', function() {
           expect(res).to.have.status(201);
           expect(res.body).to.have.property('success', true);
           expect(res.body).to.have.property('teacher');
-          
+
           teacherId = res.body.teacher.id;
           done();
         });
@@ -224,7 +224,7 @@ describe('User Management Integration Tests', function() {
   });
 
   describe('Parent Management', function() {
-    let parentId;
+    let _parentId;
 
     it('should create a new parent', function(done) {
       const newParent = {
@@ -243,8 +243,8 @@ describe('User Management Integration Tests', function() {
           expect(res).to.have.status(201);
           expect(res.body).to.have.property('success', true);
           expect(res.body).to.have.property('parent');
-          
-          parentId = res.body.parent.id;
+
+          _parentId = res.body.parent.id;
           done();
         });
     });

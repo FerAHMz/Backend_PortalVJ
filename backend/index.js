@@ -5,7 +5,6 @@ const express = require('express');
 const app = express();
 const db = require('./database_cn');
 const cors = require('cors');
-const net = require('net');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const JWT_SECRET = process.env.JWT_SECRET || 'portalvj-secret-2024';
@@ -57,7 +56,7 @@ app.post('/login', async (req, res) => {
 
   try {
     console.log('Executing login query for email:', email);
-    
+
     const result = await db.getPool().query(
       `SELECT m.id, m.password as hashed_password, 'Maestro' as rol, 'maestros' as user_type
        FROM Maestros m 
@@ -80,7 +79,7 @@ app.post('/login', async (req, res) => {
        WHERE s.email = $1`,
       [email]
     );
-    
+
     console.log('Query result:', result.rows);
 
     console.log('Query executed:', { rows: result.rows });
@@ -96,7 +95,7 @@ app.post('/login', async (req, res) => {
           'SELECT $1 = crypt($2, $1) as match',
           [hashedPassword, password]
         );
-        
+
         match = passwordCheck.rows[0].match;
         console.log('pgcrypto match:', match);
 
@@ -121,7 +120,7 @@ app.post('/login', async (req, res) => {
 
       if (match) {
         const token = jwt.sign(
-          { 
+          {
             id: user.id,
             rol: user.rol,
             type: user.user_type
@@ -129,14 +128,14 @@ app.post('/login', async (req, res) => {
           JWT_SECRET
         );
 
-        res.json({ 
-          success: true, 
+        res.json({
+          success: true,
           user: {
             id: user.id,
             rol: user.rol,
             type: user.user_type
           },
-          token: token 
+          token: token
         });
       } else {
         res.status(401).json({ success: false, message: 'Credenciales inválidas' });
@@ -190,9 +189,9 @@ app.get('/api/test/password-reset', async (req, res) => {
   try {
     // Verificar que la tabla existe
     const result = await db.getPool().query(
-      "SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'password_reset_tokens')"
+      'SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = \'password_reset_tokens\')'
     );
-    
+
     res.json({
       success: true,
       message: 'Password reset system ready',
@@ -249,19 +248,19 @@ app.get('/health', (req, res) => {
 });
 
 // Erro handeling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err.stack);
   res.status(500).json({
-      success: false,
-      error: 'Error interno del servidor'
+    success: false,
+    error: 'Error interno del servidor'
   });
 });
 
 // Not founfd middleware
 app.use((req, res) => {
   res.status(404).json({
-      success: false,
-      error: 'Ruta no encontrada'
+    success: false,
+    error: 'Ruta no encontrada'
   });
 });
 
@@ -272,15 +271,15 @@ app.listen(3000, async (err) => {
     process.exit(1);
   }
   console.log('Servidor listo en http://localhost:3000');
-  
+
   // Configurar limpieza automática de tokens de reset de contraseña
   try {
     const { autoCleanupTokens } = require('./controllers/passwordResetController');
-    
+
     // Ejecutar limpieza inicial
     const tokensRemoved = await autoCleanupTokens();
     console.log(`Limpieza inicial de tokens: ${tokensRemoved} tokens eliminados`);
-    
+
     // Configurar limpieza automática cada 24 horas
     setInterval(async () => {
       try {
@@ -290,7 +289,7 @@ app.listen(3000, async (err) => {
         console.error('Error en limpieza automática de tokens:', error);
       }
     }, 24 * 60 * 60 * 1000); // 24 horas
-    
+
   } catch (error) {
     console.error('Error configurando limpieza automática de tokens:', error);
   }

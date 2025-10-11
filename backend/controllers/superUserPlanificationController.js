@@ -32,13 +32,13 @@ const getAllPlanificationsByGrade = async (req, res) => {
     `;
 
     const result = await db.getPool().query(query);
-    
+
     // Group the results by grade
     const planificationsByGrade = {};
-    
+
     result.rows.forEach(row => {
       const gradeKey = row.grado_nombre;
-      
+
       if (!planificationsByGrade[gradeKey]) {
         planificationsByGrade[gradeKey] = {
           grado_id: row.grado_id,
@@ -46,7 +46,7 @@ const getAllPlanificationsByGrade = async (req, res) => {
           planificaciones: []
         };
       }
-      
+
       planificationsByGrade[gradeKey].planificaciones.push({
         planificacion_id: row.planificacion_id,
         mes: row.mes,
@@ -65,10 +65,10 @@ const getAllPlanificationsByGrade = async (req, res) => {
         }
       });
     });
-    
+
     // Convert to array format
     const responseData = Object.values(planificationsByGrade);
-    
+
     res.status(200).json({
       success: true,
       data: responseData,
@@ -114,7 +114,7 @@ const getPlanificationDetailById = async (req, res) => {
     `;
 
     const planificationResult = await db.getPool().query(planificationQuery, [planificationId]);
-    
+
     if (planificationResult.rows.length === 0) {
       return res.status(404).json({
         success: false,

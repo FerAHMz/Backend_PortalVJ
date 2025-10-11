@@ -6,14 +6,14 @@ chai.use(chaiHttp);
 const expect = chai.expect;
 
 describe('Authentication & Authorization Integration Tests', function() {
-  let server;
-  let testUser;
+  let _server;
+  let _testUser;
   let authToken;
 
   before(async function() {
     this.timeout(10000);
     // Create a test user for authentication
-    testUser = await global.createTestUser({
+    _testUser = await global.createTestUser({
       email: 'auth.test@portalvj.com',
       password: '$2b$10$YourHashedPasswordHere',
       rol: 1 // SUP role
@@ -35,7 +35,7 @@ describe('Authentication & Authorization Integration Tests', function() {
           expect(res.body).to.have.property('user');
           expect(res.body.user).to.have.property('id');
           expect(res.body.user).to.have.property('email', 'auth.test@portalvj.com');
-          
+
           authToken = res.body.token;
           done();
         });
@@ -128,7 +128,7 @@ describe('Authentication & Authorization Integration Tests', function() {
 
   describe('Role-Based Access Control', function() {
     let teacherToken;
-    let parentToken;
+    let _parentToken;
 
     before(async function() {
       // Create teacher user
@@ -152,7 +152,7 @@ describe('Authentication & Authorization Integration Tests', function() {
         { expiresIn: '1h' }
       );
 
-      parentToken = jwt.sign(
+      _parentToken = jwt.sign(
         { id: parentUser.id, email: parentUser.email, rol: 'Padre' },
         process.env.JWT_SECRET,
         { expiresIn: '1h' }

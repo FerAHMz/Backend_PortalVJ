@@ -9,11 +9,11 @@ router.use(verifyToken);
 
 // Add role verification middleware
 const verifyMessageAccess = async (req, res, next) => {
-  const { id: userId, rol: userRole } = req.user;
-  const { recipient_id, recipient_role } = req.body;
+  const { id: _userId, rol: userRole } = req.user;
+  const { recipient_id: _recipient_id, recipient_role } = req.body;
 
   // Allow messages only between teachers and parents
-  if (!['Maestro', 'Padre'].includes(userRole) || 
+  if (!['Maestro', 'Padre'].includes(userRole) ||
       !['Maestro', 'Padre'].includes(recipient_role)) {
     return res.status(403).json({
       success: false,
@@ -188,7 +188,7 @@ router.post('/conversation', async (req, res) => {
 // Search for a user by name
 router.get('/search', verifyToken, async (req, res) => {
   const { name } = req.query;
-  
+
   try {
     const query = `
       SELECT id, nombre, apellido, rol
@@ -200,9 +200,9 @@ router.get('/search', verifyToken, async (req, res) => {
       WHERE LOWER(CONCAT(nombre, ' ', apellido)) LIKE LOWER($1)
       LIMIT 1
     `;
-    
+
     const result = await db.getPool().query(query, [`%${name}%`]);
-    
+
     if (result.rows.length > 0) {
       res.json({ user: result.rows[0] });
     } else {

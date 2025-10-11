@@ -1,10 +1,10 @@
 const express = require('express');
-const { 
-  uploadProfileImage, 
-  updateProfileImageUrl, 
-  deleteProfileImage, 
+const {
+  uploadProfileImage,
+  updateProfileImageUrl,
+  deleteProfileImage,
   getProfileWithImage,
-  upload 
+  upload
 } = require('../controllers/profileImageController');
 const { verifyToken } = require('../middlewares/authMiddleware');
 

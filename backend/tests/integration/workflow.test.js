@@ -20,7 +20,7 @@ describe('End-to-End Workflow Integration Tests', function() {
   before(async function() {
     this.timeout(20000);
     console.log('Setting up complete workflow test environment...');
-    
+
     // Create core test data
     await setupTestEnvironment();
   });
@@ -70,7 +70,7 @@ describe('End-to-End Workflow Integration Tests', function() {
     );
 
     // Create supporting data
-    const gradeQuery = `INSERT INTO Grados (grado) VALUES ($1) RETURNING *`;
+    const gradeQuery = 'INSERT INTO Grados (grado) VALUES ($1) RETURNING *';
     const gradeResult = await global.testDb.query(gradeQuery, ['Workflow Grade']);
     testGrade = gradeResult.rows[0];
 
@@ -365,7 +365,7 @@ describe('End-to-End Workflow Integration Tests', function() {
       const concurrentGrades = [];
       for (let i = 0; i < 3; i++) {
         concurrentGrades.push(
-          new Promise((resolve, reject) => {
+          new Promise((resolve, _reject) => {
             const gradeData = {
               estudiante_id: testStudent.id,
               tarea_id: 999, // Non-existent assignment
@@ -446,10 +446,10 @@ describe('End-to-End Workflow Integration Tests', function() {
           expect(res.body.success).to.be.true;
           expect(res.body.created).to.be.an('array');
           expect(res.body.created.length).to.equal(10);
-          
+
           // Performance assertion - should complete within reasonable time
           expect(responseTime).to.be.below(5000); // 5 seconds
-          
+
           console.log(`Bulk payment operation took ${responseTime}ms`);
           done();
         });
@@ -476,10 +476,10 @@ describe('End-to-End Workflow Integration Tests', function() {
 
           expect(res).to.have.status(200);
           expect(res.body.success).to.be.true;
-          
+
           // Performance assertion
           expect(responseTime).to.be.below(8000); // 8 seconds
-          
+
           console.log(`Comprehensive report generation took ${responseTime}ms`);
           done();
         });

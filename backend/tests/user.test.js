@@ -148,7 +148,7 @@ describe('User Controller Tests', () => {
     test('should delete user successfully', async () => {
       // Arrange
       const userId = 5;
-      
+
       // Mock user exists and successful deletion
       mockClient.query
         .mockResolvedValueOnce({ rows: [{ id: userId, nombre: 'Test User' }] }) // User exists check
@@ -167,7 +167,7 @@ describe('User Controller Tests', () => {
     test('should return 404 for non-existent user', async () => {
       // Arrange
       const nonExistentUserId = 999;
-      
+
       // Mock user not found
       mockClient.query.mockResolvedValueOnce({ rows: [] });
 
@@ -184,7 +184,7 @@ describe('User Controller Tests', () => {
     test('should handle database errors during deletion', async () => {
       // Arrange
       const userId = 3;
-      
+
       // Mock database error
       mockClient.query.mockRejectedValueOnce(new Error('Database deletion failed'));
 

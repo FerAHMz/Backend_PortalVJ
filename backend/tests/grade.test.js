@@ -16,7 +16,7 @@ describe('Grade Controller Tests', () => {
       { carnet_estudiante: 'A123', nota: 85 },
       { carnet_estudiante: 'B456', nota: 90 }
     ];
-    
+
     const mockReq = {
       params: {
         courseId: '1',

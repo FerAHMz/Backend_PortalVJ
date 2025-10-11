@@ -103,7 +103,7 @@ exports.getAvailableStudents = async (req, res) => {
 exports.getStudentsByParent = async (req, res) => {
   try {
     const { parentId } = req.params;
-    
+
     const result = await db.getPool().query(`
       SELECT 
         e.carnet,

@@ -12,7 +12,7 @@ exports.getChildren = async (req, res) => {
       [parentId]
     );
     res.json({ success: true, children: result.rows });
-  } catch (error) {
+  } catch {
     res.status(500).json({ success: false, error: 'Error al obtener hijos' });
   }
 };
@@ -33,7 +33,7 @@ exports.getStudentGrades = async (req, res) => {
       [studentId]
     );
     res.json({ success: true, grades: result.rows });
-  } catch (error) {
+  } catch {
     res.status(500).json({ success: false, error: 'Error al obtener calificaciones' });
   }
 };
@@ -52,7 +52,7 @@ exports.getStudentTaskGrades = async (req, res) => {
       [studentId, subjectId]
     );
     res.json({ success: true, tasks: result.rows });
-  } catch (error) {
+  } catch {
     res.status(500).json({ success: false, error: 'Error al obtener calificaciones de tareas' });
   }
 };
@@ -73,15 +73,15 @@ exports.getChildPaymentHistory = async (req, res) => {
     );
 
     if (childVerification.rows.length === 0) {
-      return res.status(403).json({ 
-        success: false, 
-        error: 'No tiene permisos para ver los pagos de este estudiante' 
+      return res.status(403).json({
+        success: false,
+        error: 'No tiene permisos para ver los pagos de este estudiante'
       });
     }
 
     // Construir query con filtros de fecha opcionales
     const currentYear = new Date().getFullYear();
-    
+
     let query = `
       SELECT 
         s.id,
@@ -127,7 +127,7 @@ exports.getChildPaymentHistory = async (req, res) => {
       queryParams.push(endDate);
     }
 
-    query += ` ORDER BY s.fecha_pago DESC`;
+    query += ' ORDER BY s.fecha_pago DESC';
 
     const result = await db.getPool().query(query, queryParams);
 
@@ -169,8 +169,8 @@ exports.getChildPaymentHistory = async (req, res) => {
 
     const summaryResult = await db.getPool().query(summaryQuery, summaryParams);
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       payments: result.rows,
       summary: summaryResult.rows[0]
     });
@@ -195,9 +195,9 @@ exports.getChildPendingPayments = async (req, res) => {
     );
 
     if (childVerification.rows.length === 0) {
-      return res.status(403).json({ 
-        success: false, 
-        error: 'No tiene permisos para ver los pagos de este estudiante' 
+      return res.status(403).json({
+        success: false,
+        error: 'No tiene permisos para ver los pagos de este estudiante'
       });
     }
 
@@ -229,19 +229,19 @@ exports.getChildPendingPayments = async (req, res) => {
     `;
 
     const paidMonths = await db.getPool().query(paidMonthsQuery, [
-      studentId, 
-      parentId, 
-      MONTO_MINIMO, 
+      studentId,
+      parentId,
+      MONTO_MINIMO,
       currentYear
     ]);
 
     const paidMonthsList = paidMonths.rows.map(row => row.mes_solvencia_new);
-    
+
     // Filtrar solo los meses que ya pasaron y no están pagados
     const pendingMonths = monthsToCheck.filter(month => !paidMonthsList.includes(month));
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       pendingMonths: pendingMonths,
       year: currentYear,
       monthsChecked: monthsToCheck.length,

@@ -3,18 +3,18 @@ const jwt = require('jsonwebtoken');
 const verifyToken = (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
-    
+
     console.log('Auth Header:', authHeader); // Debug log
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Token no proporcionado' 
+      return res.status(401).json({
+        success: false,
+        error: 'Token no proporcionado'
       });
     }
 
     const token = authHeader.split(' ')[1];
-    
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log('Decoded token:', decoded); // Debug log
 
@@ -37,9 +37,9 @@ const verifyToken = (req, res, next) => {
     next();
   } catch (error) {
     console.error('Auth middleware error:', error);
-    return res.status(401).json({ 
-      success: false, 
-      error: 'Token inválido' 
+    return res.status(401).json({
+      success: false,
+      error: 'Token inválido'
     });
   }
 };
