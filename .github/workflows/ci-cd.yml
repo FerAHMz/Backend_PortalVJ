@@ -1,0 +1,372 @@
+---
+name: Backend PortalVJ CI/CD Pipeline
+
+"on":
+  push:
+    branches: [main, develop, master]
+  pull_request:
+    branches: [main, master]
+
+env:
+  NODE_VERSION: '18.x'
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: admin123.
+  POSTGRES_DB: portalvj_test
+
+jobs:
+  # ==============================
+  # BACKEND CI
+  # ==============================
+  backend-test:
+    name: Backend Tests & Linting
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run ESLint
+        working-directory: ./backend
+        run: npm run lint
+        continue-on-error: false
+
+      - name: Setup test database
+        run: |
+          # Esperar a que PostgreSQL esté completamente listo
+          sleep 10
+
+          # Crear tablas y datos de prueba
+          if [ -f "./DB/sql/01_schema.sql" ]; then
+            PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql \
+              -h localhost -U ${{ env.POSTGRES_USER }} \
+              -d ${{ env.POSTGRES_DB }} -f ./DB/sql/01_schema.sql
+          fi
+
+          if [ -f "./DB/sql/02_updates.sql" ]; then
+            PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql \
+              -h localhost -U ${{ env.POSTGRES_USER }} \
+              -d ${{ env.POSTGRES_DB }} -f ./DB/sql/02_updates.sql
+          fi
+
+          if [ -f "./DB/sql/03_data.sql" ]; then
+            PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql \
+              -h localhost -U ${{ env.POSTGRES_USER }} \
+              -d ${{ env.POSTGRES_DB }} -f ./DB/sql/03_data.sql
+          fi
+
+      - name: Run backend tests
+        working-directory: ./backend
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: ${{ env.POSTGRES_DB }}
+          DB_USER: ${{ env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          JWT_SECRET: test-jwt-secret-for-ci
+          PORT: 3000
+        run: npm test
+
+      - name: Upload backend test coverage
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: backend-test-coverage
+          path: backend/coverage/
+
+  # ==============================
+  # SECURITY & QUALITY CHECKS
+  # ==============================
+  backend-security:
+    name: Security & Quality Audit
+    runs-on: ubuntu-latest
+    needs: [backend-test]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Run security audit
+        working-directory: ./backend
+        run: npm audit --audit-level=moderate
+
+      - name: Check for outdated packages
+        working-directory: ./backend
+        run: npm outdated || true
+
+  # ==============================
+  # DOCKER BUILD
+  # ==============================
+  backend-docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: [backend-test]
+    if: >
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/master' ||
+      github.ref == 'refs/heads/develop'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub (Production only)
+        if: >
+          github.ref == 'refs/heads/main' ||
+          github.ref == 'refs/heads/master'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Docker image (test)
+        if: github.ref == 'refs/heads/develop'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: portalvj-backend:test
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push Docker image (production)
+        if: >
+          github.ref == 'refs/heads/main' ||
+          github.ref == 'refs/heads/master'
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          platforms: linux/amd64
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/portalvj-backend:latest
+            ${{ secrets.DOCKER_USERNAME }}/portalvj-backend:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.title=PortalVJ Backend
+            org.opencontainers.image.description=Backend API for PortalVJ
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{
+              github.event.head_commit.timestamp }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ==============================
+  # DEPLOYMENT
+  # ==============================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [backend-test, backend-security]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy backend to staging
+        run: |
+          echo "🚀 Deploying backend to staging environment..."
+          echo "Environment: Staging"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+
+          # Aquí irían los comandos específicos de deployment
+          # Ejemplos según tu proveedor:
+
+          # Para Heroku:
+          # git remote add heroku-staging \
+          #   https://git.heroku.com/your-app-staging.git
+          # git push heroku-staging develop:master
+
+          # Para Railway:
+          # railway login --browserless
+          # railway deploy --service backend-staging
+
+          # Para DigitalOcean App Platform:
+          # doctl apps create-deployment $STAGING_APP_ID
+
+          # Para AWS ECS/Fargate:
+          # aws ecs update-service --cluster staging \
+          #   --service backend --force-new-deployment
+
+      - name: Run smoke tests on staging
+        run: |
+          echo "Running smoke tests on staging deployment..."
+          # Esperar a que el deployment esté listo
+          sleep 30
+
+          # Ejemplo de smoke test
+          # curl -f $STAGING_BACKEND_URL/health || exit 1
+          # curl -f $STAGING_BACKEND_URL/api/version || exit 1
+
+      - name: Notify staging deployment
+        run: |
+          echo "✅ Backend staging deployment completed!"
+          echo "Staging URL: https://your-backend-staging.herokuapp.com"
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [backend-test, backend-security, backend-docker]
+    if: >
+      github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/master'
+    environment: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy backend to production
+        run: |
+          echo "🚀 Deploying backend to production environment..."
+          echo "Environment: Production"
+          echo "Branch: ${{ github.ref_name }}"
+          echo "Commit: ${{ github.sha }}"
+
+          # Comandos de deployment para producción
+          # Similar a staging pero con configuraciones de producción
+
+      - name: Run production smoke tests
+        run: |
+          echo "Running smoke tests on production deployment..."
+          sleep 30
+
+          # Smoke tests más exhaustivos para producción
+          # curl -f $PRODUCTION_BACKEND_URL/health || exit 1
+          # curl -f $PRODUCTION_BACKEND_URL/api/version || exit 1
+
+      - name: Notify production deployment
+        run: |
+          echo "✅ Backend production deployment completed!"
+          echo "Production URL: https://your-backend-prod.herokuapp.com"
+
+          # Opcional: Enviar notificación a Slack/Discord/Teams
+          # curl -X POST -H 'Content-type: application/json' \
+          #   --data '{"text":"🚀 Backend PortalVJ deployed to production!"}' \
+          #   $SLACK_WEBHOOK_URL
+
+  # ==============================
+  # INTEGRATION TESTS
+  # ==============================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [backend-test]
+    if: github.event_name == 'pull_request'
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Setup test database
+        run: |
+          sleep 10
+          if [ -f "./DB/sql/01_schema.sql" ]; then
+            PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql \
+              -h localhost -U ${{ env.POSTGRES_USER }} \
+              -d ${{ env.POSTGRES_DB }} -f ./DB/sql/01_schema.sql
+          fi
+          if [ -f "./DB/sql/02_updates.sql" ]; then
+            PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql \
+              -h localhost -U ${{ env.POSTGRES_USER }} \
+              -d ${{ env.POSTGRES_DB }} -f ./DB/sql/02_updates.sql
+          fi
+          if [ -f "./DB/sql/03_data.sql" ]; then
+            PGPASSWORD=${{ env.POSTGRES_PASSWORD }} psql \
+              -h localhost -U ${{ env.POSTGRES_USER }} \
+              -d ${{ env.POSTGRES_DB }} -f ./DB/sql/03_data.sql
+          fi
+
+      - name: Run integration tests
+        working-directory: ./backend
+        env:
+          NODE_ENV: test
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: ${{ env.POSTGRES_DB }}
+          DB_USER: ${{ env.POSTGRES_USER }}
+          DB_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          JWT_SECRET: test-jwt-secret-for-integration
+          PORT: 3000
+        run: |
+          # Si tienes tests de integración específicos
+          npm run test:integration || npm test
+
+      - name: Upload integration test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: integration-test-results
+          path: backend/coverage/

@@ -43,6 +43,15 @@ app.use('/api/superuser/families', familyRoutes);
 app.use('/api/courses', attendanceRoutes); 
 app.use('/api/students', studentAttendanceRoutes); 
 
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.status(200).json({ 
+        status: 'OK', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).send('Something broke!');
