@@ -54,7 +54,7 @@ beforeEach(() => {
   mockClient.release.mockClear();
   mockPool.connect.mockClear();
   mockPool.query.mockClear();
-  
+
   // Reset to default behavior
   mockClient.query.mockResolvedValue({ rows: [] });
   mockPool.query.mockResolvedValue({ rows: [] });

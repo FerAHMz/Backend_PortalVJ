@@ -9,9 +9,9 @@ const login = async (req, res) => {
 
   // Validar datos requeridos
   if (!email || !password) {
-    return res.status(400).json({ 
-      success: false, 
-      error: 'Email y contraseña son requeridos' 
+    return res.status(400).json({
+      success: false,
+      error: 'Email y contraseña son requeridos'
     });
   }
 
@@ -40,9 +40,9 @@ const login = async (req, res) => {
     );
 
     if (result.rows.length === 0) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Credenciales inválidas' 
+      return res.status(401).json({
+        success: false,
+        error: 'Credenciales inválidas'
       });
     }
 
@@ -64,16 +64,16 @@ const login = async (req, res) => {
       }
     } catch (error) {
       console.error('Error verifying password:', error);
-      return res.status(500).json({ 
-        success: false, 
-        error: 'Error al verificar contraseña' 
+      return res.status(500).json({
+        success: false,
+        error: 'Error al verificar contraseña'
       });
     }
 
     if (!match) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Credenciales inválidas' 
+      return res.status(401).json({
+        success: false,
+        error: 'Credenciales inválidas'
       });
     }
 
@@ -103,9 +103,9 @@ const login = async (req, res) => {
 
   } catch (err) {
     console.error('Error during login:', err);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Error en el servidor' 
+    res.status(500).json({
+      success: false,
+      error: 'Error en el servidor'
     });
   }
 };

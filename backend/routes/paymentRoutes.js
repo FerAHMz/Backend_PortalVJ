@@ -201,7 +201,7 @@ router.get('/full-report', async (req, res) => {
 router.post('/', verifyToken, isAdmin, createPayment);
 router.get('/', verifyToken, isAdmin, getPayments);
 
-//Manual payments CRUD  
+//Manual payments CRUD
 router.post('/manual', verifyToken, isAdmin, addPayment);
 router.put('/manual/:id', verifyToken, isAdmin, updatePayment);
 router.put('/manual/invalidate/:id', verifyToken, isAdmin, invalidatePayment);

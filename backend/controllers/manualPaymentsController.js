@@ -133,9 +133,9 @@ const getPayments = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching students payments:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Internal Server Error' 
+    res.status(500).json({
+      success: false,
+      error: 'Internal Server Error'
     });
   } finally {
     client?.release();

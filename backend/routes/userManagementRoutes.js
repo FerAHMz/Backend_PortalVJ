@@ -10,7 +10,7 @@ const {
 // Get all users
 router.get('/', verifyToken, isAdmin, getAllUsers);
 
-// Create new user  
+// Create new user
 router.post('/', verifyToken, isAdmin, createUser);
 
 // Delete user

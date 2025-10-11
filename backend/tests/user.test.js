@@ -67,8 +67,8 @@ describe('User Controller Tests', () => {
       mockClient.query
         .mockResolvedValueOnce({ rows: [] }) // Email check - no duplicates
         .mockResolvedValueOnce({ rows: [{ id: 1 }] }) // Role ID lookup
-        .mockResolvedValueOnce({ 
-          rows: [{ 
+        .mockResolvedValueOnce({
+          rows: [{
             id: 1,
             nombre: 'John',
             apellido: 'Doe',
@@ -76,7 +76,7 @@ describe('User Controller Tests', () => {
             telefono: '12345678',
             rol: 'Maestro',
             activo: true
-          }] 
+          }]
         }); // Insert user
 
       // Act
@@ -143,9 +143,9 @@ describe('User Controller Tests', () => {
       const userId = 5;
 
       // Mock successful deletion (UPDATE query returns 1 row affected)
-      mockClient.query.mockResolvedValueOnce({ 
-        rows: [{ id: userId }], 
-        rowCount: 1 
+      mockClient.query.mockResolvedValueOnce({
+        rows: [{ id: userId }],
+        rowCount: 1
       });
 
       // Act
@@ -164,9 +164,9 @@ describe('User Controller Tests', () => {
       const nonExistentUserId = 999;
 
       // Mock user not found (UPDATE query affects 0 rows)
-      mockClient.query.mockResolvedValueOnce({ 
-        rows: [], 
-        rowCount: 0 
+      mockClient.query.mockResolvedValueOnce({
+        rows: [],
+        rowCount: 0
       });
 
       // Act

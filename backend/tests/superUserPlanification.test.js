@@ -267,7 +267,7 @@ describe('SuperUser Planifications API Tests', () => {
       await request(app)
         .get('/api/superuser/planifications/by-grade')
         .expect(200);
-      
+
       expect(verifyToken).toHaveBeenCalled();
     });
 
@@ -276,7 +276,7 @@ describe('SuperUser Planifications API Tests', () => {
       await request(app)
         .get('/api/superuser/planifications/by-grade')
         .expect(200);
-        
+
       expect(isSup).toHaveBeenCalled();
     });
   });
