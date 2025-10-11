@@ -294,7 +294,7 @@ describe('Course & Academic Management Integration Tests', function() {
   describe('Grade and Assignment Management', function() {
     let assignmentId;
 
-    before(async function() {
+    beforeAll(async () => {
       // Re-enroll student for grade testing
       await global.testDb.query(
         'INSERT INTO Inscripciones (estudiante_id, curso_id, fecha_inscripcion) VALUES ($1, $2, $3)',

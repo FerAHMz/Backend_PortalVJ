@@ -1,30 +1,12 @@
 const request = require('supertest');
 const app = require('../app');
-const db = require('../database_cn');
-
-// Mock the database connection
-jest.mock('../database_cn', () => ({
-  getPool: jest.fn(() => ({
-    connect: jest.fn(),
-    query: jest.fn()
-  }))
-}));
 
 describe('User Controller Tests', () => {
-  let mockClient;
+  // Use global mockClient from setup.js
+  const mockClient = global.mockClient;
 
   beforeEach(() => {
-    mockClient = {
-      query: jest.fn(),
-      release: jest.fn()
-    };
-    db.getPool.mockReturnValue({
-      connect: jest.fn().mockResolvedValue(mockClient),
-      query: jest.fn()
-    });
-  });
-
-  afterEach(() => {
+    // Reset mocks
     jest.clearAllMocks();
   });
 
@@ -33,9 +15,9 @@ describe('User Controller Tests', () => {
     test('should return all users with proper role ordering', async () => {
       // Arrange
       const mockUsers = [
-        { id: 1, nombre: 'Admin', apellido: 'User', email: 'admin@test.com', telefono: '1234567890', rol: 'SUP', rol_order: 1, activo: true },
-        { id: 2, nombre: 'Director', apellido: 'Test', email: 'director@test.com', telefono: '0987654321', rol: 'Director', rol_order: 2, activo: true },
-        { id: 3, nombre: 'Teacher', apellido: 'Test', email: 'teacher@test.com', telefono: '1122334455', rol: 'Maestro', rol_order: 4, activo: true }
+        { id: 1, nombre: 'Admin', apellido: 'User', email: 'admin@test.com', telefono: '12345678', rol: 'SUP', rol_order: 1, activo: true },
+        { id: 2, nombre: 'Director', apellido: 'Test', email: 'director@test.com', telefono: '09876543', rol: 'Director', rol_order: 2, activo: true },
+        { id: 3, nombre: 'Teacher', apellido: 'Test', email: 'teacher@test.com', telefono: '11223344', rol: 'Maestro', rol_order: 4, activo: true }
       ];
 
       mockClient.query.mockResolvedValueOnce({ rows: mockUsers });
@@ -56,7 +38,7 @@ describe('User Controller Tests', () => {
 
     test('should handle database connection errors', async () => {
       // Arrange
-      db.getPool().connect.mockRejectedValueOnce(new Error('Database connection failed'));
+      global.mockPool.connect.mockRejectedValueOnce(new Error('Database connection failed'));
 
       // Act
       const response = await request(app)
@@ -76,7 +58,7 @@ describe('User Controller Tests', () => {
         nombre: 'John',
         apellido: 'Doe',
         email: 'john.doe@test.com',
-        telefono: '1234567890',
+        telefono: '12345678',
         password: 'securePassword123',
         rol: 'Maestro'
       };
@@ -84,7 +66,18 @@ describe('User Controller Tests', () => {
       // Mock successful user creation queries
       mockClient.query
         .mockResolvedValueOnce({ rows: [] }) // Email check - no duplicates
-        .mockResolvedValueOnce({ rows: [{ id: 1 }] }); // Insert user
+        .mockResolvedValueOnce({ rows: [{ id: 1 }] }) // Role ID lookup
+        .mockResolvedValueOnce({ 
+          rows: [{ 
+            id: 1,
+            nombre: 'John',
+            apellido: 'Doe',
+            email: 'john.doe@test.com',
+            telefono: '12345678',
+            rol: 'Maestro',
+            activo: true
+          }] 
+        }); // Insert user
 
       // Act
       const response = await request(app)
@@ -95,7 +88,7 @@ describe('User Controller Tests', () => {
       // Assert
       expect(response.body).toHaveProperty('message', 'Usuario creado exitosamente');
       expect(response.body).toHaveProperty('userId', 1);
-      expect(mockClient.query).toHaveBeenCalledTimes(2);
+      expect(mockClient.query).toHaveBeenCalledTimes(3);
     });
 
     test('should return 400 error for missing required fields', async () => {
@@ -123,7 +116,7 @@ describe('User Controller Tests', () => {
         nombre: 'Jane',
         apellido: 'Smith',
         email: 'existing@test.com',
-        telefono: '9876543210',
+        telefono: '98765432',
         password: 'password123',
         rol: 'Padre'
       };
@@ -149,31 +142,37 @@ describe('User Controller Tests', () => {
       // Arrange
       const userId = 5;
 
-      // Mock user exists and successful deletion
-      mockClient.query
-        .mockResolvedValueOnce({ rows: [{ id: userId, nombre: 'Test User' }] }) // User exists check
-        .mockResolvedValueOnce({ rowCount: 1 }); // Successful deletion
+      // Mock successful deletion (UPDATE query returns 1 row affected)
+      mockClient.query.mockResolvedValueOnce({ 
+        rows: [{ id: userId }], 
+        rowCount: 1 
+      });
 
       // Act
       const response = await request(app)
         .delete(`/api/users/${userId}`)
+        .send({ rol: 'Maestro' })
         .expect(200);
 
       // Assert
-      expect(response.body).toHaveProperty('message', 'Usuario eliminado exitosamente');
-      expect(mockClient.query).toHaveBeenCalledTimes(2);
+      expect(response.body).toHaveProperty('message', 'Usuario desactivado exitosamente');
+      expect(mockClient.query).toHaveBeenCalledTimes(1);
     });
 
     test('should return 404 for non-existent user', async () => {
       // Arrange
       const nonExistentUserId = 999;
 
-      // Mock user not found
-      mockClient.query.mockResolvedValueOnce({ rows: [] });
+      // Mock user not found (UPDATE query affects 0 rows)
+      mockClient.query.mockResolvedValueOnce({ 
+        rows: [], 
+        rowCount: 0 
+      });
 
       // Act
       const response = await request(app)
         .delete(`/api/users/${nonExistentUserId}`)
+        .send({ rol: 'Maestro' })
         .expect(404);
 
       // Assert
@@ -191,10 +190,11 @@ describe('User Controller Tests', () => {
       // Act
       const response = await request(app)
         .delete(`/api/users/${userId}`)
+        .send({ rol: 'Maestro' })
         .expect(500);
 
       // Assert
-      expect(response.body).toHaveProperty('error', 'Error interno del servidor');
+      expect(response.body).toHaveProperty('error', 'Error al desactivar usuario');
     });
   });
 });

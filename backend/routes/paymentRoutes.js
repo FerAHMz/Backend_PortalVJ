@@ -4,29 +4,25 @@ const { upload, uploadPayments } = require('../controllers/paymentControllers');
 const { verifyToken, isAdmin } = require('../middlewares/authMiddleware');
 const {
   addPayment,
-  getPayments,
+  getPayments: getManualPayments,
   updatePayment,
   invalidatePayment
 } = require('../controllers/manualPaymentsController');
+const {
+  createPayment,
+  getPayments
+} = require('../controllers/paymentController');
 const db = require('../database_cn');
 
-router.post('/upload', verifyToken, isAdmin, (req, res) => {
-  upload(req, res, async (err) => {
+router.post('/upload', verifyToken, isAdmin, (req, res, next) => {
+  upload(req, res, (err) => {
     if (err) {
       return res.status(400).json({
         success: false,
         error: err.message
       });
     }
-
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        error: 'No se ha seleccionado ningún archivo'
-      });
-    }
-
-    await uploadPayments(req, res);
+    uploadPayments(req, res).catch(next);
   });
 });
 
@@ -201,11 +197,15 @@ router.get('/full-report', async (req, res) => {
   }
 });
 
-//CRUD manual de pagos
-router.post('/', verifyToken, isAdmin, addPayment);
-router.put('/:id', verifyToken, isAdmin, updatePayment);
-router.put('/invalidate/:id', verifyToken, isAdmin, invalidatePayment);
+//Basic payment CRUD
+router.post('/', verifyToken, isAdmin, createPayment);
 router.get('/', verifyToken, isAdmin, getPayments);
+
+//Manual payments CRUD  
+router.post('/manual', verifyToken, isAdmin, addPayment);
+router.put('/manual/:id', verifyToken, isAdmin, updatePayment);
+router.put('/manual/invalidate/:id', verifyToken, isAdmin, invalidatePayment);
+router.get('/manual', verifyToken, isAdmin, getManualPayments);
 
 module.exports = router;
 

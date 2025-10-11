@@ -110,6 +110,12 @@ exports.getConversationMessages = async (req, res) => {
 exports.searchUsers = async (req, res) => {
   const { query } = req.query;
   const { id: currentUserId, rol: currentUserRole } = req.user;
+
+  // Return empty array for short queries
+  if (!query || query.length < 2) {
+    return res.json({ success: true, users: [] });
+  }
+
   let client;
 
   try {
@@ -164,6 +170,15 @@ exports.searchUsers = async (req, res) => {
 exports.sendMessage = async (req, res) => {
   const { recipient_id, recipient_role, subject, content } = req.body;
   const { id: sender_id, rol: sender_role } = req.user;
+
+  // Validate required fields
+  if (!recipient_id || !recipient_role || !subject || !content) {
+    return res.status(400).json({
+      success: false,
+      error: 'Missing required fields: recipient_id, recipient_role, subject, and content are required'
+    });
+  }
+
   let client;
 
   try {

@@ -1,4 +1,17 @@
 const request = require('supertest');
+
+// Mock paymentControllers before importing app
+jest.mock('../controllers/paymentControllers', () => ({
+  upload: jest.fn((req, res, callback) => callback()),
+  uploadPayments: jest.fn()
+}));
+
+// Mock paymentController before importing app
+jest.mock('../controllers/paymentController', () => ({
+  createPayment: jest.fn(),
+  getPayments: jest.fn()
+}));
+
 const app = require('../app');
 const db = require('../database_cn');
 
@@ -11,6 +24,7 @@ jest.mock('../middlewares/authMiddleware', () => ({
     req.user = { id: 1, rol: 'SUP' };
     next();
   }),
+  isAdmin: jest.fn((req, res, next) => next()),
   isSup: jest.fn((req, res, next) => next())
 }));
 

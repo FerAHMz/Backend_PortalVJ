@@ -51,7 +51,7 @@ describe('Message API Tests', () => {
           recipient_id: 1,
           recipient_role: 'Maestro',
           content: 'Test message content',
-          created_at: new Date(),
+          created_at: new Date().toISOString(),
           read: false,
           sender_name: 'John',
           sender_lastname: 'Doe'
@@ -91,7 +91,7 @@ describe('Message API Tests', () => {
           recipient_id: 2,
           recipient_role: 'Padre',
           content: 'Hello',
-          created_at: new Date(),
+          created_at: new Date().toISOString(),
           read: true,
           sender_nombre: 'Jane',
           sender_apellido: 'Smith'
@@ -104,7 +104,7 @@ describe('Message API Tests', () => {
           recipient_id: 1,
           recipient_role: 'Maestro',
           content: 'Hi there',
-          created_at: new Date(),
+          created_at: new Date().toISOString(),
           read: false,
           sender_nombre: 'John',
           sender_apellido: 'Doe'
@@ -151,7 +151,7 @@ describe('Message API Tests', () => {
           sender_id: 1,
           sender_role: 'Maestro',
           ...newMessage,
-          created_at: new Date(),
+          created_at: new Date().toISOString(),
           read: false
         }]
       };
@@ -235,7 +235,7 @@ describe('Message API Tests', () => {
         recipient_role: 'Maestro',
         subject: 'Test Subject',
         content: 'Test content',
-        created_at: new Date(),
+        created_at: new Date().toISOString(),
         read: true
       };
 

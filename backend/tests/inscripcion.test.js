@@ -52,8 +52,8 @@ describe('Inscripciones API', () => {
     it('debería crear una nueva inscripción', async () => {
       const inscripcionData = {
         carnet: 'TEST999',
-        nombres: 'Estudiante',
-        apellidos: 'De Prueba',
+        nombre: 'Estudiante',
+        apellido: 'De Prueba',
         fecha_nacimiento: '2010-01-01',
         id_grado_seccion: 1,
         sire: 'TEST001',
@@ -93,8 +93,8 @@ describe('Inscripciones API', () => {
     it('debería fallar al crear inscripción duplicada', async () => {
       const inscripcionData = {
         carnet: 'TEST999', // Mismo carnet que en el primer test
-        nombres: 'Otro',
-        apellidos: 'Estudiante',
+        nombre: 'Otro',
+        apellido: 'Estudiante',
         fecha_nacimiento: '2010-01-01',
         id_grado_seccion: 1
       };

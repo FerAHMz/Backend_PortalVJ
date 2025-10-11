@@ -253,7 +253,7 @@ describe('Messaging System Integration Tests', function() {
   describe('Message Status Management', function() {
     let messageId;
 
-    before(async function() {
+    beforeAll(async () => {
       // Create a test message to work with
       const messageQuery = `
         INSERT INTO Mensajes (sender_id, sender_role, recipient_id, recipient_role, subject, message, conversation_id, is_read, created_at)
@@ -382,7 +382,7 @@ describe('Messaging System Integration Tests', function() {
   describe('Message Deletion and Archive', function() {
     let testMessageId;
 
-    before(async function() {
+    beforeAll(async () => {
       // Create a message for deletion testing
       const messageQuery = `
         INSERT INTO Mensajes (sender_id, sender_role, recipient_id, recipient_role, subject, message, conversation_id, is_read, created_at)

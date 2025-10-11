@@ -1,12 +1,4 @@
-const db = require('../database_cn');
 const GradeController = require('../controllers/gradeController');
-
-// Mock the database connection
-jest.mock('../database_cn', () => ({
-  getPool: jest.fn(() => ({
-    query: jest.fn()
-  }))
-}));
 
 describe('Grade Controller Tests', () => {
   // Test 1: Get Task Grades
@@ -29,7 +21,7 @@ describe('Grade Controller Tests', () => {
       status: jest.fn().mockReturnThis()
     };
 
-    db.getPool().query.mockResolvedValueOnce({ rows: mockGrades });
+    global.mockPool.query.mockResolvedValueOnce({ rows: mockGrades });
 
     // Act
     await GradeController.getTaskGrades(mockReq, mockRes);
@@ -60,7 +52,7 @@ describe('Grade Controller Tests', () => {
       status: jest.fn().mockReturnThis()
     };
 
-    db.getPool().query.mockResolvedValueOnce({});
+    global.mockPool.query.mockResolvedValueOnce({});
 
     // Act
     await GradeController.updateGrade(mockReq, mockRes);

@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const app = require('../app');
+const app = require('../../app');
 const jwt = require('jsonwebtoken');
 
 chai.use(chaiHttp);
@@ -17,8 +17,7 @@ describe('End-to-End Workflow Integration Tests', function() {
   let testCourse;
   let testGrade;
 
-  before(async function() {
-    this.timeout(20000);
+  beforeAll(async () => {
     console.log('Setting up complete workflow test environment...');
 
     // Create core test data

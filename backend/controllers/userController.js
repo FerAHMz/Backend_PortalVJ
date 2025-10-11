@@ -196,7 +196,11 @@ const createUser = async (req, res) => {
       return res.status(400).json({ error: 'Rol de usuario no válido' });
     }
 
-    res.status(201).json(result.rows[0]);
+    res.status(201).json({ 
+      message: 'Usuario creado exitosamente', 
+      userId: result.rows[0].id,
+      user: result.rows[0]
+    });
   } catch (error) {
     console.error('Error creating user:', error.message, error.stack);
     res.status(500).json({ error: 'Error al crear usuario' });

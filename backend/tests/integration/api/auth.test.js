@@ -130,7 +130,7 @@ describe('Authentication & Authorization Integration Tests', function() {
     let teacherToken;
     let _parentToken;
 
-    before(async function() {
+    beforeAll(async () => {
       // Create teacher user
       const teacherUser = await global.createTestUser({
         email: 'teacher.test@portalvj.com',

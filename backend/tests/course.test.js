@@ -242,7 +242,10 @@ describe('Course Controller Tests', () => {
 
       mockClient.query
         .mockResolvedValueOnce({ command: 'BEGIN' })
-        .mockResolvedValueOnce({ rows: [] }) // Course doesn't exist
+        .mockResolvedValueOnce({ rows: [{ id: 1 }] }) // Teacher exists
+        .mockResolvedValueOnce({ rows: [{ id: 2 }] }) // Subject exists
+        .mockResolvedValueOnce({ rows: [{ id: 3 }] }) // Grade section exists
+        .mockResolvedValueOnce({ rows: [] }) // Course doesn't exist (UPDATE returns 0 rows)
         .mockResolvedValueOnce({ command: 'ROLLBACK' });
 
       // Act

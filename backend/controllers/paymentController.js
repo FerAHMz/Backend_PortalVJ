@@ -4,7 +4,7 @@ const db = require('../database_cn');
 const createPayment = async (req, res) => {
   const { amount, userId, description } = req.body;
 
-  if (!amount || !userId || !description) {
+  if (amount === undefined || amount === null || !userId || !description) {
     return res.status(400).json({ success: false, error: 'Missing required fields' });
   }
 

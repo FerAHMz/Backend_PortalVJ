@@ -1,11 +1,6 @@
-const chai = require('chai');
-const chaiHttp = require('chai-http');
 const { Pool } = require('pg');
 
-// Configure Chai
-chai.use(chaiHttp);
-global.expect = chai.expect;
-global.should = chai.should();
+// Jest already provides expect globally, no need for Chai
 
 // Test database configuration
 const testDbConfig = {
@@ -79,9 +74,8 @@ if (!process.env.VERBOSE_TESTS) {
   console.warn = () => {};
 }
 
-// Global hooks
-before(async function() {
-  this.timeout(15000);
+// Jest global hooks (converted from Mocha)
+beforeAll(async () => {
   console.log('Setting up integration test environment...');
 
   // Test database connection
@@ -92,15 +86,15 @@ before(async function() {
     console.error('✗ Database connection failed:', error.message);
     throw error;
   }
-});
+}, 15000);
 
-after(async function() {
+afterAll(async () => {
   console.log('Cleaning up integration test environment...');
   await global.cleanupTestData();
   await global.testDb.end();
 });
 
-beforeEach(async function() {
+beforeEach(async () => {
   // Clean up before each test to ensure isolation
   await global.cleanupTestData();
 });

@@ -8,7 +8,7 @@ jest.mock('../middlewares/authMiddleware', () => ({
     req.user = {
       id: 1,
       email: 'test@example.com',
-      rol: 'SUP',
+      rol: 'Maestro', // Changed to a valid role for message tests
       nombre: 'Test User'
     };
     next();
@@ -30,16 +30,27 @@ jest.mock('../middlewares/authMiddleware', () => ({
   }
 }));
 
+// Create mock objects
+const mockClient = {
+  query: jest.fn().mockResolvedValue({ rows: [] }),
+  release: jest.fn()
+};
+
+const mockPool = {
+  connect: jest.fn().mockResolvedValue(mockClient),
+  query: jest.fn().mockResolvedValue({ rows: [] })
+};
+
 // Mock the database connection for all tests
 jest.mock('../database_cn', () => ({
-  getPool: jest.fn(() => ({
-    connect: jest.fn().mockResolvedValue({
-      query: jest.fn().mockResolvedValue({ rows: [] }),
-      release: jest.fn()
-    }),
-    query: jest.fn().mockResolvedValue({ rows: [] })
-  }))
+  getPool: jest.fn(() => mockPool),
+  query: jest.fn().mockResolvedValue({ rows: [] }),
+  end: jest.fn().mockResolvedValue(undefined)
 }));
+
+// Export mock functions for use in tests
+global.mockClient = mockClient;
+global.mockPool = mockPool;
 
 // Mock bcrypt to avoid Windows compatibility issues
 jest.mock('bcrypt', () => ({
@@ -61,3 +72,25 @@ global.console = {
   info: console.info,
   debug: console.debug,
 };
+
+// Mock global functions for integration tests
+global.createTestUser = jest.fn().mockImplementation(async (userData = {}) => {
+  const defaultUser = {
+    id: Math.floor(Math.random() * 10000),
+    nombre: 'Test',
+    apellido: 'User',
+    email: `test${Date.now()}@test.com`,
+    telefono: `1234567${Math.floor(Math.random() * 1000)}`,
+    password: '$2b$10$hashedPassword',
+    rol: userData.rol || 1,
+    activo: true
+  };
+  return { ...defaultUser, ...userData };
+});
+
+global.testDb = {
+  query: jest.fn().mockResolvedValue({ rows: [] }),
+  end: jest.fn().mockResolvedValue(undefined)
+};
+
+global.cleanupTestData = jest.fn().mockResolvedValue(undefined);

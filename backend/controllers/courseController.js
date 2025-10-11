@@ -100,7 +100,10 @@ class CourseController {
       );
 
       await client.query('COMMIT');
-      res.status(201).json(result.rows[0]);
+      res.status(201).json({
+        message: 'Curso creado exitosamente',
+        courseId: result.rows[0].id
+      });
     } catch (error) {
       if (client) await client.query('ROLLBACK');
       console.error('Error al crear curso:', error);
@@ -301,7 +304,10 @@ class CourseController {
       }
 
       await client.query('COMMIT');
-      res.json(result.rows[0]);
+      res.json({
+        message: 'Curso actualizado exitosamente',
+        courseId: result.rows[0].id
+      });
     } catch (error) {
       if (client) await client.query('ROLLBACK');
       console.error('Error al actualizar curso:', error);

@@ -12,8 +12,7 @@ describe('Payment System Integration Tests', function() {
   let testStudent;
   let testPayment;
 
-  before(async function() {
-    this.timeout(10000);
+  beforeAll(async () => {
 
     // Create test superuser
     testSuperUser = await global.createTestUser({
@@ -333,7 +332,7 @@ describe('Payment System Integration Tests', function() {
   describe('Payment Deletion and Soft Delete', function() {
     let tempPaymentId;
 
-    before(async function() {
+    beforeAll(async () => {
       // Create a temporary payment for deletion tests
       const paymentQuery = `
         INSERT INTO Pagos (estudiante_id, monto, tipo_pago, fecha_pago, metodo_pago, descripcion)
