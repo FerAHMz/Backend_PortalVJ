@@ -571,17 +571,17 @@ const processExcelFile = async (req, res) => {
     // Leer archivo Excel
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(req.file.path);
-    
+
     if (!workbook.worksheets || workbook.worksheets.length === 0) {
       return res.status(400).json({
         success: false,
         message: 'El archivo Excel está vacío o corrupto'
       });
     }
-    
+
     const worksheet = workbook.worksheets[0];
     const data = [];
-    
+
     // Get headers from first row
     const headerRow = worksheet.getRow(1);
     const headers = [];
@@ -592,14 +592,14 @@ const processExcelFile = async (req, res) => {
     // Convert rows to JSON format
     worksheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return; // Skip header row
-      
+
       const rowData = {};
       row.eachCell((cell, colNumber) => {
         if (headers[colNumber]) {
           rowData[headers[colNumber]] = cell.value;
         }
       });
-      
+
       if (Object.keys(rowData).length > 0) {
         data.push(rowData);
       }

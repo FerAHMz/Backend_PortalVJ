@@ -4,7 +4,7 @@ const validateExcelContent = async (filePath) => {
   try {
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.readFile(filePath);
-    
+
     if (!workbook.worksheets || workbook.worksheets.length === 0) {
       return {
         isValid: false,
@@ -15,7 +15,7 @@ const validateExcelContent = async (filePath) => {
 
     const firstSheet = workbook.worksheets[0];
     const data = [];
-    
+
     // Get headers from first row
     const headerRow = firstSheet.getRow(1);
     const headerMap = [];
@@ -26,14 +26,14 @@ const validateExcelContent = async (filePath) => {
     // Convert rows to JSON format
     firstSheet.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return; // Skip header row
-      
+
       const rowData = {};
       row.eachCell((cell, colNumber) => {
         if (headerMap[colNumber]) {
           rowData[headerMap[colNumber]] = cell.value;
         }
       });
-      
+
       if (Object.keys(rowData).length > 0) {
         data.push(rowData);
       }
