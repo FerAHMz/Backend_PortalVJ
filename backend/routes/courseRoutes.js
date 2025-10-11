@@ -7,6 +7,7 @@ const { verifyToken } = require('../middlewares/authMiddleware');
 // Rutas para cursos
 router.get('/', courseController.getCourses);
 router.post('/', courseController.createCourse);
+router.put('/:id', courseController.updateCourse);
 router.delete('/:id', courseController.deleteCourse);
 router.get('/teacher/:teacherId', courseController.getCoursesByTeacher);
 

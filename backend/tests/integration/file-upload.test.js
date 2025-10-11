@@ -8,7 +8,7 @@ describe('Portal Vanguardia Juvenil - File Upload Integration Tests', function()
   let mockToken;
   let mockPlanificationId;
 
-  before(function() {
+  beforeAll(() => {
     // Create Express app with file upload functionality
     app = express();
     app.use(express.json());

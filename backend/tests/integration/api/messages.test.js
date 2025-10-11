@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const app = require('../../app');
+const app = require('../../../app');
 const jwt = require('jsonwebtoken');
 
 chai.use(chaiHttp);
@@ -13,8 +13,8 @@ describe('Messaging System Integration Tests', function() {
   let testParent;
   let conversationId;
 
-  before(async function() {
-    this.timeout(10000);
+  beforeAll(async () => {
+    jest.setTimeout(10000);
 
     // Create test teacher
     testTeacher = await global.createTestUser({

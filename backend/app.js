@@ -16,6 +16,7 @@ const inscripcionRoutes = require('./routes/inscripcionRoutes');
 
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
+const courseRoutes = require('./routes/courseRoutes');
 
 // Configure CORS with specific options
 app.use(cors({
@@ -41,7 +42,8 @@ app.use('/api/superuser', superUserRoutes);
 app.use('/api/superuser/planifications', superUserPlanificationRoutes);
 app.use('/api/superuser/families', familyRoutes);
 app.use('/api/inscripciones', inscripcionRoutes);
-app.use('/api/courses', attendanceRoutes);
+app.use('/api/courses', courseRoutes);
+app.use('/api/attendance', attendanceRoutes);
 app.use('/api/students', studentAttendanceRoutes);
 
 // Health check endpoint

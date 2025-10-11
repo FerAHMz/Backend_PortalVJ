@@ -9,7 +9,7 @@ const expect = chai.expect;
 describe('Basic Integration Test Framework Verification', function() {
   let testApp;
 
-  before(function() {
+  beforeAll(() => {
     // Create a simple test Express app
     testApp = express();
     testApp.use(express.json());

@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const app = require('../../app');
+const app = require('../../../app');
 
 chai.use(chaiHttp);
 const expect = chai.expect;
@@ -10,8 +10,8 @@ describe('Authentication & Authorization Integration Tests', function() {
   let _testUser;
   let authToken;
 
-  before(async function() {
-    this.timeout(10000);
+  beforeAll(async () => {
+    jest.setTimeout(10000);
     // Create a test user for authentication
     _testUser = await global.createTestUser({
       email: 'auth.test@portalvj.com',

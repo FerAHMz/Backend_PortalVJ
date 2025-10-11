@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const app = require('../../app');
+const app = require('../../../app');
 const jwt = require('jsonwebtoken');
 
 chai.use(chaiHttp);
@@ -10,7 +10,7 @@ describe('User Management Integration Tests', function() {
   let authToken;
   let testSuperUser;
 
-  before(async function() {
+  beforeAll(async () => {
     // Create a superuser for testing
     testSuperUser = await global.createTestUser({
       email: 'superuser.test@portalvj.com',

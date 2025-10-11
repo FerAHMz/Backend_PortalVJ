@@ -6,7 +6,7 @@ const expect = chai.expect;
 describe('Portal Vanguardia Juvenil - API Integration Tests', function() {
   let app;
 
-  before(function() {
+  beforeAll(() => {
     // Create a minimal Express app for testing core functionality
     app = express();
     app.use(express.json());

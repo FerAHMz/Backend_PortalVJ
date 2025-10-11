@@ -24,14 +24,27 @@ jest.mock('../middlewares/authMiddleware', () => ({
   },
   isParent: (req, res, next) => {
     next();
+  },
+  isDirector: (req, res, next) => {
+    next();
   }
 }));
 
 // Mock the database connection for all tests
 jest.mock('../database_cn', () => ({
-  getPool: () => ({
+  getPool: jest.fn(() => ({
+    connect: jest.fn().mockResolvedValue({
+      query: jest.fn().mockResolvedValue({ rows: [] }),
+      release: jest.fn()
+    }),
     query: jest.fn().mockResolvedValue({ rows: [] })
-  })
+  }))
+}));
+
+// Mock bcrypt to avoid Windows compatibility issues
+jest.mock('bcrypt', () => ({
+  hash: jest.fn().mockResolvedValue('hashedPassword'),
+  compare: jest.fn().mockResolvedValue(true)
 }));
 
 // Set test environment variables

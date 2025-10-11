@@ -1,6 +1,6 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
-const app = require('../../app');
+const app = require('../../../app');
 const jwt = require('jsonwebtoken');
 
 chai.use(chaiHttp);
@@ -15,8 +15,8 @@ describe('Course & Academic Management Integration Tests', function() {
   let testStudent;
   let testGrade;
 
-  before(async function() {
-    this.timeout(15000);
+  beforeAll(async () => {
+    jest.setTimeout(15000);
 
     // Create test superuser
     testSuperUser = await global.createTestUser({

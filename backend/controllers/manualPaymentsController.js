@@ -127,10 +127,18 @@ const getPayments = async (req, res) => {
                 WHERE p.estado = TRUE
                 GROUP BY e.carnet, e.nombre, e.apellido, g.grado, p.id, s.mes_solvencia_new, s.monto, s.id_metodo_pago, s.no_boleta, s.fecha_pago, pa.nombre, pa.apellido;
             `);
-    res.json(result.rows);
+    res.json({
+      success: true,
+      data: result.rows
+    });
   } catch (error) {
     console.error('Error fetching students payments:', error);
-    res.status(500).json({ error: 'Error fetching students payments' });
+    res.status(500).json({ 
+      success: false, 
+      error: 'Internal Server Error' 
+    });
+  } finally {
+    client?.release();
   }
 };
 

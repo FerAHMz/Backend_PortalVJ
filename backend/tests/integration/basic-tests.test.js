@@ -7,7 +7,7 @@ describe('Basic Integration Test Framework Verification', function() {
     it('should have access to testing dependencies', function() {
       expect(chai).to.exist;
       expect(require('express')).to.exist;
-      expect(require('mocha')).to.exist;
+      // Jest is used as test framework instead of mocha
     });
 
     it('should support async operations', async function() {
@@ -104,7 +104,7 @@ describe('Basic Integration Test Framework Verification', function() {
       // Simulate a database configuration
       const dbConfig = {
         host: process.env.DB_HOST || 'localhost',
-        port: process.env.DB_PORT || 5432,
+        port: parseInt(process.env.DB_PORT) || 5432,
         database: process.env.DB_NAME || 'test_db',
         user: process.env.DB_USER || 'test_user',
         password: process.env.DB_PASSWORD || 'test_password',
