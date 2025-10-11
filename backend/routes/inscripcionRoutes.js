@@ -22,6 +22,6 @@ router.put('/:id', inscripcionController.updateInscripcion);
 router.delete('/:id', inscripcionController.deleteInscripcion);
 
 // Ruta para subir archivo Excel de inscripciones
-router.post('/upload-excel', inscripcionController.uploadExcelInscripciones);
+router.post('/upload-excel', inscripcionController.uploadMiddleware, inscripcionController.processExcelFile);
 
 module.exports = router;

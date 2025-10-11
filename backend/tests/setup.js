@@ -27,6 +27,13 @@ jest.mock('../middlewares/authMiddleware', () => ({
   }
 }));
 
+// Mock the database connection for all tests
+jest.mock('../database_cn', () => ({
+  getPool: () => ({
+    query: jest.fn().mockResolvedValue({ rows: [] })
+  })
+}));
+
 // Set test environment variables
 process.env.NODE_ENV = 'test';
 process.env.JWT_SECRET = 'test-secret-key';
