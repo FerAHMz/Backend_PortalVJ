@@ -53,8 +53,8 @@ describe('Basic Payment Controller Unit Tests', () => {
 
   // Test Case 3: Get Payments - Database Error Handling
   test('getPayments should handle database errors gracefully', async () => {
-    // This test validates error handling without database dependency
-    // Arrange - No specific setup needed for this basic test
+    // Arrange - Mock database to throw error
+    global.mockPool.query.mockRejectedValueOnce(new Error('Database connection failed'));
 
     // Act
     await getPayments(mockReq, mockRes);

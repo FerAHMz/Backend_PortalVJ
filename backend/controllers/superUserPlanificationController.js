@@ -33,6 +33,16 @@ const getAllPlanificationsByGrade = async (req, res) => {
 
     const result = await db.getPool().query(query);
 
+    // Check if result exists and has rows
+    if (!result || !result.rows) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        total_grados: 0,
+        total_planificaciones: 0
+      });
+    }
+
     // Group the results by grade
     const planificationsByGrade = {};
 
@@ -115,7 +125,7 @@ const getPlanificationDetailById = async (req, res) => {
 
     const planificationResult = await db.getPool().query(planificationQuery, [planificationId]);
 
-    if (planificationResult.rows.length === 0) {
+    if (!planificationResult || !planificationResult.rows || planificationResult.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'Planificación no encontrada'
@@ -172,12 +182,12 @@ const getPlanificationDetailById = async (req, res) => {
         nombre: planification.maestro_nombre,
         apellido: planification.maestro_apellido
       },
-      tareas: tasksResult.rows.map(task => ({
+      tareas: (tasksResult && tasksResult.rows) ? tasksResult.rows.map(task => ({
         id: task.id,
         tema_tarea: task.tema_tarea,
         puntos_tarea: parseFloat(task.puntos_tarea)
-      })),
-      revisiones: reviewsResult.rows.map(review => ({
+      })) : [],
+      revisiones: (reviewsResult && reviewsResult.rows) ? reviewsResult.rows.map(review => ({
         id: review.id,
         observaciones: review.observaciones,
         fecha: review.fecha,
@@ -185,10 +195,10 @@ const getPlanificationDetailById = async (req, res) => {
           nombre: review.director_nombre,
           apellido: review.director_apellido
         }
-      })),
+      })) : [],
       estadisticas: {
-        total_tareas: tasksResult.rows.length,
-        total_puntos: tasksResult.rows.reduce((sum, task) => sum + parseFloat(task.puntos_tarea), 0)
+        total_tareas: (tasksResult && tasksResult.rows) ? tasksResult.rows.length : 0,
+        total_puntos: (tasksResult && tasksResult.rows) ? tasksResult.rows.reduce((sum, task) => sum + parseFloat(task.puntos_tarea), 0) : 0
       }
     };
 
@@ -252,8 +262,8 @@ const getPlanificationsStatistics = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {
-        general_statistics: result.rows,
-        grade_statistics: gradeStatsResult.rows
+        general_statistics: (result && result.rows) ? result.rows : [],
+        grade_statistics: (gradeStatsResult && gradeStatsResult.rows) ? gradeStatsResult.rows : []
       }
     });
 
@@ -300,7 +310,7 @@ const getPlanificationsBySpecificGrade = async (req, res) => {
 
     const result = await db.getPool().query(query, [gradeId]);
 
-    if (result.rows.length === 0) {
+    if (!result || !result.rows || result.rows.length === 0) {
       return res.status(404).json({
         success: false,
         error: 'No se encontraron planificaciones para este grado'

@@ -399,6 +399,7 @@ describe('Portal Vanguardia Juvenil - File Upload Integration Tests', function()
     it('should maintain consistent error response format', function(done) {
       request(app)
         .post(`/api/teacher/planning/${mockPlanificationId}/upload`)
+        .set('Authorization', mockToken)
         .expect(400)
         .end((err, res) => {
           if (err) return done(err);

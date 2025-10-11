@@ -30,10 +30,13 @@ describe('SuperUser Planifications API Tests', () => {
       release: jest.fn()
     };
 
-    db.getPool = jest.fn().mockReturnValue({
+    // Mock the pool to return a mock that has the query method
+    const mockPool = {
       connect: jest.fn().mockResolvedValue(mockClient),
-      query: jest.fn()
-    });
+      query: jest.fn() // This is what the controller actually uses
+    };
+
+    db.getPool = jest.fn().mockReturnValue(mockPool);
   });
 
   afterEach(() => {
@@ -75,7 +78,8 @@ describe('SuperUser Planifications API Tests', () => {
         }
       ];
 
-      mockClient.query.mockResolvedValue({ rows: mockPlanifications });
+      // Mock the pool query method that the controller actually uses
+      db.getPool().query.mockResolvedValue({ rows: mockPlanifications });
 
       const response = await request(app)
         .get('/api/superuser/planifications/by-grade')
@@ -90,7 +94,7 @@ describe('SuperUser Planifications API Tests', () => {
     });
 
     it('should handle database errors', async () => {
-      mockClient.query.mockRejectedValue(new Error('Database error'));
+      db.getPool().query.mockRejectedValue(new Error('Database error'));
 
       const response = await request(app)
         .get('/api/superuser/planifications/by-grade')
@@ -132,7 +136,7 @@ describe('SuperUser Planifications API Tests', () => {
         }
       ];
 
-      mockClient.query
+      db.getPool().query
         .mockResolvedValueOnce({ rows: mockGeneralStats })
         .mockResolvedValueOnce({ rows: mockGradeStats });
 
@@ -165,7 +169,7 @@ describe('SuperUser Planifications API Tests', () => {
         }
       ];
 
-      mockClient.query.mockResolvedValue({ rows: mockPlanifications });
+      db.getPool().query.mockResolvedValue({ rows: mockPlanifications });
 
       const response = await request(app)
         .get('/api/superuser/planifications/grade/1')
@@ -178,7 +182,7 @@ describe('SuperUser Planifications API Tests', () => {
     });
 
     it('should return 404 when no planifications found for grade', async () => {
-      mockClient.query.mockResolvedValue({ rows: [] });
+      db.getPool().query.mockResolvedValue({ rows: [] });
 
       const response = await request(app)
         .get('/api/superuser/planifications/grade/999')
@@ -228,7 +232,7 @@ describe('SuperUser Planifications API Tests', () => {
         }
       ];
 
-      mockClient.query
+      db.getPool().query
         .mockResolvedValueOnce({ rows: [mockPlanification] })
         .mockResolvedValueOnce({ rows: mockTasks })
         .mockResolvedValueOnce({ rows: mockReviews });
@@ -246,7 +250,7 @@ describe('SuperUser Planifications API Tests', () => {
     });
 
     it('should return 404 when planification not found', async () => {
-      mockClient.query.mockResolvedValue({ rows: [] });
+      db.getPool().query.mockResolvedValue({ rows: [] });
 
       const response = await request(app)
         .get('/api/superuser/planifications/999/detail')
@@ -258,11 +262,21 @@ describe('SuperUser Planifications API Tests', () => {
   });
 
   describe('Authentication and Authorization', () => {
-    it('should require authentication', () => {
+    it('should require authentication', async () => {
+      // Make a request to trigger middleware
+      await request(app)
+        .get('/api/superuser/planifications/by-grade')
+        .expect(200);
+      
       expect(verifyToken).toHaveBeenCalled();
     });
 
-    it('should require superuser role', () => {
+    it('should require superuser role', async () => {
+      // Make a request to trigger middleware
+      await request(app)
+        .get('/api/superuser/planifications/by-grade')
+        .expect(200);
+        
       expect(isSup).toHaveBeenCalled();
     });
   });

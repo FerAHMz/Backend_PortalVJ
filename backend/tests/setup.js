@@ -48,6 +48,18 @@ jest.mock('../database_cn', () => ({
   end: jest.fn().mockResolvedValue(undefined)
 }));
 
+// Reset mocks before each test
+beforeEach(() => {
+  mockClient.query.mockClear();
+  mockClient.release.mockClear();
+  mockPool.connect.mockClear();
+  mockPool.query.mockClear();
+  
+  // Reset to default behavior
+  mockClient.query.mockResolvedValue({ rows: [] });
+  mockPool.query.mockResolvedValue({ rows: [] });
+});
+
 // Export mock functions for use in tests
 global.mockClient = mockClient;
 global.mockPool = mockPool;

@@ -7,7 +7,12 @@ const verifyToken = (req, res, next) => {
     return next();
   }
 
-  const token = req.headers.authorization?.split(' ')[1];
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ success: false, error: 'Access denied. No token provided.' });
+  }
+
+  const token = authHeader.split(' ')[1];
   if (!token) {
     return res.status(401).json({ success: false, error: 'Access denied. No token provided.' });
   }
@@ -89,10 +94,24 @@ const isDirector = async (req, res, next) => {
   }
 };
 
+const isParent = (req, res, next) => {
+  // Skip role check for OPTIONS requests (CORS preflight)
+  if (req.method === 'OPTIONS') {
+    return next();
+  }
+
+  if (req.user.role === 'Padre') {
+    next();
+  } else {
+    res.status(403).json({ error: 'Acceso denegado. Se requiere rol Padre' });
+  }
+};
+
 module.exports = {
   verifyToken,
   isAdmin,
   isSup,
   isTeacher,
-  isDirector
+  isDirector,
+  isParent
 };

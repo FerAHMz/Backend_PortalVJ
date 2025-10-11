@@ -18,6 +18,9 @@ const attendanceRoutes = require('./routes/attendanceRoutes');
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 
+// Controllers
+const authController = require('./controllers/authController');
+
 // Configure CORS with specific options
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:3000'],
@@ -27,6 +30,9 @@ app.use(cors({
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Auth routes
+app.post('/login', authController.login);
 
 // Serve uploaded files statically in development
 if (process.env.NODE_ENV === 'development') {
