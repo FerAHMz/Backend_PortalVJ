@@ -3,3 +3,19 @@ hashPasswords.js
 resetPassword.js
 config.js
 node_modules/
+
+# Environment variables (CRÍTICO para seguridad)
+.env
+backend/.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
