@@ -115,170 +115,170 @@ INSERT INTO Metodo_pago (metodo_pago) VALUES
 ('Pago Móvil');
 
 INSERT INTO Solvencias (id_pagos, no_boleta, id_metodo_pago, monto, mes_solvencia_new, fecha_pago) VALUES
-(1, 12345, 1, 500.00, 'Enero', '2023-01-15'),
-(2, 12346, 2, 500.00, 'Febrero', '2023-02-15'),
-(3, 12347, 1, 500.00, 'Marzo', '2023-03-15'),
-(4, 12348, 2, 500.00, 'Abril', '2023-04-15'),
-(5, 12349, 1, 500.00, 'Mayo', '2023-05-15');
+(1, 12345, 1, 500.00, 'Enero', '2025-01-15'),
+(2, 12346, 2, 500.00, 'Febrero', '2025-02-15'),
+(3, 12347, 1, 500.00, 'Marzo', '2025-03-15'),
+(4, 12348, 2, 500.00, 'Abril', '2025-04-15'),
+(5, 12349, 1, 500.00, 'Mayo', '2025-05-15');
 
 INSERT INTO Trimestres (nombre, fecha_inicio, fecha_fin) VALUES
-('Primer Trimestre', '2023-01-01', '2023-03-31'), 
-('Segundo Trimestre', '2023-04-01', '2023-06-30'), 
-('Tercer Trimestre', '2023-07-01', '2023-09-30'),
-('Cuarto Trimestre', '2023-10-01', '2023-12-31'); 
+('Primer Trimestre', '2025-01-01', '2025-03-31'), 
+('Segundo Trimestre', '2025-04-01', '2025-06-30'), 
+('Tercer Trimestre', '2025-07-01', '2025-09-30'),
+('Cuarto Trimestre', '2025-10-01', '2025-12-31'); 
 
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES
-('Tarea de Álgebra', 'Resolver ejercicios de ecuaciones lineales', 10.0, '2023-01-20', 1), 
-('Informe de Laboratorio', 'Documentar experimento de física', 15.0, '2023-01-22', 1),
-('Ensayo sobre la Revolución', 'Analizar causas y consecuencias', 20.0, '2023-01-25', 1), 
-('Análisis de Poema', 'Interpretar elementos literarios', 10.0, '2023-01-27', 1), 
-('Presentación en Inglés', 'Exponer tema de interés en inglés', 15.0, '2023-01-30', 1), 
-('Proyecto de Arte', 'Crear obra usando técnicas mixtas', 25.0, '2023-02-01', 1), 
-('Rutina de Ejercicios', 'Desarrollar plan de ejercicios semanal', 10.0, '2023-02-03', 1), 
-('Mapa de América', 'Dibujar y etiquetar países y capitales', 15.0, '2023-02-05', 1), 
-('Informe de Biología', 'Investigar sistemas del cuerpo humano', 20.0, '2023-02-07', 1), 
-('Experimento de Química', 'Realizar práctica de laboratorio', 25.0, '2023-02-10', 1),
-('Hoja de trabajo 1', 'Resolver problemas de álgebra capitulo 1', 3.0, '2023-05-07', 1),
-('Hoja de trabajo 2', 'Resolver problemas de álgebra capitulo 2', 3.0, '2023-05-14', 1),
-('Hoja de trabajo 3', 'Resolver problemas de álgebra capitulo 3', 3.0, '2023-05-21', 1), 
-('Hoja de trabajo 4', 'Resolver problemas de álgebra capitulo 4', 3.0, '2023-05-28', 1), 
-('Hoja de trabajo 5', 'Resolver problemas de álgebra capitulo 5', 3.0, '2023-06-04', 1), 
-('Hoja de trabajo 6', 'Resolver problemas de álgebra capitulo 6', 3.0, '2023-06-11', 1), 
-('Hoja de trabajo 7', 'Resolver problemas de álgebra capitulo 7', 3.0, '2023-06-18', 1), 
-('Hoja de trabajo 8', 'Resolver problemas de álgebra capitulo 8', 3.0, '2023-06-25', 1), 
-('Hoja de trabajo 9', 'Resolver problemas de álgebra capitulo 9', 3.0, '2023-07-02', 1), 
-('Hoja de trabajo 10', 'Resolver problemas de álgebra capitulo 10', 3.0, '2023-07-09', 1);
+('Tarea de Álgebra', 'Resolver ejercicios de ecuaciones lineales', 10.0, '2025-01-20', 1), 
+('Informe de Laboratorio', 'Documentar experimento de física', 15.0, '2025-01-22', 1),
+('Ensayo sobre la Revolución', 'Analizar causas y consecuencias', 20.0, '2025-01-25', 1), 
+('Análisis de Poema', 'Interpretar elementos literarios', 10.0, '2025-01-27', 1), 
+('Presentación en Inglés', 'Exponer tema de interés en inglés', 15.0, '2025-01-30', 1), 
+('Proyecto de Arte', 'Crear obra usando técnicas mixtas', 25.0, '2025-02-01', 1), 
+('Rutina de Ejercicios', 'Desarrollar plan de ejercicios semanal', 10.0, '2025-02-03', 1), 
+('Mapa de América', 'Dibujar y etiquetar países y capitales', 15.0, '2025-02-05', 1), 
+('Informe de Biología', 'Investigar sistemas del cuerpo humano', 20.0, '2025-02-07', 1), 
+('Experimento de Química', 'Realizar práctica de laboratorio', 25.0, '2025-02-10', 1),
+('Hoja de trabajo 1', 'Resolver problemas de álgebra capitulo 1', 3.0, '2025-05-07', 1),
+('Hoja de trabajo 2', 'Resolver problemas de álgebra capitulo 2', 3.0, '2025-05-14', 1),
+('Hoja de trabajo 3', 'Resolver problemas de álgebra capitulo 3', 3.0, '2025-05-21', 1), 
+('Hoja de trabajo 4', 'Resolver problemas de álgebra capitulo 4', 3.0, '2025-05-28', 1), 
+('Hoja de trabajo 5', 'Resolver problemas de álgebra capitulo 5', 3.0, '2025-06-04', 1), 
+('Hoja de trabajo 6', 'Resolver problemas de álgebra capitulo 6', 3.0, '2025-06-11', 1), 
+('Hoja de trabajo 7', 'Resolver problemas de álgebra capitulo 7', 3.0, '2025-06-18', 1), 
+('Hoja de trabajo 8', 'Resolver problemas de álgebra capitulo 8', 3.0, '2025-06-25', 1), 
+('Hoja de trabajo 9', 'Resolver problemas de álgebra capitulo 9', 3.0, '2025-07-02', 1), 
+('Hoja de trabajo 10', 'Resolver problemas de álgebra capitulo 10', 3.0, '2025-07-09', 1);
 
 -- probar boleta_calificaciones
 -- Matemáticas
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Álgebra básica', 'Resolver ecuaciones de primer grado', 10, '2023-09-15', 1),
-('Geometría', 'Calcular áreas de figuras geométricas', 10, '2023-09-22', 1),
-('Fracciones', 'Realizar operaciones con fracciones', 10, '2023-10-05', 1),
-('Teorema de Pitágoras', 'Demostrar y aplicar el teorema', 10, '2023-10-12', 1),
-('Estadística', 'Crear gráficos de barras', 10, '2023-10-19', 1),
-('Ecuaciones cuadráticas', 'Resolver usando fórmula general', 10, '2023-11-02', 1),
-('Trigonometría', 'Problemas con seno y coseno', 10, '2023-11-09', 1),
-('Probabilidad', 'Calcular probabilidades simples', 10, '2023-11-16', 1),
-('Logaritmos', 'Aplicar propiedades de logaritmos', 10, '2023-11-30', 1),
-('Funciones', 'Graficar funciones lineales', 10, '2023-12-07', 1);
+('Álgebra básica', 'Resolver ecuaciones de primer grado', 10, '2025-09-15', 1),
+('Geometría', 'Calcular áreas de figuras geométricas', 10, '2025-09-22', 1),
+('Fracciones', 'Realizar operaciones con fracciones', 10, '2025-10-05', 1),
+('Teorema de Pitágoras', 'Demostrar y aplicar el teorema', 10, '2025-10-12', 1),
+('Estadística', 'Crear gráficos de barras', 10, '2025-10-19', 1),
+('Ecuaciones cuadráticas', 'Resolver usando fórmula general', 10, '2025-11-02', 1),
+('Trigonometría', 'Problemas con seno y coseno', 10, '2025-11-09', 1),
+('Probabilidad', 'Calcular probabilidades simples', 10, '2025-11-16', 1),
+('Logaritmos', 'Aplicar propiedades de logaritmos', 10, '2025-11-30', 1),
+('Funciones', 'Graficar funciones lineales', 10, '2025-12-07', 1);
 
 -- Ciencias
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Sistema solar', 'Maqueta de los planetas', 10, '2023-09-18', 1),
-('Estados de la materia', 'Experimento con hielo y vapor', 10, '2023-09-25', 1),
-('Circuitos eléctricos', 'Construir circuito simple', 10, '2023-10-09', 1),
-('Fotosíntesis', 'Informe sobre el proceso', 10, '2023-10-16', 1),
-('Leyes de Newton', 'Ejemplos de cada ley', 10, '2023-10-23', 1),
-('Energías renovables', 'Presentación sobre tipos', 10, '2023-11-06', 1),
-('Tabla periódica', 'Memorizar primeros 20 elementos', 10, '2023-11-13', 1),
-('Ecosistemas', 'Diagrama de cadena alimenticia', 10, '2023-11-20', 1),
-('Volcanes', 'Simulación con bicarbonato', 10, '2023-12-04', 1),
-('Magnetismo', 'Experimentos con imanes', 10, '2023-12-11', 1);
+('Sistema solar', 'Maqueta de los planetas', 10, '2025-09-18', 1),
+('Estados de la materia', 'Experimento con hielo y vapor', 10, '2025-09-25', 1),
+('Circuitos eléctricos', 'Construir circuito simple', 10, '2025-10-09', 1),
+('Fotosíntesis', 'Informe sobre el proceso', 10, '2025-10-16', 1),
+('Leyes de Newton', 'Ejemplos de cada ley', 10, '2025-10-23', 1),
+('Energías renovables', 'Presentación sobre tipos', 10, '2025-11-06', 1),
+('Tabla periódica', 'Memorizar primeros 20 elementos', 10, '2025-11-13', 1),
+('Ecosistemas', 'Diagrama de cadena alimenticia', 10, '2025-11-20', 1),
+('Volcanes', 'Simulación con bicarbonato', 10, '2025-12-04', 1),
+('Magnetismo', 'Experimentos con imanes', 10, '2025-12-11', 1);
 
 -- Historia
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Revolución Francesa', 'Linea de tiempo de eventos', 10, '2023-09-20', 1),
-('Civilizaciones antiguas', 'Comparar Egipto y Mesopotamia', 10, '2023-09-27', 1),
-('Descubrimiento de América', 'Ensayo sobre el impacto', 10, '2023-10-11', 1),
-('Guerras mundiales', 'Mapa de países participantes', 10, '2023-10-18', 1),
-('Independencia nacional', 'Analizar causas y consecuencias', 10, '2023-10-25', 1),
-('Edad Media', 'Investigar vida cotidiana', 10, '2023-11-08', 1),
-('Revolución Industrial', 'Cambios tecnológicos', 10, '2023-11-15', 1),
-('Culturas precolombinas', 'Maqueta de ciudad azteca', 10, '2023-11-22', 1),
-('Derechos humanos', 'Cronología de su desarrollo', 10, '2023-12-06', 1),
-('Globalización', 'Debate sobre efectos', 10, '2023-12-13', 1);
+('Revolución Francesa', 'Linea de tiempo de eventos', 10, '2025-09-20', 1),
+('Civilizaciones antiguas', 'Comparar Egipto y Mesopotamia', 10, '2025-09-27', 1),
+('Descubrimiento de América', 'Ensayo sobre el impacto', 10, '2025-10-11', 1),
+('Guerras mundiales', 'Mapa de países participantes', 10, '2025-10-18', 1),
+('Independencia nacional', 'Analizar causas y consecuencias', 10, '2025-10-25', 1),
+('Edad Media', 'Investigar vida cotidiana', 10, '2025-11-08', 1),
+('Revolución Industrial', 'Cambios tecnológicos', 10, '2025-11-15', 1),
+('Culturas precolombinas', 'Maqueta de ciudad azteca', 10, '2025-11-22', 1),
+('Derechos humanos', 'Cronología de su desarrollo', 10, '2025-12-06', 1),
+('Globalización', 'Debate sobre efectos', 10, '2025-12-13', 1);
 
 -- Literatura
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Análisis poético', 'Identificar figuras literarias en un poema de Neruda', 10, '2023-09-14', 1),
-('Géneros literarios', 'Presentación sobre diferencias entre lírico, épico y dramático', 10, '2023-09-21', 1),
-('Don Quijote', 'Resumen y análisis de capítulos 1-5', 10, '2023-10-06', 1),
-('Realismo mágico', 'Ensayo sobre "Cien años de soledad"', 10, '2023-10-13', 1),
-('Haikus', 'Crear 3 haikus originales', 10, '2023-10-20', 1),
-('Teatro griego', 'Comparar tragedias de Sófocles y Eurípides', 10, '2023-11-03', 1),
-('Metáforas visuales', 'Dibujar una metáfora literaria', 10, '2023-11-10', 1),
-('Biografía autor', 'Investigación sobre Gabriela Mistral', 10, '2023-11-17', 1),
-('Cuento corto', 'Escribir un relato de 500 palabras', 10, '2023-12-01', 1),
-('Crítica literaria', 'Analizar un artículo de opinión', 10, '2023-12-08', 1);
+('Análisis poético', 'Identificar figuras literarias en un poema de Neruda', 10, '2025-09-14', 1),
+('Géneros literarios', 'Presentación sobre diferencias entre lírico, épico y dramático', 10, '2025-09-21', 1),
+('Don Quijote', 'Resumen y análisis de capítulos 1-5', 10, '2025-10-06', 1),
+('Realismo mágico', 'Ensayo sobre "Cien años de soledad"', 10, '2025-10-13', 1),
+('Haikus', 'Crear 3 haikus originales', 10, '2025-10-20', 1),
+('Teatro griego', 'Comparar tragedias de Sófocles y Eurípides', 10, '2025-11-03', 1),
+('Metáforas visuales', 'Dibujar una metáfora literaria', 10, '2025-11-10', 1),
+('Biografía autor', 'Investigación sobre Gabriela Mistral', 10, '2025-11-17', 1),
+('Cuento corto', 'Escribir un relato de 500 palabras', 10, '2025-12-01', 1),
+('Crítica literaria', 'Analizar un artículo de opinión', 10, '2025-12-08', 1);
 
 --ingles
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Verb "to be"', 'Ejercicios de conjugación en presente', 10, '2023-09-16', 1),
-('Family tree', 'Crear árbol genealógico con descripciones en inglés', 10, '2023-09-23', 1),
-('Irregular verbs', 'Memorizar lista de 20 verbos', 10, '2023-10-07', 1),
-('Job interview', 'Grabar un diálogo simulando una entrevista', 10, '2023-10-14', 1),
-('Travel brochure', 'Diseñar folleto turístico de un país', 10, '2023-10-21', 1),
-('Past tense', 'Redactar un diario personal (1 semana)', 10, '2023-11-04', 1),
-('Movie review', 'Reseña de una película en inglés', 10, '2023-11-11', 1),
-('Debate', 'Discutir tema "Technology in education"', 10, '2023-11-18', 1),
-('Idioms', 'Ilustrar 5 modismos comunes', 10, '2023-12-02', 1),
-('News report', 'Presentar noticiero en inglés (video)', 10, '2023-12-09', 1);
+('Verb "to be"', 'Ejercicios de conjugación en presente', 10, '2025-09-16', 1),
+('Family tree', 'Crear árbol genealógico con descripciones en inglés', 10, '2025-09-23', 1),
+('Irregular verbs', 'Memorizar lista de 20 verbos', 10, '2025-10-07', 1),
+('Job interview', 'Grabar un diálogo simulando una entrevista', 10, '2025-10-14', 1),
+('Travel brochure', 'Diseñar folleto turístico de un país', 10, '2025-10-21', 1),
+('Past tense', 'Redactar un diario personal (1 semana)', 10, '2025-11-04', 1),
+('Movie review', 'Reseña de una película en inglés', 10, '2025-11-11', 1),
+('Debate', 'Discutir tema "Technology in education"', 10, '2025-11-18', 1),
+('Idioms', 'Ilustrar 5 modismos comunes', 10, '2025-12-02', 1),
+('News report', 'Presentar noticiero en inglés (video)', 10, '2025-12-09', 1);
 
 --arte
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Autorretrato', 'Dibujo con lápiz usando espejo', 10, '2023-09-15', 1),
-('Arte rupestre', 'Recrear pintura en cartón piedra', 10, '2023-09-22', 1),
-('Círculo cromático', 'Pintar y explicar relaciones de color', 10, '2023-10-06', 1),
-('Collage surrealista', 'Composición con revistas', 10, '2023-10-13', 1),
-('Maqueta arquitectónica', 'Construir edificio con material reciclado', 10, '2023-10-20', 1),
-('Fotografía', 'Serie de 5 fotos con tema "Sombras"', 10, '2023-11-03', 1),
-('Mural colectivo', 'Participar en pintura mural del aula', 10, '2023-11-10', 1),
-('Escultura', 'Figura abstracta con arcilla', 10, '2023-11-17', 1),
-('Arte digital', 'Diseñar portada para libro en Illustrator', 10, '2023-12-01', 1),
-('Exposición virtual', 'Crear galería online con obras propias', 10, '2023-12-08', 1);
+('Autorretrato', 'Dibujo con lápiz usando espejo', 10, '2025-09-15', 1),
+('Arte rupestre', 'Recrear pintura en cartón piedra', 10, '2025-09-22', 1),
+('Círculo cromático', 'Pintar y explicar relaciones de color', 10, '2025-10-06', 1),
+('Collage surrealista', 'Composición con revistas', 10, '2025-10-13', 1),
+('Maqueta arquitectónica', 'Construir edificio con material reciclado', 10, '2025-10-20', 1),
+('Fotografía', 'Serie de 5 fotos con tema "Sombras"', 10, '2025-11-03', 1),
+('Mural colectivo', 'Participar en pintura mural del aula', 10, '2025-11-10', 1),
+('Escultura', 'Figura abstracta con arcilla', 10, '2025-11-17', 1),
+('Arte digital', 'Diseñar portada para libro en Illustrator', 10, '2025-12-01', 1),
+('Exposición virtual', 'Crear galería online con obras propias', 10, '2025-12-08', 1);
 
 -- educación física
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Plan de entrenamiento', 'Diseñar rutina semanal de ejercicios', 10, '2023-09-17', 1),
-('Deportes de equipo', 'Ensayo sobre reglas del fútbol', 10, '2023-09-24', 1),
-('Nutrición deportiva', 'Investigar dieta de un atleta famoso', 10, '2023-10-08', 1),
-('Yoga y meditación', 'Practicar y escribir experiencia personal', 10, '2023-10-15', 1),
-('Historia del deporte', 'Presentación sobre los Juegos Olímpicos', 10, '2023-10-22', 1),
-('Técnicas de respiración', 'Ejercicios prácticos y reflexiones', 10, '2023-11-05', 1),
-('Atletismo', 'Competencia de carreras cortas y largas', 10, '2023-11-12', 1),
-('Deportes alternativos', 'Investigar un deporte poco conocido', 10, '2023-11-19', 1),
-('Primeros auxilios', 'Simulación de atención a lesiones comunes', 10, '2023-12-03', 1),
-('Evaluación física', 'Test de resistencia y fuerza personal', 10, '2023-12-10', 1);
+('Plan de entrenamiento', 'Diseñar rutina semanal de ejercicios', 10, '2025-09-17', 1),
+('Deportes de equipo', 'Ensayo sobre reglas del fútbol', 10, '2025-09-24', 1),
+('Nutrición deportiva', 'Investigar dieta de un atleta famoso', 10, '2025-10-08', 1),
+('Yoga y meditación', 'Practicar y escribir experiencia personal', 10, '2025-10-15', 1),
+('Historia del deporte', 'Presentación sobre los Juegos Olímpicos', 10, '2025-10-22', 1),
+('Técnicas de respiración', 'Ejercicios prácticos y reflexiones', 10, '2025-11-05', 1),
+('Atletismo', 'Competencia de carreras cortas y largas', 10, '2025-11-12', 1),
+('Deportes alternativos', 'Investigar un deporte poco conocido', 10, '2025-11-19', 1),
+('Primeros auxilios', 'Simulación de atención a lesiones comunes', 10, '2025-12-03', 1),
+('Evaluación física', 'Test de resistencia y fuerza personal', 10, '2025-12-10', 1);
 
 -- geografía
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Mapa de continentes', 'Dibujar y etiquetar continentes y océanos', 10, '2023-09-18', 1),
-('Climas del mundo', 'Presentación sobre zonas climáticas', 10, '2023-09-25', 1),
-('Capitales del mundo', 'Juego de memoria con capitales', 10, '2023-10-09', 1),
-('Recursos naturales', 'Investigar recursos de un país específico', 10, '2023-10-16', 1),
-('Geografía física', 'Mapa topográfico de una región local', 10, '2023-10-23', 1),
-('Población mundial', 'Gráfico de crecimiento poblacional', 10, '2023-11-07', 1),
-('Cultura y geografía', 'Ensayo sobre influencia cultural en geografía', 15, '2023-11-14', 1),
-('Desastres naturales', 'Informe sobre terremotos y tsunamis', 10, '2023-11-21', 1),
-('Geopolítica actual', 'Debate sobre conflictos territoriales actuales', 10, '2023-12-05', 1),
-('Proyectos geográficos', 'Crear un proyecto sobre un país elegido', 10, '2023-12-12', 1);
+('Mapa de continentes', 'Dibujar y etiquetar continentes y océanos', 10, '2025-09-18', 1),
+('Climas del mundo', 'Presentación sobre zonas climáticas', 10, '2025-09-25', 1),
+('Capitales del mundo', 'Juego de memoria con capitales', 10, '2025-10-09', 1),
+('Recursos naturales', 'Investigar recursos de un país específico', 10, '2025-10-16', 1),
+('Geografía física', 'Mapa topográfico de una región local', 10, '2025-10-23', 1),
+('Población mundial', 'Gráfico de crecimiento poblacional', 10, '2025-11-07', 1),
+('Cultura y geografía', 'Ensayo sobre influencia cultural en geografía', 15, '2025-11-14', 1),
+('Desastres naturales', 'Informe sobre terremotos y tsunamis', 10, '2025-11-21', 1),
+('Geopolítica actual', 'Debate sobre conflictos territoriales actuales', 10, '2025-12-05', 1),
+('Proyectos geográficos', 'Crear un proyecto sobre un país elegido', 10, '2025-12-12', 1);
 
 -- biología
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Células', 'Dibujar y etiquetar partes de una célula', 10, '2023-09-19', 1),
-('Ecosistemas', 'Crear diagrama de cadena alimentaria', 10, '2023-09-26', 1),
-('Genética', 'Explorar herencia mendeliana con plantas', 10, '2023-10-10', 1),
-('Anatomía humana', 'Estudiar sistemas del cuerpo humano', 10, '2023-10-17', 1),
-('Biodiversidad', 'Investigar especies en peligro de extinción', 10, '2023-10-24', 1),
-('Microorganismos', 'Experimento con cultivo de bacterias', 10, '2023-11-08', 1),
-('Plantas medicinales', 'Informe sobre usos y propiedades', 10, '2023-11-15', 1),
-('Ecología urbana', 'Estudio de flora y fauna local', 10, '2023-11-22', 1),
-('Biotecnología', 'Debate sobre ética en biotecnología moderna', 10, '2023-12-06', 1),
-('Proyecto final de biología', 'Presentación sobre un tema biológico elegido', 10, '2023-12-13', 1);
+('Células', 'Dibujar y etiquetar partes de una célula', 10, '2025-09-19', 1),
+('Ecosistemas', 'Crear diagrama de cadena alimentaria', 10, '2025-09-26', 1),
+('Genética', 'Explorar herencia mendeliana con plantas', 10, '2025-10-10', 1),
+('Anatomía humana', 'Estudiar sistemas del cuerpo humano', 10, '2025-10-17', 1),
+('Biodiversidad', 'Investigar especies en peligro de extinción', 10, '2025-10-24', 1),
+('Microorganismos', 'Experimento con cultivo de bacterias', 10, '2025-11-08', 1),
+('Plantas medicinales', 'Informe sobre usos y propiedades', 10, '2025-11-15', 1),
+('Ecología urbana', 'Estudio de flora y fauna local', 10, '2025-11-22', 1),
+('Biotecnología', 'Debate sobre ética en biotecnología moderna', 10, '2025-12-06', 1),
+('Proyecto final de biología', 'Presentación sobre un tema biológico elegido', 10, '2025-12-13', 1);
 
 -- química
 INSERT INTO Tareas (titulo, descripcion, valor, fecha_entrega, trimestre_id) VALUES 
-('Tabla periódica', 'Memorizar primeros 20 elementos', 10, '2023-09-20', 1),
-('Reacciones químicas', 'Experimento con reacciones ácido-base', 10, '2023-09-27', 1),
-('Moles y masa molar', 'Calcular moles de diferentes sustancias', 10, '2023-10-11', 1),
-('Soluciones y concentraciones', 'Preparar soluciones de diferentes concentraciones', 10, '2023-10-18', 1),
-('Ecuaciones químicas', 'Balancear ecuaciones químicas simples', 10, '2023-10-25', 1),
-('Propiedades de los gases', 'Experimento con presión y volumen de gases', 10, '2023-11-09', 1),
-('Ácidos y bases', 'Investigar propiedades de ácidos y bases comunes', 10, '2023-11-16', 1),
-('Química orgánica', 'Dibujar estructuras de compuestos orgánicos', 10, '2023-11-23', 1),
-('Polímeros', 'Crear un proyecto sobre plásticos y su reciclaje', 10, '2023-12-07', 1),
-('Proyecto final de química', 'Presentación sobre un tema químico elegido', 10, '2023-12-14', 1);
+('Tabla periódica', 'Memorizar primeros 20 elementos', 10, '2025-09-20', 1),
+('Reacciones químicas', 'Experimento con reacciones ácido-base', 10, '2025-09-27', 1),
+('Moles y masa molar', 'Calcular moles de diferentes sustancias', 10, '2025-10-11', 1),
+('Soluciones y concentraciones', 'Preparar soluciones de diferentes concentraciones', 10, '2025-10-18', 1),
+('Ecuaciones químicas', 'Balancear ecuaciones químicas simples', 10, '2025-10-25', 1),
+('Propiedades de los gases', 'Experimento con presión y volumen de gases', 10, '2025-11-09', 1),
+('Ácidos y bases', 'Investigar propiedades de ácidos y bases comunes', 10, '2025-11-16', 1),
+('Química orgánica', 'Dibujar estructuras de compuestos orgánicos', 10, '2025-11-23', 1),
+('Polímeros', 'Crear un proyecto sobre plásticos y su reciclaje', 10, '2025-12-07', 1),
+('Proyecto final de química', 'Presentación sobre un tema químico elegido', 10, '2025-12-14', 1);
 
 INSERT INTO Maestros (id, rol, nombre, apellido, email, telefono, password, activo) VALUES
 (1, 3, 'Juan', 'Pérez', 'maestro1@example.com', '12345678', 'password1', True),
@@ -554,16 +554,16 @@ INSERT INTO Calificaciones (carnet_estudiante, id_curso, nota, id_boleta, id_tar
 
 
 INSERT INTO Asistencia (id_curso, carnet_estudiante, fecha) VALUES
-(1, 1001, '2023-01-10 08:00:00'), 
-(2, 1002, '2023-01-11 08:00:00'), 
-(3, 1003, '2023-01-12 08:00:00'), 
-(4, 1004, '2023-01-13 08:00:00'), 
-(5, 1005, '2023-01-14 08:00:00'), 
-(6, 1006, '2023-01-15 08:00:00'), 
-(7, 1007, '2023-01-16 08:00:00'), 
-(8, 1008, '2023-01-17 08:00:00'), 
-(9, 1009, '2023-01-18 08:00:00'), 
-(10, 1010, '2023-01-19 08:00:00'); 
+(1, 1001, '2025-01-10 08:00:00'), 
+(2, 1002, '2025-01-11 08:00:00'), 
+(3, 1003, '2025-01-12 08:00:00'), 
+(4, 1004, '2025-01-13 08:00:00'), 
+(5, 1005, '2025-01-14 08:00:00'), 
+(6, 1006, '2025-01-15 08:00:00'), 
+(7, 1007, '2025-01-16 08:00:00'), 
+(8, 1008, '2025-01-17 08:00:00'), 
+(9, 1009, '2025-01-18 08:00:00'), 
+(10, 1010, '2025-01-19 08:00:00'); 
 
 INSERT INTO Observaciones (carnet_estudiante, id_curso, observaciones, puntos_de_accion, id_calificacion) VALUES
 (1001, 1, 'Necesita mejorar en álgebra.', 'Reforzar temas de álgebra.', 1), 
@@ -588,16 +588,16 @@ INSERT INTO Observaciones (carnet_estudiante, id_curso, observaciones, puntos_de
 (1001, 9, 'Buen desempeño en exposiciones orales.', 'Seguir practicando habilidades de comunicación.', 101);
 
 INSERT INTO Boleta_calificaciones (carnet_estudiante, fecha, ciclo_escolar, trimestre_id) VALUES
-(1001, '2023-03-31', '2023', 1),
-(1002, '2023-03-31', '2023', 1),
-(1003, '2023-03-31', '2023', 1),
-(1004, '2023-03-31', '2023', 1),
-(1005, '2023-03-31', '2023', 1),
-(1006, '2023-03-31', '2023', 1),
-(1007, '2023-03-31', '2023', 1),
-(1008, '2023-03-31', '2023', 1),
-(1009, '2023-03-31', '2023', 1),
-(1010, '2023-03-31', '2023', 1);
+(1001, '2025-03-31', '2025', 1),
+(1002, '2025-03-31', '2025', 1),
+(1003, '2025-03-31', '2025', 1),
+(1004, '2025-03-31', '2025', 1),
+(1005, '2025-03-31', '2025', 1),
+(1006, '2025-03-31', '2025', 1),
+(1007, '2025-03-31', '2025', 1),
+(1008, '2025-03-31', '2025', 1),
+(1009, '2025-03-31', '2025', 1),
+(1010, '2025-03-31', '2025', 1);
 
 -- data para planificaciones
 
@@ -611,8 +611,8 @@ INSERT INTO Grados_director (id_grado, id_director) VALUES
 (6, 1);
 
 INSERT INTO Planificaciones (id_curso, mes, ciclo_escolar) VALUES
-(1, 'enero', '2023'),
-(1, 'febrero', '2023');
+(1, 'enero', '2025'),
+(1, 'febrero', '2025');
 
 INSERT INTO Detalle_planificacion (id_planificacion, tema_tarea, puntos_tarea) VALUES
 (1, 'Sumas hasta el 10', 5),
