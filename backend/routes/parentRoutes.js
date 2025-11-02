@@ -18,4 +18,7 @@ router.get('/:studentId/payments', verifyToken, parentController.getChildPayment
 // Obtener pagos pendientes por hijo
 router.get('/:studentId/payments/pending', verifyToken, parentController.getChildPendingPayments);
 
+// Verificar solvencia de pagos para acceso a calificaciones
+router.get('/:studentId/solvency', verifyToken, parentController.checkPaymentSolvency);
+
 module.exports = router;

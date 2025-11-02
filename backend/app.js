@@ -13,6 +13,7 @@ const superUserRoutes = require('./routes/superUserRoutes');
 const superUserPlanificationRoutes = require('./routes/superUserPlanificationRoutes');
 const familyRoutes = require('./routes/familyRoutes');
 const inscripcionRoutes = require('./routes/inscripcionRoutes');
+const passwordResetRoutes = require('./routes/passwordResetRoutes');
 
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
@@ -51,6 +52,7 @@ app.use('/api/inscripciones', inscripcionRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/students', studentAttendanceRoutes);
+app.use('/api/password', passwordResetRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {

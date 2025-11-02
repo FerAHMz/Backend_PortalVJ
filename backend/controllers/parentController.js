@@ -252,3 +252,92 @@ exports.getChildPendingPayments = async (req, res) => {
     res.status(500).json({ success: false, error: 'Error al obtener pagos pendientes' });
   }
 };
+
+// Verificar solvencia de pagos para acceso a calificaciones
+exports.checkPaymentSolvency = async (req, res) => {
+  try {
+    const parentId = req.user.id;
+    const { studentId } = req.params;
+
+    // Verificar que el estudiante pertenece al padre
+    const childVerification = await db.getPool().query(
+      `SELECT e.carnet FROM Familias f
+       JOIN Estudiantes e ON f.carnet_estudiante = e.carnet
+       WHERE f.id_padre = $1 AND e.carnet = $2`,
+      [parentId, studentId]
+    );
+
+    if (childVerification.rows.length === 0) {
+      return res.status(403).json({
+        success: false,
+        error: 'No tiene permisos para verificar la solvencia de este estudiante'
+      });
+    }
+
+    // Obtener año y mes actual
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth(); // 0-11 (Enero = 0)
+
+    const months = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    // Solo considerar meses que ya han pasado (hasta el mes actual)
+    const monthsToCheck = months.slice(0, currentMonth + 1);
+    const MONTO_MINIMO = 500.00;
+
+    // Obtener meses que tienen pago suficiente
+    const paidMonthsQuery = `
+      SELECT DISTINCT s.mes_solvencia_new 
+      FROM Pagos p
+      JOIN Solvencias s ON p.id = s.id_pagos
+      WHERE p.carnet_estudiante = $1 AND p.id_padre = $2 
+      AND s.estado = TRUE AND p.estado = TRUE
+      AND s.monto >= $3
+      AND EXTRACT(YEAR FROM s.fecha_pago) = $4
+    `;
+
+    const paidMonths = await db.getPool().query(paidMonthsQuery, [
+      studentId,
+      parentId,
+      MONTO_MINIMO,
+      currentYear
+    ]);
+
+    const paidMonthsList = paidMonths.rows.map(row => row.mes_solvencia_new);
+    const pendingMonths = monthsToCheck.filter(month => !paidMonthsList.includes(month));
+
+    // Determinar si está solvente
+    const isSolvent = pendingMonths.length === 0;
+    
+    // Calcular porcentaje de solvencia
+    const solvencyPercentage = monthsToCheck.length > 0 ? 
+      ((monthsToCheck.length - pendingMonths.length) / monthsToCheck.length) * 100 : 100;
+
+    res.json({
+      success: true,
+      solvency: {
+        isSolvent: isSolvent,
+        solvencyPercentage: Math.round(solvencyPercentage),
+        totalMonthsToCheck: monthsToCheck.length,
+        paidMonths: paidMonthsList.length,
+        pendingMonths: pendingMonths.length,
+        pendingMonthsList: pendingMonths,
+        year: currentYear,
+        lastCheckedMonth: months[currentMonth],
+        accessBlocked: !isSolvent,
+        message: isSolvent ? 
+          'Estudiante solvente - Acceso completo a calificaciones' :
+          `Estudiante no solvente - ${pendingMonths.length} meses pendientes`
+      }
+    });
+  } catch (error) {
+    console.error('Error checking payment solvency:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Error al verificar solvencia de pagos' 
+    });
+  }
+};
