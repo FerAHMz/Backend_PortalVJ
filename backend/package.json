@@ -10,7 +10,7 @@
     "test:integration": "jest --testPathPattern=integration --coverage --detectOpenHandles --forceExit",
     "lint": "eslint . --ext .js --fix",
     "lint:check": "eslint . --ext .js",
-    "build": "echo 'Backend build completed'",
+    "build": "node --version && npm --version",
     "docker:build": "docker build -t portalvj-backend .",
     "docker:run": "docker run -p 3000:3000 portalvj-backend",
     "security-audit": "npm audit --audit-level=moderate"
