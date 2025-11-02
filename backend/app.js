@@ -27,7 +27,7 @@ app.use(cors({
   origin: [
     'http://localhost:5173', 
     'http://localhost:3000',
-    'https://frontend-portal-84egosx13-fernandos-projects-3cc9b62d.vercel.app'
+    'https://frontend-portal-vj.vercel.app'
   ],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE']
