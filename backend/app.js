@@ -18,6 +18,8 @@ const passwordResetRoutes = require('./routes/passwordResetRoutes');
 const attendanceRoutes = require('./routes/attendanceRoutes');
 const studentAttendanceRoutes = require('./routes/studentAttendanceRoutes');
 const courseRoutes = require('./routes/courseRoutes');
+const gradePromotionRoutes = require('./routes/gradePromotionRoutes');
+const directorRoutes = require('./routes/directorRoutes');
 
 // Controllers
 const authController = require('./controllers/authController');
@@ -57,6 +59,8 @@ app.use('/api/courses', courseRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/students', studentAttendanceRoutes);
 app.use('/api/password', passwordResetRoutes);
+app.use('/api/promotions', gradePromotionRoutes);
+app.use('/api/director', directorRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
