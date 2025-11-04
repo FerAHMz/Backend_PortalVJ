@@ -31,7 +31,7 @@ const corsOptions = {
   origin: [
     'http://localhost:5173', 
     'http://localhost:3000',
-    'https://frontend-portal-vj.vercel.app'
+    'https://portalvanguardiajuvenil.vercel.app'
   ], // Allow frontend and backend
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
